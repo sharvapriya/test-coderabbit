@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ invoice_number }} | MyKartStore Buyer Invoice</title>
+<style>
+@page {
+    size: A4;
+    margin: 10mm;
+}
+
+:root {
+    --ink: #0f172a;
+    --muted: #64748b;
+    --line: #dbe2ea;
+    --panel: #ffffff;
+    --panel-soft: #f8fafc;
+    --accent: #ff6b00;
+    --accent-deep: #c2410c;
+    --success-bg: #ecfdf3;
+    --success-text: #166534;
+    --shadow: 0 24px 60px rgba(15, 23, 42, 0.12);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: "Segoe UI", Arial, Helvetica, sans-serif;
+    color: var(--ink);
+    background:
+        radial-gradient(circle at top left, rgba(255, 107, 0, 0.16), transparent 26%),
+        linear-gradient(180deg, #f7f8fb 0%, #eef2f7 100%);
+    padding: 32px;
+}
+
+.invoice-shell {
+    max-width: 1120px;
+    margin: 0 auto;
+    background: var(--panel);
+    border-radius: 28px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+}
+
+body.pdf-mode {
+    padding: 0;
+    background: #ffffff;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+body.pdf-mode .invoice-shell {
+    max-width: none;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.hero {
+    padding: 36px 42px 30px;
+    color: #fff;
+    background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.08), transparent 44%),
+        linear-gradient(135deg, #0f172a 0%, #1e293b 54%, #334155 100%);
+}
+
+body.pdf-mode .hero {
+    padding: 20px 24px 18px;
+    background: #1f2937;
+}
+
+.hero-top {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    align-items: flex-start;
+}
+
+body.pdf-mode .invoice-card {
+    background: rgba(255, 255, 255, 0.06);
+    backdrop-filter: none;
+}
+
+.brand-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.1);
+    font-size: 12px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+}
+
+.brand-mark {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #fbbf24, #fb923c);
+    box-shadow: 0 0 0 6px rgba(251, 146, 60, 0.18);
+}
+
+.brand-name {
+    margin: 14px 0 8px;
+    font-size: 34px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+}
+
+.brand-copy {
+    max-width: 520px;
+    margin: 0;
+    color: rgba(255, 255, 255, 0.72);
+    line-height: 1.6;
+    font-size: 14px;
+}
+
+.invoice-card {
+    min-width: 290px;
+    padding: 20px 22px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(10px);
+}
+
+.invoice-card .eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.invoice-card h1 {
+    margin: 8px 0 18px;
+    font-size: 30px;
+    line-height: 1;
+}
+
+.meta-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px 18px;
+}
+
+.meta-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: rgba(255, 255, 255, 0.62);
+}
+
+.meta-value {
+    margin-top: 4px;
+    font-size: 14px;
+    font-weight: 600;
+    word-break: break-word;
+}
+
+.status-strip {
+    margin-top: 22px;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: 999px;
+    background: {% if order.paid %}var(--success-bg){% else %}rgba(255,255,255,0.14){% endif %};
+    color: {% if order.paid %}var(--success-text){% else %}#ffffff{% endif %};
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+.content {
+    padding: 34px 42px 40px;
+}
+
+.grid-two {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.panel {
+    border: 1px solid var(--line);
+    border-radius: 22px;
+    background: linear-gradient(180deg, #ffffff 0%, #fbfcfe 100%);
+    padding: 22px;
+}
+
+body.pdf-mode .panel,
+body.pdf-mode .seller-card,
+body.pdf-mode .trust-card,
+body.pdf-mode .invoice-card {
+    box-shadow: none;
+}
+
+.panel.soft {
+    background: var(--panel-soft);
+}
+
+body.pdf-mode .panel.soft,
+body.pdf-mode .trust-card {
+    background: #ffffff;
+}
+
+.section-kicker {
+    margin: 0 0 8px;
+    color: var(--accent-deep);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.section-title {
+    margin: 0 0 14px;
+    font-size: 19px;
+}
+
+.detail-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 10px;
+}
+
+.detail-row {
+    display: flex;
+    gap: 14px;
+    justify-content: space-between;
+}
+
+.detail-row strong {
+    color: var(--muted);
+    font-weight: 600;
+}
+
+.detail-row span:last-child {
+    text-align: right;
+}
+
+.seller-stack {
+    display: grid;
+    gap: 14px;
+}
+
+.seller-card {
+    padding: 16px 18px;
+    border-radius: 18px;
+    background: #fff;
+    border: 1px solid #edf2f7;
+}
+
+.seller-name {
+    margin: 0 0 10px;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.address-copy,
+.support-copy {
+    margin: 0;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+.table-wrap {
+    margin-top: 22px;
+    border: 1px solid var(--line);
+    border-radius: 24px;
+    overflow: hidden;
+}
+
+body.pdf-mode .table-wrap {
+    border-radius: 0;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+thead {
+    display: table-header-group;
+}
+
+tr,
+.panel,
+.seller-card,
+.trust-card,
+.summary-row,
+.footer {
+    break-inside: avoid;
+    page-break-inside: avoid;
+}
+
+thead th {
+    padding: 16px 18px;
+    background: #f8fafc;
+    color: var(--muted);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    text-align: left;
+}
+
+tbody td {
+    padding: 18px;
+    border-top: 1px solid #eef2f7;
+    vertical-align: top;
+    font-size: 14px;
+}
+
+.product-name {
+    margin: 0 0 5px;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.product-meta {
+    margin: 0;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.money {
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+
+.summary-grid {
+    margin-top: 24px;
+    display: grid;
+    grid-template-columns: 1.2fr 0.8fr;
+    gap: 18px;
+}
+
+.summary-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 11px 0;
+    border-bottom: 1px solid #edf2f7;
+    font-size: 14px;
+}
+
+.summary-row:last-child {
+    border-bottom: 0;
+}
+
+.summary-row strong {
+    font-weight: 600;
+}
+
+.summary-row.grand {
+    margin-top: 8px;
+    padding-top: 18px;
+    border-top: 2px solid var(--ink);
+    border-bottom: 0;
+    font-size: 19px;
+    font-weight: 700;
+}
+
+.summary-row.credit span:last-child {
+    color: var(--success-text);
+    font-weight: 700;
+}
+
+.summary-row.due span:last-child {
+    color: var(--accent-deep);
+    font-weight: 700;
+}
+
+.summary-note {
+    margin: 10px 0 0;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.trust-strip {
+    margin-top: 20px;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.trust-card {
+    padding: 16px 18px;
+    border-radius: 18px;
+    background: linear-gradient(180deg, #fff7ed 0%, #ffffff 100%);
+    border: 1px solid #fed7aa;
+}
+
+.trust-card h3 {
+    margin: 0 0 6px;
+    font-size: 14px;
+}
+
+.trust-card p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.footer {
+    margin-top: 24px;
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    align-items: center;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.print-btn {
+    appearance: none;
+    border: 0;
+    border-radius: 999px;
+    padding: 13px 20px;
+    background: linear-gradient(135deg, var(--accent), #f97316);
+    color: #fff;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 10px 24px rgba(249, 115, 22, 0.28);
+}
+
+.download-btn {
+    appearance: none;
+    border: 1px solid #dbe2ea;
+    border-radius: 999px;
+    padding: 13px 20px;
+    background: #ffffff;
+    color: var(--ink);
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.download-btn:hover {
+    background: #f8fafc;
+}
+
+.fallback-banner {
+    margin: 0 0 18px;
+    padding: 14px 16px;
+    border: 1px solid #fcd34d;
+    border-radius: 16px;
+    background: #fffbeb;
+    color: #92400e;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.print-btn:hover {
+    background: linear-gradient(135deg, #ea580c, #f97316);
+}
+
+@media (max-width: 920px) {
+    body {
+        padding: 18px;
+    }
+
+    .hero,
+    .content {
+        padding-left: 22px;
+        padding-right: 22px;
+    }
+
+    .hero-top,
+    .grid-two,
+    .summary-grid,
+    .trust-strip,
+    .footer {
+        grid-template-columns: 1fr;
+        display: grid;
+    }
+
+    .meta-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .detail-row {
+        flex-direction: column;
+        gap: 3px;
+    }
+
+    .detail-row span:last-child {
+        text-align: left;
+    }
+
+    .table-wrap {
+        overflow-x: auto;
+    }
+}
+
+@media print {
+    body {
+        background: #fff;
+        padding: 0;
+    }
+
+    .invoice-shell {
+        max-width: none;
+        box-shadow: none;
+        border-radius: 0;
+    }
+
+    .print-btn {
+        display: none;
+    }
+
+    .download-btn {
+        display: none;
+    }
+}
+</style>
+</head>
+<body class="{% if pdf_mode %}pdf-mode{% endif %}">
+<div class="invoice-shell">
+    <section class="hero">
+        <div class="hero-top">
+            <div>
+                <div class="brand-tag">
+                    <span class="brand-mark"></span>
+                    Buyer Invoice
+                </div>
+                <div class="brand-name">{{ support_company }}</div>
+                <p class="brand-copy">
+                    Premium order invoice with tax-inclusive pricing, verified payment references, and support details for smooth customer assistance.
+                </p>
+            </div>
+
+            <div class="invoice-card">
+                <div class="eyebrow">Tax Invoice</div>
+                <h1>{{ invoice_number }}</h1>
+                <div class="meta-grid">
+                    <div>
+                        <div class="meta-label">Order ID</div>
+                        <div class="meta-value">{{ order.display_order_id }}</div>
+                    </div>
+                    <div>
+                        <div class="meta-label">Invoice Date</div>
+                        <div class="meta-value">{{ order.created_at|date:"d M Y" }}</div>
+                    </div>
+                    <div>
+                        <div class="meta-label">Payment Method</div>
+                        <div class="meta-value">{{ order.get_payment_method_display }}</div>
+                    </div>
+                    <div>
+                        <div class="meta-label">Transaction ID</div>
+                        <div class="meta-value">{{ payment_transaction_id }}</div>
+                    </div>
+                </div>
+                <div class="status-strip">
+                    <span class="status-dot"></span>
+                    Payment {% if order.paid %}Completed{% else %}Pending{% endif %}
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="content">
+        {% if pdf_fallback_mode %}
+        <div class="fallback-banner">
+            PDF package is not installed on this server right now, so this page is shown in a print-safe invoice view instead of crashing.
+            Install `weasyprint` on production to enable direct PDF file download from this URL.
+        </div>
+        {% endif %}
+        <div class="grid-two">
+            <article class="panel">
+                <p class="section-kicker">Buyer Details</p>
+                <h2 class="section-title">Billing and Shipping</h2>
+                <ul class="detail-list">
+                    <li class="detail-row"><strong>Name</strong><span>{{ order.full_name }}</span></li>
+                    <li class="detail-row"><strong>Email</strong><span>{{ order.email }}</span></li>
+                    <li class="detail-row"><strong>Phone</strong><span>{{ buyer_phone }}</span></li>
+                    <li class="detail-row"><strong>Address</strong><span>{{ order.address }}</span></li>
+                    {% if order.state or order.pincode or order.country %}
+                    <li class="detail-row">
+                        <strong>Region</strong>
+                        <span>
+                            {% if order.state %}{{ order.state }}{% endif %}{% if order.pincode %}{% if order.state %} - {% endif %}{{ order.pincode }}{% endif %}{% if order.country %}{% if order.state or order.pincode %}, {% endif %}{{ order.country }}{% endif %}
+                        </span>
+                    </li>
+                    {% endif %}
+                </ul>
+            </article>
+
+            <article class="panel soft">
+                <p class="section-kicker">Seller Details</p>
+                <h2 class="section-title">Fulfilled By</h2>
+                <div class="seller-stack">
+                    {% for seller in seller_profiles %}
+                    <div class="seller-card">
+                        <p class="seller-name">{{ seller.business_name|default:"Marketplace Seller" }}</p>
+                        <p class="address-copy">
+                            {{ seller.contact_email|default:"-" }}<br>
+                            {{ seller.phone|default:"-" }}<br>
+                            {{ seller.registered_office_address|default:"-" }}<br>
+                            {% if seller.gst_number %}GSTIN: {{ seller.gst_number }}{% endif %}
+                        </p>
+                    </div>
+                    {% empty %}
+                    <div class="seller-card">
+                        <p class="seller-name">Marketplace Seller</p>
+                        <p class="address-copy">Seller details are not available for this order.</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </article>
+        </div>
+
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Unit Price</th>
+                        <th>Qty</th>
+                        <th>Item Total</th>
+                        <th>GST</th>
+                        <th>Line Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for line in invoice_line_items %}
+                    <tr>
+                        <td>
+                            <p class="product-name">{{ line.item.product.name }}</p>
+                            <p class="product-meta">
+                                {% if line.item.variant_summary %}{{ line.item.variant_summary }}<br>{% endif %}
+                                GST {{ line.item.gst_rate }}% included
+                                {% if line.item.product.effective_hsn_code %}<br>HSN: {{ line.item.product.effective_hsn_code }}{% endif %}
+                            </p>
+                        </td>
+                        <td class="money">₹{{ line.item.price }}</td>
+                        <td>{{ line.item.quantity }}</td>
+                        <td class="money">₹{{ line.line_taxable|floatformat:2 }}</td>
+                        <td class="money">₹{{ line.line_gst|floatformat:2 }}</td>
+                        <td class="money">₹{{ line.line_total|floatformat:2 }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="summary-grid">
+            <article class="panel">
+                <p class="section-kicker">Payment Summary</p>
+                <h2 class="section-title">Charged Amount</h2>
+                <div class="summary-row">
+                    <span>Items total (GST included)</span>
+                    <span class="money">₹{{ items_total|floatformat:2 }}</span>
+                </div>
+                <div class="summary-row">
+                    <span>Items total</span>
+                    <span class="money">₹{{ subtotal|floatformat:2 }}</span>
+                </div>
+                <div class="summary-row">
+                    <span>GST total{% if gst_rate_labels %} ({{ gst_rate_labels|join:", " }}){% endif %}</span>
+                    <span class="money">₹{{ gst_amount|floatformat:2 }}</span>
+                </div>
+                {% if discount_amount > 0 %}
+                <div class="summary-row credit">
+                    <span>Discount</span>
+                    <span class="money">-₹{{ discount_amount|floatformat:2 }}</span>
+                </div>
+                {% endif %}
+                {% if shipping_amount > 0 %}
+                <div class="summary-row">
+                    <span>Delivery charge</span>
+                    <span class="money">₹{{ shipping_amount|floatformat:2 }}</span>
+                </div>
+                {% endif %}
+                {% if adjustment_amount %}
+                <div class="summary-row">
+                    <span>Order adjustment</span>
+                    <span class="money">₹{{ adjustment_amount|floatformat:2 }}</span>
+                </div>
+                {% endif %}
+                <div class="summary-row grand">
+                    <span>Total payable</span>
+                    <span class="money">₹{{ grand_total|floatformat:2 }}</span>
+                </div>
+                <p class="summary-note">
+                    GST is calculated from each item total amount using the saved GST percentage for each ordered product, then combined in this summary.
+                </p>
+            </article>
+
+            <article class="panel soft">
+                <p class="section-kicker">Payment Trail</p>
+                <h2 class="section-title">Settlement Snapshot</h2>
+                <div class="summary-row">
+                    <span>Transaction reference</span>
+                    <span>{{ payment_transaction_id }}</span>
+                </div>
+                <div class="summary-row">
+                    <span>Payment mode</span>
+                    <span>{{ order.get_payment_method_display }}</span>
+                </div>
+                {% if wallet_paid > 0 %}
+                <div class="summary-row credit">
+                    <span>Paid via wallet</span>
+                    <span class="money">₹{{ wallet_paid|floatformat:2 }}</span>
+                </div>
+                {% endif %}
+                {% if gateway_paid > 0 %}
+                <div class="summary-row credit">
+                    <span>Paid via gateway</span>
+                    <span class="money">₹{{ gateway_paid|floatformat:2 }}</span>
+                </div>
+                {% endif %}
+                <div class="summary-row credit">
+                    <span>Total paid</span>
+                    <span class="money">₹{{ total_paid|floatformat:2 }}</span>
+                </div>
+                <div class="summary-row due">
+                    <span>Balance due</span>
+                    <span class="money">₹{{ balance_due|floatformat:2 }}</span>
+                </div>
+                <p class="summary-note">
+                    Need help with payment, replacement, or order assistance? Reach our support team using the verified contact details below.
+                </p>
+            </article>
+        </div>
+
+        <div class="trust-strip">
+            <div class="trust-card">
+                <h3>Customer Support</h3>
+                <p class="support-copy">{{ support_email }}<br>{{ support_phone }}</p>
+            </div>
+            <div class="trust-card">
+                <h3>Registered Office</h3>
+                <p class="support-copy">
+                    {% for line in support_address_lines %}
+                    {{ line }}{% if not forloop.last %}<br>{% endif %}
+                    {% endfor %}
+                </p>
+            </div>
+            <div class="trust-card">
+                <h3>Why This Layout Works</h3>
+                <p>
+                    Clear pricing hierarchy, visible payment proof, and a GST-included breakdown make this invoice easier to trust and easier to use for support follow-up.
+                </p>
+            </div>
+        </div>
+
+        <div class="footer">
+            <div>
+                This is a computer-generated buyer invoice issued by {{ support_company }}.<br>
+                Keep this copy for warranty, returns, and support requests.
+            </div>
+            <div style="display:flex; gap:12px; flex-wrap:wrap; justify-content:flex-end;">
+                {% if not pdf_mode %}
+                <a class="download-btn" href="{% url 'orders:order_invoice_pdf' order.id %}">Download PDF</a>
+                <button class="print-btn" onclick="window.print()">Print Invoice</button>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+</div>
+</body>
+</html>

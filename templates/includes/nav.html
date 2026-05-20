@@ -1,0 +1,455 @@
+{% load static %}
+<nav class="w-full shadow-md sticky top-0 z-[1000]">
+
+    <!-- TOP HEADER -->
+
+    <div class="bg-[#131921] text-white">
+
+        <div class="max-w-[1600px] mx-auto px-3 sm:px-4 py-2 flex flex-wrap items-center gap-3">
+
+
+
+             <!-- LOGO -->
+            <a href="{% url 'products:home' %}"
+               class="shrink-0 flex flex-col items-start px-0 py-0 border border-transparent hover:border-white rounded-sm transition no-underline">
+                <span class="mb-1 text-[1.35rem] sm:text-[1.7rem] font-bold leading-none tracking-[0.02em]" style="font-family: Georgia, 'Times New Roman', serif; background: linear-gradient(90deg, #1f6a4f 0%, #c38a3d 100%); -webkit-background-clip: text; background-clip: text; color: transparent;">
+                    Mykart Store
+                </span>
+                <img src="{% static 'images/mykart-logo.png' %}"
+                     alt="MyKartStore"
+                     class="block h-auto max-h-[56px] w-auto max-w-[240px] object-contain">
+            </a>
+
+
+
+            <!-- LOCATION -->
+
+            <a href="#"
+
+               class="hidden lg:flex items-center gap-2 px-2 py-1 border border-transparent hover:border-white rounded-sm transition min-w-[180px]">
+
+                <span class="text-lg">📍</span>
+
+                <div class="leading-tight">
+
+                    <div class="text-[11px] text-gray-300">Deliver to</div>
+
+                    <div class="text-[13px] font-semibold">Coimbatore 641012</div>
+
+                </div>
+
+            </a>
+
+
+
+            <!-- SEARCH -->
+
+            <form action="{% url 'products:product_list' %}" method="get"
+
+                  class="order-3 lg:order-none w-full lg:flex-1 flex h-[42px] min-w-0">
+
+                <div class="relative shrink-0" id="searchCategoryDropdownContainer">
+
+                    <input type="hidden" name="category" id="searchCategoryInput" value="{% if selected_category_slug %}{{ selected_category_slug }}{% elif category %}{{ category.slug }}{% endif %}">
+
+                    <button type="button"
+
+                        id="searchCategoryDropdownBtn"
+
+                        class="flex min-w-[11rem] items-center justify-between gap-3 bg-gray-200 text-gray-700 text-sm px-3 border-r border-gray-300 rounded-l-md outline-none">
+
+                        <span id="selectedCategoryText">
+
+                            {% if category %}
+
+                                {{ category.name }}
+
+                            {% elif selected_category_slug %}
+
+                                {% for nav_category in navigation_categories %}{% if nav_category.slug == selected_category_slug %}{{ nav_category.name }}{% endif %}{% endfor %}
+
+                            {% else %}
+
+                                All
+
+                            {% endif %}
+
+                        </span>
+
+                        <span class="text-[10px]">▼</span>
+
+                    </button>
+
+
+
+                    <div id="searchCategoryDropdownMenu" class="hidden absolute left-0 top-full mt-2 w-64 max-h-72 overflow-y-auto rounded-2xl border border-slate-200 bg-white text-black shadow-2xl z-50">
+
+                        <button type="button" class="search-category-option flex w-full items-center justify-between px-4 py-3 text-left text-sm font-medium hover:bg-slate-50" data-value="" data-label="All">
+
+                            <span>All</span>
+
+                            {% if not selected_category_slug and not category %}<span>✓</span>{% endif %}
+
+                        </button>
+
+                        {% for nav_category in navigation_categories %}
+
+                            <button type="button" class="search-category-option flex w-full items-center justify-between px-4 py-3 text-left text-sm font-medium hover:bg-slate-50" data-value="{{ nav_category.slug }}" data-label="{{ nav_category.name }}">
+
+                                <span>{{ nav_category.name }}</span>
+
+                                {% if selected_category_slug == nav_category.slug or category.slug == nav_category.slug %}<span>✓</span>{% endif %}
+
+                            </button>
+
+                        {% endfor %}
+
+                    </div>
+
+                </div>
+
+
+
+                <input type="text"
+
+                       name="q"
+
+                       placeholder="Search MyKartStore"
+
+                       class="flex-1 px-4 text-black text-sm sm:text-base outline-none">
+
+
+
+                <button type="submit"
+
+                        class="w-[55px] bg-[#febd69] hover:bg-[#f3a847] rounded-r-md flex items-center justify-center text-black text-xl font-bold"
+
+                        aria-label="Search">
+
+                    🔍
+
+                </button>
+
+            </form>
+
+
+
+            <!-- RIGHT SECTION -->
+
+            <div class="ml-auto flex items-center gap-1 sm:gap-2">
+
+
+
+                <!-- LANGUAGE -->
+
+                <div class="hidden md:flex items-center gap-1 px-2 py-2 border border-transparent hover:border-white rounded-sm cursor-pointer transition">
+
+                    <span>🇮🇳</span>
+
+                    <span class="text-sm font-medium">EN</span>
+
+                    <span class="text-[10px]">▼</span>
+
+                </div>
+
+
+
+                {% if request.user.is_authenticated %}
+
+
+
+                    
+
+                   <!-- ACCOUNT DROPDOWN -->
+
+<div class="relative" id="accountDropdownContainer">
+
+
+
+    <button id="accountDropdownBtn"
+
+        class="px-2 py-2 border border-transparent hover:border-white rounded-sm transition leading-tight">
+
+        <div class="text-[12px] text-gray-300">Hello, {{ request.user.username }}</div>
+
+        <div class="text-sm font-bold">Account & Lists ▼</div>
+
+    </button>
+
+
+
+    <!-- DROPDOWN MENU -->
+
+    <div id="accountDropdownMenu"
+
+        class="hidden absolute right-0 top-full mt-1 w-64 bg-white text-black rounded-md shadow-xl z-50">
+
+
+
+        <div class="p-4 border-b">
+
+            <div class="font-semibold text-gray-800">
+
+                Hi, {{ request.user.username }}
+
+            </div>
+
+        </div>
+
+
+
+        <a href="{% url 'orders:order_tracking_list' %}" class="block px-4 py-2 hover:bg-gray-100 text-sm">
+
+            My Orders
+
+        </a>
+
+        
+
+         <a href="{% url 'profile' %}" class="block px-4 py-2 hover:bg-gray-100 text-sm">
+
+            My Profile
+
+        </a>
+
+
+
+        <a href="{% url 'sellers:dashboard' %}" class="block px-4 py-2 hover:bg-gray-100 text-sm">
+
+            Seller Dashboard
+
+        </a>
+
+
+
+        <a href="{% url 'orders:delivery_dashboard' %}" class="block px-4 py-2 hover:bg-gray-100 text-sm">
+
+            Delivery Dashboard
+
+        </a>
+
+
+
+        <a href="{% url 'orders:wallet_detail' %}" class="block px-4 py-2 hover:bg-gray-100 text-sm">
+
+            Wallet
+
+        </a>
+
+
+
+        <div class="border-t">
+
+            <form method="post" action="{% url 'logout' %}">
+
+                {% csrf_token %}
+
+                <button type="submit"
+
+                    class="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm text-red-600">
+
+                    Logout
+
+                </button>
+
+            </form>
+
+        </div>
+
+
+
+    </div>
+
+</div>
+
+
+
+                    <!-- ORDERS -->
+
+                    <a href="{% url 'orders:order_tracking_list' %}"
+
+                       class="hidden md:block px-2 py-2 border border-transparent hover:border-white rounded-sm transition leading-tight">
+
+                        <div class="text-[12px] text-gray-300">Returns</div>
+
+                        <div class="text-sm font-bold">& Orders</div>
+
+                    </a>
+
+
+
+                {% else %}
+
+
+
+                    <!-- SIGNIN / SIGNUP -->
+
+                    <a href="{% url 'login' %}"
+
+                       class="px-2 py-2 border border-transparent hover:border-white rounded-sm transition leading-tight">
+
+                        <div class="text-[12px] text-gray-300">Hello, sign in</div>
+
+                        <div class="text-sm font-bold">Account</div>
+
+                    </a>
+
+
+
+                    <a href="{% url 'accounts:signup' %}"
+
+                       class="hidden sm:block px-2 py-2 border border-transparent hover:border-white rounded-sm transition text-sm font-bold">
+
+                        Signup
+
+                    </a>
+
+
+
+                {% endif %}
+
+
+
+                <!-- WISHLIST -->
+
+                <a href="{% url 'wishlist:wishlist_view' %}"
+
+                   class="relative px-2 py-2 border border-transparent hover:border-white rounded-sm transition"
+
+                   aria-label="Wishlist">
+
+                    <span class="text-xl text-red-500">❤</span>
+
+                    {% if request.user.is_authenticated and wishlist_count > 0 %}
+
+                        <span class="absolute top-0 right-0 bg-red-500 text-white text-[10px] min-w-[18px] h-[18px] flex items-center justify-center rounded-full px-1">
+
+                            {{ wishlist_count }}
+
+                        </span>
+
+                    {% endif %}
+
+                </a>
+
+
+
+                <!-- CART -->
+
+                <a href="{% url 'cart:cart_detail' %}"
+
+                   class="relative flex items-end gap-1 px-2 py-2 border border-transparent hover:border-white rounded-sm transition"
+
+                   aria-label="Cart">
+
+                    <div class="relative">
+
+                        <svg class="w-8 h-8 fill-white" viewBox="0 0 24 24" aria-hidden="true">
+
+                            <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zm10 
+
+                                     0c-1.1 0-1.99.9-1.99 2S15.9 22 17 22s2-.9 
+
+                                     2-2-.9-2-2-2zM7.16 14h9.45c.75 0 1.41-.41 
+
+                                     1.75-1.03l3.58-6.49a1 1 0 0 0-.88-1.48H5.21L4.27 
+
+                                     3H1v2h2l3.6 7.59-1.35 2.44A2 2 0 0 0 7 18h12v-2H7l1.16-2z"/>
+
+                        </svg>
+
+
+
+                        {% if cart_count > 0 %}
+
+                            <span class="absolute -top-2 -right-2 bg-yellow-400 text-black text-[10px] min-w-[18px] h-[18px] flex items-center justify-center rounded-full px-1 font-bold">
+
+                                {{ cart_count }}
+
+                            </span>
+
+                        {% endif %}
+
+                    </div>
+
+                    <span class="hidden sm:block text-sm font-bold">Cart</span>
+
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- MOBILE LOCATION -->
+
+    <div class="lg:hidden bg-[#232f3e] text-white px-4 py-2 border-t border-white/10">
+
+        <a href="#" class="flex items-center gap-2 text-sm">
+
+            <span>📍</span>
+
+            <span>Delivering to Coimbatore 641012</span>
+
+        </a>
+
+    </div>
+
+
+
+    <!-- CATEGORY / MENU BAR -->
+
+    <!-- CATEGORY / MENU BAR -->
+    <div class="bg-[#2f4858] border-t border-slate-500/40 border-b border-slate-900/30 text-slate-100"></div>
+        <div class="max-w-[1600px] mx-auto px-3 sm:px-4 py-2 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm font-medium">
+             <a href="#" class="px-3 py-2 border border-transparent text-white hover:border-white rounded-sm transition">☰ All</a>
+            {% for nav_category in navigation_categories %}
+                 <a href="{% url 'products:product_list_by_category' nav_category.slug %}" class="inline-flex items-center h-[46px] text-[12px] font-bold uppercase tracking-[0.14em] text-white border-b-2 border-transparent hover:text-amber-300 hover:border-amber-300 transition">{{ nav_category.name }}</a>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+
+
+    <!-- MOBILE QUICK LINKS -->
+
+    {% if request.user.is_authenticated %}
+
+    <div class="md:hidden bg-[#37475a] text-white px-3 py-2">
+
+        <div class="flex gap-3 overflow-x-auto whitespace-nowrap text-sm">
+
+            <span class="font-medium text-gray-200">Hi, {{ request.user.username }}</span>
+
+            <a href="{% url 'orders:order_tracking_list' %}" class="hover:text-yellow-300">Orders</a>
+
+            <a href="{% url 'profile' %}" class="hover:text-yellow-300">Profile</a>
+
+            <a href="{% url 'sellers:dashboard' %}" class="hover:text-yellow-300">Seller</a>
+
+            <a href="{% url 'orders:delivery_dashboard' %}" class="hover:text-yellow-300">Delivery</a>
+
+            <a href="{% url 'orders:wallet_detail' %}" class="hover:text-yellow-300">Wallet</a>
+
+            <form method="post" action="{% url 'logout' %}" class="inline">
+
+                {% csrf_token %}
+
+                <button type="submit" class="hover:text-red-300">Logout</button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+    {% endif %}
+
+</nav>
+

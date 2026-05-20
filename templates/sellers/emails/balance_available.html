@@ -1,0 +1,50 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background-color: #d4edda; padding: 20px; border-radius: 4px; margin-bottom: 20px; border-left: 4px solid #28a745; }
+        .content { padding: 20px; background-color: #ffffff; border: 1px solid #ddd; border-radius: 4px; }
+        .footer { text-align: center; margin-top: 20px; font-size: 12px; color: #666; }
+        .success { color: #28a745; font-weight: bold; }
+        .amount { font-size: 24px; font-weight: bold; color: #28a745; }
+        .info-box { background-color: #f8f9fa; padding: 15px; border-radius: 4px; margin: 20px 0; text-align: center; }
+        .button { display: inline-block; padding: 10px 20px; background-color: #28a745; color: white; text-decoration: none; border-radius: 4px; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2 class="success">✓ Payout Available!</h2>
+        </div>
+        
+        <div class="content">
+            <p>Hello {{ seller_name }},</p>
+            
+            <p>Great news! Your balance is now available for withdrawal. You can request a payout anytime from your seller dashboard.</p>
+            
+            <div class="info-box">
+                <p class="label">Available Balance</p>
+                <div class="amount">₹{{ amount }}</div>
+            </div>
+            
+            <p>Your earnings from completed orders are ready to be transferred to your account. The payout will be processed within 24 hours of your request.</p>
+            
+            <p>
+                <a href="{{ dashboard_url }}" class="button">Request Payout</a>
+            </p>
+            
+            <p>
+                <strong>Note:</strong> Make sure your bank account details are up to date to ensure smooth payout processing.
+            </p>
+        </div>
+        
+        <div class="footer">
+            <p>This is an automated message. Please don't reply to this email.</p>
+            <p>&copy; 2026 MyKartStore. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

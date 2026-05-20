@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+
+{% block title %}Sign In{% endblock %}
+
+{% block content %}
+<div class="max-w-lg mx-auto bg-white border border-slate-200 rounded-2xl shadow-sm p-6 sm:p-8">
+    {% if messages %}
+        <div class="space-y-3 mb-6">
+            {% for message in messages %}
+                {% if 'password-change' in message.tags %}
+                <div class="rounded-2xl border px-4 py-3 flex items-start gap-3 border-emerald-200 bg-emerald-50 text-emerald-900">
+                    <div class="mt-0.5 shrink-0 text-emerald-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.707a1 1 0 00-1.414-1.414L9 10.172 7.707 8.879a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-sm font-semibold">Password Changed</p>
+                        <p class="text-sm leading-6">{{ message }}</p>
+                    </div>
+                </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <h1 class="text-2xl font-bold text-slate-900 mb-2">Sign in</h1>
+    <p class="text-slate-600 mb-2">No account? <a href="{% url 'accounts:signup' %}" class="text-indigo-600 font-semibold">Create one</a></p>
+    <p class="text-xs text-slate-500 mb-6">Admin users are redirected to the admin panel after sign in.</p>
+
+    <form method="post" class="space-y-4">
+        {% csrf_token %}
+        {% if next %}
+            <input type="hidden" name="next" value="{{ next }}">
+        {% endif %}
+        {% if form.non_field_errors %}
+            <p class="text-sm text-red-600">{{ form.non_field_errors|striptags }}</p>
+        {% endif %}
+
+        <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1" for="{{ form.username.id_for_label }}">Username</label>
+            {{ form.username }}
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1" for="{{ form.password.id_for_label }}">Password</label>
+            <div class="password-toggle-group">
+                {{ form.password }}
+                <button type="button" class="password-toggle-button" data-password-toggle aria-label="Show password" aria-pressed="false">
+                    <svg class="h-5 w-5" data-password-icon="show" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M2.458 12C3.732 7.943 7.523 5 12 5s8.268 2.943 9.542 7c-1.274 4.057-5.065 7-9.542 7S3.732 16.057 2.458 12Z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 15.5A3.5 3.5 0 1 0 12 8.5a3.5 3.5 0 0 0 0 7Z" />
+                    </svg>
+                    <svg class="hidden h-5 w-5" data-password-icon="hide" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="m3 3 18 18" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M10.585 10.587A2 2 0 0 0 12 14a2 2 0 0 0 1.414-.586" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9.878 5.092A10.45 10.45 0 0 1 12 5c4.477 0 8.268 2.943 9.542 7a11.07 11.07 0 0 1-4.132 5.411M6.228 6.228A11.08 11.08 0 0 0 2.458 12c1.274 4.057 5.065 7 9.542 7a10.5 10.5 0 0 0 3.103-.468" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <button type="submit" class="w-full bg-indigo-600 text-white font-semibold py-3 rounded-xl hover:bg-indigo-700 transition">
+            Sign In
+        </button>
+        <div class="text-center mt-3">
+                <a href="{% url 'accounts:change_password' %}" class="text-white-50 text-decoration-none small">
+                    Forgot Password?
+                </a>
+        </div>
+    </form>
+
+    <!-- SELLER SECTION -->
+    <div class="mt-10 pt-6 border-t border-slate-200 text-center">
+        <h2 class="text-lg font-semibold text-slate-800 mb-2">
+            New Seller?
+        </h2>
+
+        <p class="text-sm text-slate-600 mb-4">
+            Want to sell your products on our platform?
+            Apply for seller registration.
+        </p>
+
+        <!-- <a href="{% url 'sellers:create_profile' %}" -->
+           <!-- class="inline-block bg-black text-white font-semibold px-6 py-3 rounded-xl hover:bg-slate-800 transition"> -->
+            <!-- Apply for Registration -->
+            <!-- </a> -->
+             <a href="{% url 'login' %}?next={% url 'sellers:create_profile' %}"
+                class="inline-block bg-black text-white font-semibold px-6 py-3 rounded-xl hover:bg-slate-800 transition">
+                   Apply for Registration
+                </a>
+    </div>
+</div>
+</div>
+
+	<style>
+	    form input {
+	        width: 100%;
+	        border: 1px solid #cbd5e1;
+	        border-radius: 0.75rem;
+	        padding: 0.65rem 0.8rem;
+	        background-color: #fff;
+	    }
+        .password-toggle-group {
+            position: relative;
+        }
+        .password-toggle-group input {
+            padding-right: 4.5rem;
+        }
+        .password-toggle-button {
+            position: absolute;
+            right: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            border: 0;
+            background: transparent;
+            color: #475569;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+	    form input:focus {
+	        outline: none;
+	        border-color: #6366f1;
+	        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+	    }
+	</style>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            document.querySelectorAll("[data-password-toggle]").forEach(function (button) {
+                const input = button.parentElement.querySelector("input");
+                const showIcon = button.querySelector('[data-password-icon="show"]');
+                const hideIcon = button.querySelector('[data-password-icon="hide"]');
+                if (!input) return;
+                button.addEventListener("click", function () {
+                    const showingPassword = input.type === "text";
+                    input.type = showingPassword ? "password" : "text";
+                    button.setAttribute("aria-pressed", String(!showingPassword));
+                    button.setAttribute("aria-label", showingPassword ? "Show password" : "Hide password");
+                    if (showIcon && hideIcon) {
+                        showIcon.classList.toggle("hidden", !showingPassword);
+                        hideIcon.classList.toggle("hidden", showingPassword);
+                    }
+                });
+            });
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,1389 @@
+{% extends "base.html" %}
+
+{% block title %}Seller Dashboard{% endblock %}
+
+{% block content %}
+<style>
+  .seller-portal-shell {
+    background:
+      radial-gradient(circle at top left, rgba(244, 114, 182, 0.12), transparent 28%),
+      radial-gradient(circle at top right, rgba(59, 130, 246, 0.15), transparent 24%),
+      linear-gradient(180deg, #f8fafc 0%, #eef2ff 45%, #f8fafc 100%);
+  }
+
+  .seller-sidebar {
+    background: linear-gradient(180deg, #0f172a 0%, #1e1b4b 52%, #312e81 100%);
+    box-shadow: 0 24px 70px rgba(15, 23, 42, 0.24);
+    max-height: calc(100vh - 7rem);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(191, 219, 254, 0.8) rgba(255, 255, 255, 0.08);
+  }
+
+  .seller-sidebar::-webkit-scrollbar {
+    width: 10px;
+  }
+
+  .seller-sidebar::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 999px;
+  }
+
+  .seller-sidebar::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, rgba(125, 211, 252, 0.95), rgba(196, 181, 253, 0.95));
+    border-radius: 999px;
+  }
+
+  .seller-sidebar::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, rgba(56, 189, 248, 1), rgba(167, 139, 250, 1));
+  }
+
+  .seller-sidebar-link {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    width: 100%;
+    border: 1px solid transparent;
+    border-radius: 1rem;
+    padding: 0.95rem 1rem;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.98rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    text-decoration: none;
+    transition: transform 0.18s ease, border-color 0.18s ease, background-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
+  }
+
+  .seller-sidebar-link:hover {
+    transform: translateX(4px);
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.12);
+    color: #ffffff;
+  }
+
+  .seller-sidebar-link.is-active {
+    color: #0f172a;
+    background: linear-gradient(135deg, #fef3c7 0%, #ffffff 42%, #dbeafe 100%);
+    border-color: rgba(255, 255, 255, 0.38);
+    box-shadow: 0 16px 34px rgba(15, 23, 42, 0.24);
+  }
+
+  .seller-sidebar-link.is-active .seller-sidebar-icon {
+    background: linear-gradient(135deg, #111827 0%, #2563eb 100%);
+    color: #fff;
+  }
+
+  .seller-sidebar-link.is-active .seller-sidebar-label {
+    font-weight: 900;
+    color: #111827;
+  }
+
+  .seller-sidebar-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.4rem;
+    height: 2.4rem;
+    border-radius: 0.9rem;
+    background: rgba(255, 255, 255, 0.1);
+    color: #e0e7ff;
+    flex-shrink: 0;
+    transition: background-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
+  }
+
+  .seller-sidebar-link:hover .seller-sidebar-icon {
+    transform: scale(1.04);
+  }
+
+  .seller-portal-panel {
+    display: none;
+    animation: sellerPanelFade 0.28s ease;
+  }
+
+  .seller-portal-panel.is-active {
+    display: block;
+  }
+
+  @keyframes sellerPanelFade {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .active-payouts-scroll {
+    overflow-x: scroll;
+    overflow-y: hidden;
+    scrollbar-gutter: stable both-edges;
+    -webkit-overflow-scrolling: touch;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  .active-payouts-scroll::-webkit-scrollbar {
+    height: 12px;
+  }
+
+  .active-payouts-scroll::-webkit-scrollbar-track {
+    background: #e2e8f0;
+    border-radius: 999px;
+  }
+
+  .active-payouts-scroll::-webkit-scrollbar-thumb {
+    background: #94a3b8;
+    border-radius: 999px;
+  }
+
+  .active-payouts-scroll::-webkit-scrollbar-thumb:hover {
+    background: #64748b;
+  }
+
+  .payout-status-chip {
+    border-radius: 999px;
+    border: 1px solid #cbd5e1;
+    background: #ffffff;
+    color: #64748b;
+    padding: 0.38rem 0.78rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    line-height: 1;
+    transition: all 0.18s ease;
+  }
+
+  .payout-status-chip:hover {
+    border-color: #94a3b8;
+    color: #334155;
+    transform: translateY(-1px);
+  }
+
+  .payout-status-chip.is-selected {
+    box-shadow: 0 0 0 2px rgba(191, 219, 254, 0.9);
+  }
+
+  .payout-update-card {
+    width: min(100%, 19rem);
+    border-radius: 1.15rem;
+    border: 1px solid #e2e8f0;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+    padding: 0.9rem;
+    box-shadow: 0 10px 24px rgba(148, 163, 184, 0.14);
+  }
+
+  .payout-update-field {
+    width: 100%;
+    max-width: 15.5rem;
+    border-radius: 0.85rem;
+    border: 1px solid #dbe2ea;
+    background: #ffffff;
+    padding: 0.55rem 0.7rem;
+    font-size: 0.74rem;
+    color: #334155;
+  }
+
+  .payout-update-field:focus {
+    border-color: #6366f1;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(199, 210, 254, 0.7);
+  }
+
+  .payout-update-save {
+    min-width: 7.5rem;
+    border-radius: 0.85rem;
+    background: linear-gradient(135deg, #0f172a 0%, #1d4ed8 100%);
+    padding: 0.6rem 0.95rem;
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: #ffffff;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+  }
+
+  .payout-update-save:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 18px rgba(37, 99, 235, 0.18);
+  }
+
+  .payout-note-panel[hidden] {
+    display: none !important;
+  }
+
+  .payout-proof-panel[hidden] {
+    display: none !important;
+  }
+
+  .payout-inline-feedback {
+    border-radius: 0.8rem;
+    padding: 0.55rem 0.7rem;
+    font-size: 0.72rem;
+    line-height: 1.35;
+  }
+
+  .payout-inline-feedback.is-success {
+    background: #dcfce7;
+    color: #166534;
+  }
+
+  .payout-inline-feedback.is-error {
+    background: #fee2e2;
+    color: #b91c1c;
+  }
+
+  .invoice-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #0d6efd;
+    color: #fff;
+    text-decoration: none;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    transition: 0.2s ease;
+    white-space: nowrap;
+  }
+
+  .invoice-btn:hover {
+    background: #0b5ed7;
+  }
+
+  .completed-order-edit-panel[hidden] {
+    display: none !important;
+  }
+
+  .completed-order-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+
+  .completed-order-edit-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.7rem;
+    border: 1px solid #cbd5e1;
+    background: #ffffff;
+    padding: 0.45rem 0.8rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #334155;
+    transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+  }
+
+  .completed-order-edit-btn:hover {
+    background: #f8fafc;
+    border-color: #94a3b8;
+    color: #0f172a;
+  }
+
+  .seller-content-card {
+    border-radius: 1.5rem;
+    border: 1px solid rgba(226, 232, 240, 0.95);
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: 0 18px 45px rgba(148, 163, 184, 0.18);
+    backdrop-filter: blur(8px);
+  }
+
+  .seller-section-title {
+    font-size: 1.55rem;
+    line-height: 1.2;
+    font-weight: 900;
+    color: #0f172a;
+    letter-spacing: -0.03em;
+  }
+
+  .seller-section-copy {
+    color: #475569;
+    font-size: 0.95rem;
+  }
+
+  .dashboard-stat-card {
+    border-radius: 1.5rem;
+    padding: 1.35rem 1.4rem;
+    box-shadow: 0 18px 34px rgba(148, 163, 184, 0.14);
+  }
+
+  .dashboard-amount {
+    white-space: nowrap;
+    word-break: normal;
+    overflow-wrap: normal;
+    font-size: clamp(1.55rem, 2vw, 2.55rem);
+    line-height: 1.1;
+  }
+
+  .wallet-mini-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  .wallet-mini-card {
+    border-radius: 1.2rem;
+    padding: 1.1rem;
+    min-width: 0;
+  }
+
+  .wallet-mini-value {
+    margin-top: 0.55rem;
+    color: #0f172a;
+    font-weight: 900;
+    font-size: clamp(1.2rem, 1.8vw, 2rem);
+    line-height: 1.1;
+    white-space: nowrap;
+    word-break: normal;
+    overflow-wrap: normal;
+  }
+
+  .sales-chart-shell {
+    border-radius: 1.5rem;
+    border: 1px solid rgba(226, 232, 240, 0.95);
+    background:
+      linear-gradient(135deg, rgba(255,255,255,0.68) 0%, rgba(255,255,255,0.38) 100%),
+      radial-gradient(circle at top left, rgba(56, 189, 248, 0.18), transparent 32%),
+      radial-gradient(circle at bottom right, rgba(168, 85, 247, 0.16), transparent 28%);
+    box-shadow: 0 18px 45px rgba(148, 163, 184, 0.14);
+    backdrop-filter: blur(18px);
+  }
+
+  .sales-pie-shell {
+    display: grid;
+    grid-template-columns: minmax(0, 260px) minmax(0, 1fr);
+    gap: 1.75rem;
+    align-items: center;
+  }
+
+  .sales-pie-chart {
+    width: 240px;
+    height: 240px;
+    margin: 0 auto;
+    border-radius: 999px;
+    position: relative;
+    box-shadow:
+      inset 0 2px 14px rgba(255,255,255,0.65),
+      0 24px 40px rgba(15, 23, 42, 0.14);
+  }
+
+  .sales-pie-chart::before {
+    content: "";
+    position: absolute;
+    inset: 18px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.44);
+    backdrop-filter: blur(12px);
+    box-shadow: inset 0 1px 12px rgba(255,255,255,0.7);
+  }
+
+  .sales-pie-center {
+    position: absolute;
+    inset: 50%;
+    transform: translate(-50%, -50%);
+    width: 108px;
+    height: 108px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.86);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+    text-align: center;
+    box-shadow: 0 10px 26px rgba(148, 163, 184, 0.18);
+  }
+
+  .sales-legend-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    border-radius: 1rem;
+    background: rgba(255,255,255,0.72);
+    border: 1px solid rgba(226, 232, 240, 0.9);
+    padding: 0.9rem 1rem;
+    backdrop-filter: blur(10px);
+  }
+
+  .sales-legend-dot {
+    width: 0.8rem;
+    height: 0.8rem;
+    border-radius: 999px;
+    flex-shrink: 0;
+  }
+
+  @media (max-width: 767px) {
+    .sales-pie-shell {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 767px) {
+    .wallet-mini-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 1023px) {
+    .seller-sidebar {
+      position: static;
+      max-height: none;
+    }
+  }
+</style>
+
+<section class="seller-portal-shell py-8 sm:py-10">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6">
+    <div class="grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
+      <aside class="seller-sidebar rounded-[2rem] p-5 lg:sticky lg:top-24 h-fit">
+        <div class="rounded-[1.6rem] border border-white/10 bg-white/5 px-4 py-5">
+          <p class="text-[20px] uppercase tracking-[0.32em] font-extrabold text-cyan-200/90">Seller Workspace</p>
+          <!-- <h1 class="mt-3 text-3xl font-black tracking-tight text-white">Business Portal</h1> -->
+          <p class="mt-2 text-sm font-medium text-indigo-100/80">Manage products, payouts, reviews, and orders from one premium control center.</p>
+        </div>
+
+        <nav class="mt-5 space-y-2.5" data-seller-tabs>
+          <button type="button" class="seller-sidebar-link is-active" data-seller-tab="dashboard">
+            <span class="seller-sidebar-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 12.75L12 4l9 8.75M5.25 10.5v8.25a1.5 1.5 0 001.5 1.5h10.5a1.5 1.5 0 001.5-1.5V10.5" />
+              </svg>
+            </span>
+            <span class="seller-sidebar-label">Dashboard</span>
+          </button>
+          <button type="button" class="seller-sidebar-link" data-seller-tab="products">
+            <span class="seller-sidebar-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 6.75h12m-12 5.25h12m-12 5.25h12M3.75 6.75h.008v.008H3.75V6.75zm0 5.25h.008v.008H3.75V12zm0 5.25h.008v.008H3.75v-.008z" />
+              </svg>
+            </span>
+            <span class="seller-sidebar-label">My Products</span>
+          </button>
+          <button type="button" class="seller-sidebar-link" data-seller-tab="notifications">
+            <span class="seller-sidebar-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0018 9.75V9a6 6 0 10-12 0v.75a8.967 8.967 0 00-2.311 6.022 23.848 23.848 0 005.454 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
+              </svg>
+            </span>
+            <span class="seller-sidebar-label">Order Notification</span>
+          </button>
+          <button type="button" class="seller-sidebar-link" data-seller-tab="active-payouts">
+            <span class="seller-sidebar-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m0 0l-3-3m3 3l3-3M6.75 8.25h-1.5A2.25 2.25 0 003 10.5v7.5a2.25 2.25 0 002.25 2.25h13.5A2.25 2.25 0 0021 18V10.5a2.25 2.25 0 00-2.25-2.25h-1.5" />
+              </svg>
+            </span>
+            <span class="seller-sidebar-label">Active Payouts</span>
+          </button>
+          <button type="button" class="seller-sidebar-link" data-seller-tab="completed-orders">
+            <span class="seller-sidebar-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75l2.25 2.25L15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </span>
+            <span class="seller-sidebar-label">Completed Orders</span>
+          </button>
+          <a href="{% url 'sellers:returns' %}" class="seller-sidebar-link" data-seller-nav-link>
+            <span class="seller-sidebar-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 7.5h9M7.5 12h6m-7.5 7.5h8.25A2.25 2.25 0 0016.5 17.25V6.75A2.25 2.25 0 0014.25 4.5h-8.25A2.25 2.25 0 003.75 6.75v10.5A2.25 2.25 0 006 19.5zm12-9h2.25A1.5 1.5 0 0121.75 12v3A1.5 1.5 0 0120.25 16.5H18" />
+              </svg>
+            </span>
+            <span class="seller-sidebar-label">Returns</span>
+          </a>
+          <a href="{% url 'sellers:seller_reviews' %}" class="seller-sidebar-link" data-seller-nav-link>
+            <span class="seller-sidebar-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.75.75 0 011.04 0l2.13 2.19a.75.75 0 00.53.222h3.02a.75.75 0 01.725.937l-.66 2.868a.75.75 0 00.192.698l2.019 2.117a.75.75 0 01-.402 1.254l-2.74.539a.75.75 0 00-.559.428l-1.327 2.69a.75.75 0 01-1.345 0l-1.327-2.69a.75.75 0 00-.56-.428l-2.739-.539a.75.75 0 01-.402-1.254l2.018-2.117a.75.75 0 00.193-.698l-.66-2.868a.75.75 0 01.725-.937h3.02a.75.75 0 00.53-.222l2.13-2.19z" />
+              </svg>
+            </span>
+            <span class="seller-sidebar-label">Reviews</span>
+          </a>
+          <a href="{% url 'sellers:ledger_history' %}" class="seller-sidebar-link" data-seller-nav-link>
+            <span class="seller-sidebar-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 6.75H19.5M9 12h10.5M9 17.25H19.5M4.5 6.75h.008v.008H4.5V6.75zm0 5.25h.008v.008H4.5V12zm0 5.25h.008v.008H4.5v-.008z" />
+              </svg>
+            </span>
+            <span class="seller-sidebar-label">Ledger History</span>
+          </a>
+          <a href="{% url 'sellers:wallet_summary' %}" class="seller-sidebar-link" data-seller-nav-link>
+            <span class="seller-sidebar-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21 12V8.25A2.25 2.25 0 0018.75 6H5.25A2.25 2.25 0 003 8.25v7.5A2.25 2.25 0 005.25 18h13.5A2.25 2.25 0 0021 15.75V12zm0 0h-4.5a1.5 1.5 0 100 3H21" />
+              </svg>
+            </span>
+            <span class="seller-sidebar-label">Wallet Summary</span>
+          </a>
+        </nav>
+      </aside>
+
+      <div class="space-y-6">
+        <div class="seller-portal-panel is-active" data-seller-panel="dashboard">
+          <section class="seller-content-card p-6 sm:p-8">
+            <div class="text-center">
+              <p class="text-xs uppercase tracking-[0.28em] font-extrabold text-indigo-600">Dashboard</p>
+              <h2 class="seller-section-title mt-3">{{ seller.business_name }}</h2>
+              <p class="seller-section-copy mt-2 max-w-2xl mx-auto">Your business snapshot is ready. Monitor payouts, product performance, reviews, and cash flow from one focused seller view.</p>
+              <div class="mt-6 flex justify-center">
+                <a href="{% url 'sellers:publish_product' %}" class="inline-flex h-11 items-center justify-center rounded-xl bg-slate-950 px-6 text-sm font-extrabold text-white shadow-lg shadow-slate-900/15 transition hover:-translate-y-0.5 hover:bg-slate-800">
+                  Publish New Product
+                </a>
+              </div>
+            </div>
+
+            <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-7">
+              <article class="dashboard-stat-card border border-sky-200 bg-gradient-to-br from-white to-sky-50">
+                <div class="flex items-center justify-between">
+                  <h2 class="text-sm uppercase tracking-wide font-semibold text-sky-700">Orders</h2>
+                  <span class="rounded-full bg-sky-100 px-3 py-1 text-xs font-semibold text-sky-800">Live</span>
+                </div>
+                <p class="dashboard-amount mt-3 font-extrabold text-slate-900">{{ total_orders_count }}</p>
+                <p class="mt-2 text-sm text-slate-500">Distinct seller orders currently flowing through your storefront.</p>
+              </article>
+              <article class="dashboard-stat-card border border-rose-200 bg-gradient-to-br from-white to-rose-50">
+                <div class="flex items-center justify-between">
+                  <h2 class="text-sm uppercase tracking-wide font-semibold text-rose-700">Returns</h2>
+                  <span class="rounded-full bg-rose-100 px-3 py-1 text-xs font-semibold text-rose-800">Track</span>
+                </div>
+                <p class="dashboard-amount mt-3 font-extrabold text-slate-900">{{ total_returns_count }}</p>
+                <p class="mt-2 text-sm text-slate-500">Return requests connected to your catalog and seller fulfillment flow.</p>
+              </article>
+              <article class="dashboard-stat-card border border-indigo-200 bg-gradient-to-br from-white to-indigo-50">
+                <div class="flex items-center justify-between">
+                  <h2 class="text-sm uppercase tracking-wide font-semibold text-indigo-700">Reviews</h2>
+                  <span class="rounded-full bg-indigo-100 px-3 py-1 text-xs font-semibold text-indigo-800">Live</span>
+                </div>
+                <p class="dashboard-amount mt-3 font-extrabold text-slate-900">{{ total_reviews_count }}</p>
+                <p class="mt-2 text-sm text-slate-500">Number of reviews posted for your products.</p>
+              </article>
+            </div>
+
+            <section class="mt-8 grid grid-cols-1 xl:grid-cols-[1.2fr_0.8fr] gap-6">
+              <article class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                <div class="flex items-center justify-between">
+                  <h2 class="text-lg font-bold text-slate-900">Wallet Summary</h2>
+                </div>
+                <div class="wallet-mini-grid mt-5">
+                  <div class="wallet-mini-card bg-amber-50">
+                    <p class="text-xs uppercase tracking-wide text-amber-700 font-semibold">Pending</p>
+                    <p class="wallet-mini-value">{{ seller_wallet.pending_balance }}</p>
+                  </div>
+                  <div class="wallet-mini-card bg-orange-50">
+                    <p class="text-xs uppercase tracking-wide text-orange-700 font-semibold">Hold</p>
+                    <p class="wallet-mini-value">{{ seller_wallet.hold_balance }}</p>
+                  </div>
+                  <div class="wallet-mini-card bg-emerald-50">
+                    <p class="text-xs uppercase tracking-wide text-emerald-700 font-semibold">Paid</p>
+                    <p class="wallet-mini-value">{{ seller_wallet.paid_balance }}</p>
+                  </div>
+                  <div class="wallet-mini-card bg-sky-50">
+                    <p class="text-xs uppercase tracking-wide text-sky-700 font-semibold">Total Amount</p>
+                    <p class="wallet-mini-value">{{ wallet_balance }}</p>
+                  </div>
+                </div>
+              </article>
+              <article class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                <div class="flex items-center justify-between">
+                  <h2 class="text-lg font-bold text-slate-900">Recent Payout Runs</h2>
+                  <a href="{% url 'sellers:payout_history' %}" class="inline-flex h-9 items-center justify-center rounded-full bg-indigo-50 px-4 text-xs font-bold uppercase tracking-wide text-indigo-700 hover:bg-indigo-100">View All</a>
+                </div>
+                <div class="mt-4 space-y-3">
+                  {% for payout_run in payout_history %}
+                  <div class="rounded-xl border border-slate-100 px-4 py-3">
+                    <div class="flex items-center justify-between gap-3">
+                      <div>
+                        <p class="font-semibold text-slate-900">INR {{ payout_run.amount }}</p>
+                        <p class="text-xs text-slate-500">{{ payout_run.title }} • {{ payout_run.created_at }}</p>
+                      </div>
+                      <div class="text-right">
+                        <p class="text-sm font-semibold text-slate-700">{{ payout_run.status_display }}</p>
+                        <p class="text-xs text-slate-500">{{ payout_run.reference }}</p>
+                      </div>
+                    </div>
+                  </div>
+                  {% empty %}
+                  <p class="text-sm text-slate-500">No payout runs yet.</p>
+                  {% endfor %}
+                </div>
+              </article>
+            </section>
+
+            <section class="sales-chart-shell mt-8 p-6 sm:p-7">
+              <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <h2 class="text-lg font-bold text-slate-900">Product Sales Tracker</h2>
+                  <p class="mt-1 text-sm text-slate-500">A colourful sales split across your products with a cleaner at-a-glance view.</p>
+                </div>
+                <div class="rounded-full bg-slate-100 px-4 py-2 text-xs font-bold uppercase tracking-wide text-slate-600">
+                  Total Sales: {{ total_sales_amount }}
+                </div>
+              </div>
+              <div class="sales-pie-shell mt-6">
+                <div>
+                  {% if product_sales_count %}
+                  <div class="sales-pie-chart{% if not sales_chart_background %} bg-slate-100{% endif %}"{% if sales_chart_background %} style="background: {{ sales_chart_background }};"{% endif %}>
+                    <div class="sales-pie-center">
+                      <span class="text-[11px] font-bold uppercase tracking-wide text-slate-500">Products</span>
+                      <span class="mt-1 text-2xl font-black text-slate-900">{{ product_sales_count }}</span>
+                    </div>
+                  </div>
+                  {% else %}
+                  <div class="sales-pie-chart bg-slate-100">
+                    <div class="sales-pie-center">
+                      <span class="text-[11px] font-bold uppercase tracking-wide text-slate-500">No Sales</span>
+                    </div>
+                  </div>
+                  {% endif %}
+                </div>
+                <div class="space-y-3 max-h-[420px] overflow-y-auto pr-1">
+                {% for product_sale in product_sales_chart %}
+                <div class="sales-legend-item">
+                  <div class="flex min-w-0 items-center gap-3">
+                    <span class="sales-legend-dot" style="background: {{ product_sale.color }};"></span>
+                    <div class="min-w-0">
+                      <h3 class="font-semibold text-slate-900 truncate">{{ product_sale.name }}</h3>
+                      <p class="mt-1 text-xs text-slate-500">Quantity sold: {{ product_sale.quantity }}</p>
+                    </div>
+                  </div>
+                  <div class="text-right">
+                    <p class="font-bold text-slate-900">INR {{ product_sale.sales_amount }}</p>
+                    <p class="mt-1 text-xs font-semibold text-slate-500">{{ product_sale.share_percentage }}%</p>
+                  </div>
+                </div>
+                {% empty %}
+                <div class="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-500">
+                  Sales data will appear here once product orders start flowing in.
+                </div>
+                {% endfor %}
+                </div>
+              </div>
+            </section>
+          </section>
+        </div>
+
+        <div class="seller-portal-panel" data-seller-panel="products">
+          <section class="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-6 py-5 border-b border-slate-100" style="background-color: #dcfce7;">
+              <div>
+                <h2 class="text-lg font-bold text-slate-900">My Products</h2>
+                <p class="mt-1 text-sm text-slate-600">Manage published products without changing any of the existing seller actions.</p>
+              </div>
+              <a href="{% url 'sellers:publish_product' %}" class="inline-flex h-10 items-center justify-center rounded-xl bg-slate-950 px-4 text-sm font-bold text-white transition hover:bg-slate-800">
+                Publish New Product
+              </a>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="min-w-[1700px] text-sm">
+                <thead class="bg-slate-100/90 text-slate-600">
+                  <tr>
+                    <th class="text-left py-3 px-6 font-semibold">Product</th>
+                    <th class="text-left py-3 px-6 font-semibold">Image</th>
+                    <th class="text-left py-3 px-6 font-semibold">Price</th>
+                    <th class="text-left py-3 px-6 font-semibold">Discount %</th>
+                    <th class="text-left py-3 px-6 font-semibold">Stock</th>
+                    <th class="text-left py-3 px-6 font-semibold">Product Status</th>
+                    <th class="text-left py-3 px-6 font-semibold">Updated</th>
+                    <th class="text-left py-3 px-6 font-semibold">Actions</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                  {% for item in seller_products %}
+                  <tr class="hover:bg-indigo-50/40 transition">
+                    <td class="py-3 px-6">
+                      <p class="font-semibold text-slate-900">{{ item.product.name }}</p>
+                      {% if item.product.brand %}
+                      <p class="text-xs font-medium uppercase tracking-wide text-slate-500">Brand: {{ item.product.brand }}</p>
+                      {% endif %}
+                    </td>
+                    <td class="py-3 px-6">
+                      {% if item.product.image %}
+                        <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="w-10 h-10 rounded-lg border border-slate-200 object-cover">
+                      {% else %}
+                        <div class="w-8 h-8 rounded-md border border-slate-200 bg-slate-100 text-[8px] font-semibold text-slate-500 flex items-center justify-center">No image</div>
+                      {% endif %}
+                    </td>
+                    <td class="py-3 px-6 text-slate-700">
+                      {% if item.product.has_discount %}
+                      <div class="flex flex-wrap items-center gap-2">
+                        <span class="text-xs text-slate-400 line-through">{{ item.product.price }}</span>
+                        <span class="font-semibold text-emerald-700">{{ item.product.discounted_price }}</span>
+                      </div>
+                      {% else %}
+                      <span>{{ item.product.price }}</span>
+                      {% endif %}
+                    </td>
+                    <td class="py-3 px-6 text-slate-700">
+                      {% if item.product.has_discount %}
+                      <span class="inline-flex rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+                        {{ item.product.discount_percent_value|floatformat:0 }}%
+                      </span>
+                      {% else %}
+                      <span class="text-slate-500">-</span>
+                      {% endif %}
+                    </td>
+                    <td class="py-3 px-6 text-slate-700">{{ item.product.stock }}</td>
+                    <td class="py-3 px-6 text-slate-700">
+                      <span class="inline-flex rounded-full px-3 py-1 text-xs font-semibold {% if item.product.status == 'approved' %}bg-emerald-100 text-emerald-700{% elif item.product.status == 'rejected' %}bg-rose-100 text-rose-700{% else %}bg-amber-100 text-amber-700{% endif %}">
+                        {{ item.product.get_status_display }}
+                      </span>
+                    </td>
+                    <td class="py-3 px-6 text-slate-500">{{ item.updated_at }}</td>
+                    <td class="py-3 px-6">
+                      <a href="{% url 'sellers:edit_product' item.id %}" class="inline-flex items-center rounded-lg bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-700 hover:bg-indigo-100 transition mr-2">Edit</a>
+                      <form method="post" action="{% url 'sellers:delete_product' item.id %}" class="inline">
+                        {% csrf_token %}
+                        <button type="submit" class="inline-flex items-center rounded-lg bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-700 hover:bg-rose-100 transition" onclick="return confirm('Delete this product?');">Delete</button>
+                      </form>
+                    </td> 
+                  </tr>
+                  {% empty %}
+                  <tr><td class="py-8 px-6 text-slate-500" colspan="7">No products published yet.</td></tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+
+        <div class="seller-portal-panel" data-seller-panel="notifications">
+          <section class="rounded-2xl border border-slate-200 bg-white shadow-sm">
+            <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between px-6 py-5 border-b border-slate-100" style="background-color: #e0e7ff;">
+              <div>
+                <h2 class="text-lg font-bold text-slate-900">Order Notifications</h2>
+                <p class="mt-1 text-sm text-slate-600">Keep track of new order and delivery updates from your storefront.</p>
+              </div>
+              <span class="text-sm font-medium text-slate-500">Unread: {{ unread_notification_count }}</span>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="min-w-full text-sm">
+                <thead class="bg-slate-100/90 text-slate-600">
+                  <tr>
+                    <th class="text-left py-3 px-6 font-semibold">Notification</th>
+                    <th class="text-left py-3 px-6 font-semibold">Image</th>
+                    <th class="text-left py-3 px-6 font-semibold">Quantity</th>
+                    <th class="text-left py-3 px-6 font-semibold">Variant</th>
+                    <th class="text-left py-3 px-6 font-semibold">Phone</th>
+                    <th class="text-left py-3 px-6 font-semibold">Payment Mode</th>
+                    <th class="text-left py-3 px-6 font-semibold">Payment Status</th>
+                    <th class="text-left py-3 px-6 font-semibold">Date</th>
+                    <th class="text-left py-3 px-6 font-semibold">Action</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                  {% for note in notifications %}
+                  <tr class="{% if not note.is_read %}bg-amber-100/80 ring-1 ring-amber-200{% else %}hover:bg-slate-50/40{% endif %} transition">
+                    <td class="py-4 px-6 text-slate-700">
+                      <div class="space-y-1">
+                        <div class="font-medium {% if not note.is_read %}text-slate-900{% endif %}">{{ note.display_message }}</div>
+                        {% if not note.is_read %}
+                        <span class="inline-flex rounded-full bg-amber-200 px-2.5 py-1 text-[11px] font-semibold text-amber-900">Unread</span>
+                        {% endif %}
+                      </div>
+                    </td>
+                    <td class="py-4 px-6">
+                      {% if note.order_item.product.image %}
+                        <img src="{{ note.order_item.product.image.url }}" alt="{{ note.order_item.product.name }}" class="w-10 h-10 rounded-lg border border-slate-200 object-cover">
+                      {% else %}
+                        <div class="w-10 h-10 rounded-lg border border-slate-200 bg-slate-100 text-xs font-semibold text-slate-500 flex items-center justify-center">No img</div>
+                      {% endif %}
+                    </td>
+                    <td class="py-4 px-6 text-slate-700 font-semibold">{{ note.order_item.quantity }}</td>
+                    <td class="py-4 px-6 text-slate-700">
+                      {% if note.order_item.variant %}
+                        {{ note.order_item.variant_summary|default:"No variant" }}
+                      {% else %}
+                        <span class="text-slate-400">-</span>
+                      {% endif %}
+                    </td>
+                    <td class="py-4 px-6 text-slate-600">
+                      {{ note.order_item.order.phone_number|default:"-" }}
+                    </td>
+                    <td class="py-4 px-6">
+                      {% if note.order_item.order.get_payment_method_display %}
+                        <span class="inline-flex rounded-full {% if note.order_item.order.payment_method == 'cod' %}bg-blue-100 text-blue-800{% else %}bg-purple-100 text-purple-800{% endif %} px-3 py-1 text-xs font-semibold">
+                          {{ note.order_item.order.get_payment_method_display }}
+                        </span>
+                      {% endif %}
+                    </td>
+                    
+                    <td class="py-4 px-6">
+                      {% if note.order_item.order.paid %}
+                        <span class="inline-flex rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">Paid</span>
+                      {% else %}
+                        <span class="inline-flex rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">Pending</span>
+                      {% endif %}
+                    </td>
+                    <td class="py-4 px-6 text-slate-400 whitespace-nowrap text-xs">{{ note.created_at|date:"M d, Y" }}</td>
+                    <td class="py-4 px-6">
+                      {% if not note.is_read %}
+                      <form method="post" action="{% url 'sellers:mark_notification_as_read' note.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="inline-flex items-center justify-center rounded-lg bg-slate-900 px-3 py-2 text-xs font-semibold text-white transition hover:bg-slate-800">
+                          Mark as read
+                        </button>
+                      </form>
+                      {% else %}
+                      <span class="text-xs font-medium text-slate-400">Read</span>
+                      {% endif %}
+                    </td>
+                  </tr>
+                  {% empty %}
+                  <tr>
+                    <td class="py-8 px-6 text-slate-500 text-center" colspan="9">No order notifications yet.</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+
+        <div class="seller-portal-panel" data-seller-panel="active-payouts">
+          <section class="rounded-2xl border border-slate-200 bg-white shadow-sm">
+            <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between px-6 py-5 border-b border-slate-100" style="background-color: #fef3c7;">
+              <div>
+                <h2 class="text-lg font-bold text-slate-900">Active Payouts</h2>
+                <p class="mt-1 text-sm text-slate-600">Monitor shipping progress and keep payout updates flowing.</p>
+              </div>
+              <span class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Live shipping workspace</span>
+            </div>
+            <div class="active-payouts-scroll pb-2">
+              <table class="min-w-[2250px] text-sm">
+                <thead class="bg-slate-100/90 text-slate-600">
+                  <tr>
+                    <th class="text-left py-3 px-6 font-semibold">Order ID</th>
+                    <th class="text-left py-3 px-6 font-semibold">Order Item</th>
+                    <th class="text-left py-3 px-6 font-semibold">Product</th>
+                    <th class="text-left py-3 px-6 font-semibold">Image</th>
+                    <th class="text-left py-3 px-6 font-semibold">Price</th>
+                    <th class="text-left py-3 px-6 font-semibold">Discount</th>
+                    <th class="text-left py-3 px-6 font-semibold">Address</th>
+                    <th class="text-left py-3 px-6 font-semibold">Date of Order</th>
+                    <th class="text-left py-3 px-6 font-semibold">Delivery Status</th>
+                    <th class="text-left py-3 px-6 font-semibold w-[380px] min-w-[380px]">Update</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                  {% for payout in active_payouts %}
+                  <tr class="hover:bg-indigo-50/40 transition">
+                    <td class="py-3 px-6 text-slate-700 font-semibold">{{ payout.order_item.order.display_order_id }}</td>
+                    <td class="py-3 px-6 text-slate-700">#{{ payout.order_item.id }}</td>
+                    <td class="py-3 px-6">
+                      <div class="font-semibold text-slate-900">{{ payout.order_item.product.name }}</div>
+                      {% if payout.order_item.variant_summary %}
+                      <div class="mt-1 text-xs text-slate-500">{{ payout.order_item.variant_summary }}</div>
+                      {% endif %}
+                    </td>
+                    <td class="py-3 px-6">
+                      {% if payout.order_item.product.image %}
+                        <img src="{{ payout.order_item.product.image.url }}" alt="{{ payout.order_item.product.name }}" class="w-12 h-12 rounded-lg border border-slate-200 object-cover">
+                      {% else %}
+                        <div class="w-8 h-8 rounded-md border border-slate-200 bg-slate-100 text-[8px] font-semibold text-slate-500 flex items-center justify-center">No image</div>
+                      {% endif %}
+                    </td>
+                    <td class="py-3 px-6 text-slate-700 whitespace-nowrap">
+                      <div class="font-semibold text-slate-900">Rs.{{ payout.order_item.price }}</div>
+                      {% if payout.order_item.product.discounted_price != payout.order_item.product.price %}
+                      <div class="mt-1 text-xs text-slate-400 line-through">Rs.{{ payout.order_item.product.price }}</div>
+                      {% else %}
+                      <div class="mt-1 text-xs text-slate-400">Original Rs.{{ payout.order_item.product.price }}</div>
+                      {% endif %}
+                    </td>
+                    <td class="py-3 px-6 text-slate-700 whitespace-nowrap">
+                      {% if payout.order_item.product.discount_percent_value %}
+                      <span class="inline-flex rounded-full bg-rose-100 px-3 py-1 text-xs font-semibold text-rose-700">
+                        {{ payout.order_item.product.discount_percent_value }}% off
+                      </span>
+                      {% else %}
+                      <span class="text-slate-400 text-xs">No discount</span>
+                      {% endif %}
+                    </td>
+                    <td class="py-3 px-6 text-slate-600 max-w-[280px]">
+                      <div class="whitespace-normal leading-5">
+                        {{ payout.order_item.order.address }}{% if payout.order_item.order.city %}, {{ payout.order_item.order.city }}{% endif %}{% if payout.order_item.order.state %}, {{ payout.order_item.order.state }}{% endif %}{% if payout.order_item.order.pincode %} - {{ payout.order_item.order.pincode }}{% endif %}
+                      </div>
+                    </td>
+                    <td class="py-3 px-6 text-slate-600 whitespace-nowrap">
+                      <div>{{ payout.order_item.order.created_at|date:"M d, Y" }}</div>
+                      <div class="mt-1 text-xs text-slate-400">{{ payout.order_item.order.created_at|date:"h:i A" }}</div>
+                    </td>
+                    <td class="py-3 px-6">
+                      <div class="inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700" data-status-display>{{ payout.get_delivery_status_display }}</div>
+                      {% if payout.delivery_status_updated_at %}
+                      <div class="text-xs text-slate-400 mt-1" data-status-updated-at>{{ payout.delivery_status_updated_at }}</div>
+                      {% else %}
+                      <div class="text-xs text-slate-400 mt-1" data-status-updated-at></div>
+                      {% endif %}
+                    </td>
+                    <td class="py-3 px-6 align-top w-[380px] min-w-[380px]">
+                      {% if payout.delivery_mode == "own_delivery" %}
+                      <form method="post" enctype="multipart/form-data" action="{% url 'sellers:update_own_delivery_status' payout.id %}" class="payout-update-card space-y-3" data-payout-form>
+                        {% csrf_token %}
+                        <input type="hidden" name="delivery_status" value="{{ payout.delivery_status }}" data-payout-status-input>
+                        <div>
+                          <div class="mb-2 text-[11px] font-semibold uppercase tracking-wide text-slate-500">Choose status</div>
+                          <div class="flex flex-wrap gap-1.5">
+                            {% for value, label in own_delivery_status_choices %}
+                            <button type="button" class="payout-status-chip {% if payout.delivery_status == value %}is-selected{% endif %}" data-status-value="{{ value }}"
+                              {% if payout.delivery_status == value %}
+                                {% if value == 'pending' %}style="background:#e0f2fe;border-color:#7dd3fc;color:#075985;"
+                                {% elif value == 'packed' %}style="background:#fef3c7;border-color:#fcd34d;color:#92400e;"
+                                {% elif value == 'shipped' %}style="background:#ede9fe;border-color:#c4b5fd;color:#5b21b6;"
+                                {% elif value == 'out_for_delivery' %}style="background:#ffe4e6;border-color:#fda4af;color:#9f1239;"
+                                {% elif value == 'delivered' %}style="background:#dcfce7;border-color:#86efac;color:#166534;"
+                                {% else %}style="background:#f1f5f9;border-color:#cbd5e1;color:#334155;"{% endif %}
+                              {% else %}style="background:#ffffff;border-color:#cbd5e1;color:#64748b;"{% endif %}>{{ label }}</button>
+                            {% endfor %}
+                          </div>
+                        </div>
+                        <div class="payout-proof-panel space-y-2" hidden data-proof-panel>
+                          <div class="grid gap-2">
+                            <input type="text" name="courier_number" value="{{ payout.courier_number }}" placeholder="Courier number" class="payout-update-field" data-courier-input>
+                            <input type="file" name="courier_slip" accept="image/*" class="payout-update-field file:mr-2 file:rounded file:border-0 file:bg-indigo-50 file:px-2 file:py-1 file:text-indigo-700" data-slip-input>
+                            {% if payout.courier_slip %}
+                            <a href="{{ payout.courier_slip.url }}" target="_blank" class="inline-flex text-xs font-semibold text-indigo-700 hover:text-indigo-800" data-existing-slip="true">View uploaded courier slip</a>
+                            {% endif %}
+                          </div>
+                          <div class="space-y-2">
+                            <button type="button" class="inline-flex w-fit items-center rounded-full bg-slate-100 px-3 py-1.5 text-[11px] font-semibold text-slate-700 hover:bg-slate-200" data-note-toggle>
+                              {% if payout.delivery_status_note %}Edit note{% else %}Add note{% endif %}
+                            </button>
+                            <div class="payout-note-panel" {% if not payout.delivery_status_note %}hidden{% endif %} data-note-panel>
+                              <input type="text" name="delivery_status_note" value="{{ payout.delivery_status_note }}" placeholder="Add delivery note" class="payout-update-field" data-note-input>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="hidden payout-inline-feedback" data-feedback></div>
+                      </form>
+                      {% if payout.delivery_status_updated_by %}
+                      <div class="text-xs text-slate-400 mt-2">
+                        Last update by {{ payout.delivery_status_updated_by }}{% if payout.delivery_status_updated_at %} on {{ payout.delivery_status_updated_at }}{% endif %}
+                      </div>
+                      {% endif %}
+                      {% else %}
+                      <div class="space-y-2">
+                        <div class="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                          Hub Delivery Status
+                        </div>
+
+                        <div class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold
+                          {% if payout.delivery_status == 'pending' %}
+                            bg-sky-100 text-sky-800
+                          {% elif payout.delivery_status == 'packed' %}
+                            bg-amber-100 text-amber-800
+                          {% elif payout.delivery_status == 'shipped' %}
+                            bg-violet-100 text-violet-800
+                          {% elif payout.delivery_status == 'handed_to_hub' %}
+                            bg-orange-100 text-orange-800
+                          {% elif payout.delivery_status == 'at_hub' %}
+                            bg-yellow-100 text-yellow-800
+                          {% elif payout.delivery_status == 'out_for_delivery' %}
+                            bg-rose-100 text-rose-800
+                          {% elif payout.delivery_status == 'delivered' %}
+                            bg-green-100 text-green-800
+                          {% else %}
+                            bg-slate-100 text-slate-700
+                          {% endif %}
+                        ">
+                          {{ payout.get_delivery_status_display }}
+                        </div>
+
+                        {% if payout.delivery_status_updated_by %}
+                        <div class="text-xs text-slate-400">
+                          Last updated by {{ payout.delivery_status_updated_by }}
+                          {% if payout.delivery_status_updated_at %}
+                            on {{ payout.delivery_status_updated_at }}
+                          {% endif %}
+                        </div>
+                        {% endif %}
+                      </div>
+                      {% endif %}
+                    </td>
+                  </tr>
+                  {% empty %}
+                  <tr><td class="py-8 px-6 text-slate-500" colspan="10">No active payout entries.</td></tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+
+        <div class="seller-portal-panel" data-seller-panel="completed-orders">
+          <section class="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+            <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between px-6 py-5 border-b border-slate-100" style="background-color: #dcfce7;">
+              <div>
+                <h2 class="text-lg font-bold text-slate-900">Completed Orders</h2>
+                <p class="mt-1 text-sm text-slate-600">Delivered orders stay here with customer details, courier proof, and invoice access.</p>
+              </div>
+              <span class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Delivered orders with proof and delivery timestamps</span>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="min-w-[1500px] text-sm">
+                <thead class="bg-slate-100/90 text-slate-600">
+                  <tr>
+                    <th class="text-left py-3 px-6 font-semibold">Order ID</th>
+                    <th class="text-left py-3 px-6 font-semibold">Order Item</th>
+                    <th class="text-left py-3 px-6 font-semibold">Product</th>
+                    <th class="text-left py-3 px-6 font-semibold">Image</th>
+                    <th class="text-left py-3 px-6 font-semibold">Customer Name</th>
+                    <th class="text-left py-3 px-6 font-semibold">Checkout Address</th>
+                    <th class="text-left py-3 px-6 font-semibold">Delivered On</th>
+                    <th class="text-left py-3 px-6 font-semibold">Courier No</th>
+                    <th class="text-left py-3 px-6 font-semibold">Courier Slip</th>
+                    <th class="text-left py-3 px-6 font-semibold">Edit Courier</th>
+                    <th class="text-left py-3 px-6 font-semibold">Invoice</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                  {% for payout in completed_payouts %}
+                  <tr class="hover:bg-emerald-50/40 transition">
+                    <td class="py-3 px-6 text-slate-700 font-semibold">{{ payout.order_item.order.display_order_id }}</td>
+                    <td class="py-3 px-6 text-slate-700">#{{ payout.order_item.id }}</td>
+                    <td class="py-3 px-6">
+                      <div class="font-semibold text-slate-900">{{ payout.order_item.product.name }}</div>
+                      {% if payout.order_item.variant_summary %}
+                      <div class="mt-1 text-xs text-slate-500">{{ payout.order_item.variant_summary }}</div>
+                      {% endif %}
+                    </td>
+                    <td class="py-3 px-6">
+                      {% if payout.order_item.product.image %}
+                      <img src="{{ payout.order_item.product.image.url }}" alt="{{ payout.order_item.product.name }}" class="w-10 h-10 rounded-lg border border-slate-200 object-cover">
+                      {% else %}
+                      <div class="w-12 h-12 rounded-lg border border-slate-200 bg-slate-100 text-[10px] font-semibold text-slate-500 flex items-center justify-center">No image</div>
+                      {% endif %}
+                    </td>
+                    <td class="py-3 px-6 text-slate-700">{{ payout.order_item.order.full_name|default:"-" }}</td>
+                    <td class="py-3 px-6 text-slate-600 max-w-[280px]">
+                      <div class="whitespace-normal leading-5">
+                        {{ payout.order_item.order.address }}{% if payout.order_item.order.city %}, {{ payout.order_item.order.city }}{% endif %}{% if payout.order_item.order.state %}, {{ payout.order_item.order.state }}{% endif %}{% if payout.order_item.order.pincode %} - {{ payout.order_item.order.pincode }}{% endif %}
+                      </div>
+                    </td>
+                    <td class="py-3 px-6 text-slate-600 whitespace-nowrap">
+                      {% if payout.delivery_status_updated_at %}
+                      <div>{{ payout.delivery_status_updated_at|date:"M d, Y" }}</div>
+                      <div class="mt-1 text-xs text-slate-400">{{ payout.delivery_status_updated_at|date:"h:i A" }}</div>
+                      {% else %}
+                      <span class="text-slate-400">-</span>
+                      {% endif %}
+                    </td>
+                    <td class="py-3 px-6 text-slate-700">
+                      {{ payout.courier_number|default:"-" }}
+                    </td>
+                    <td class="py-3 px-6">
+                      {% if payout.courier_slip %}
+                      <a href="{{ payout.courier_slip.url }}" target="_blank" class="text-indigo-700 font-semibold hover:text-indigo-800">View Slip</a>
+                      {% else %}
+                      <span class="text-slate-400">-</span>
+                      {% endif %}
+                    </td>
+                    <td class="py-3 px-6 align-top">
+                      {% if payout.delivery_mode == "own_delivery" %}
+                      <div class="completed-order-meta min-w-[260px]">
+                        <button type="button" class="completed-order-edit-btn" data-completed-edit-toggle>
+                          Edit
+                        </button>
+                        <form method="post" enctype="multipart/form-data" action="{% url 'sellers:update_own_delivery_status' payout.id %}" class="completed-order-edit-panel space-y-2" data-completed-edit-panel hidden>
+                        {% csrf_token %}
+                        <input type="hidden" name="delivery_status" value="{{ payout.delivery_status }}">
+                        <input type="hidden" name="panel_context" value="completed-orders">
+                        <input type="text" name="courier_number" value="{{ payout.courier_number }}" placeholder="Courier number" class="w-full rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs text-slate-700 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200">
+                        <input type="file" name="courier_slip" accept="image/*" class="w-full rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs text-slate-700 file:mr-2 file:rounded file:border-0 file:bg-indigo-50 file:px-2 file:py-1 file:text-indigo-700">
+                        <div class="flex items-center justify-between gap-2">
+                          {% if payout.courier_slip %}
+                          <a href="{{ payout.courier_slip.url }}" target="_blank" class="text-xs font-semibold text-indigo-700 hover:text-indigo-800">View Slip</a>
+                          {% else %}
+                          <span class="text-xs text-slate-400">No slip uploaded</span>
+                          {% endif %}
+                          <div class="flex items-center gap-2">
+                            <button type="button" class="inline-flex h-8 items-center justify-center rounded-lg border border-slate-200 px-3 text-[11px] font-semibold text-slate-600 hover:bg-slate-50 transition" data-completed-edit-cancel>Cancel</button>
+                            <button type="submit" class="inline-flex h-8 items-center justify-center rounded-lg bg-slate-900 px-3 text-[11px] font-semibold text-white hover:bg-slate-800 transition">Save</button>
+                          </div>
+                        </div>
+                      </form>
+                      </div>
+                      {% else %}
+                      <span class="text-xs text-slate-400">Courier details managed by {{ payout.get_delivery_mode_display }}</span>
+                      {% endif %}
+                    </td>
+                    <td class="py-3 px-6">
+                      <a href="{% url 'sellers:seller_invoice' payout.order_item.order_id %}?panel=completed-orders" class="invoice-btn">
+                        Invoice
+                      </a>
+                    </td>
+                  </tr>
+                  {% empty %}
+                  <tr><td class="py-8 px-6 text-slate-500" colspan="10">No completed orders yet.</td></tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+
+         
+
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const tabs = document.querySelectorAll("[data-seller-tab]");
+    const panels = document.querySelectorAll("[data-seller-panel]");
+    const sidebar = document.querySelector(".seller-sidebar");
+    const navLinks = document.querySelectorAll("[data-seller-nav-link]");
+    const searchParams = new URLSearchParams(window.location.search);
+    const requestedPanel = searchParams.get("panel");
+    const savedPanel = window.sessionStorage.getItem("sellerActivePanel");
+
+    if (sidebar) {
+      const savedScroll = window.sessionStorage.getItem("sellerSidebarScroll");
+      if (savedScroll !== null) {
+        sidebar.scrollTop = Number(savedScroll);
+      }
+
+      const persistSidebarScroll = function () {
+        window.sessionStorage.setItem("sellerSidebarScroll", String(sidebar.scrollTop));
+      };
+
+      sidebar.addEventListener("scroll", persistSidebarScroll, { passive: true });
+      window.addEventListener("pagehide", persistSidebarScroll);
+
+      navLinks.forEach((link) => {
+        link.addEventListener("click", persistSidebarScroll);
+      });
+    }
+
+    if (!tabs.length || !panels.length) {
+      return;
+    }
+
+    function setActivePanel(targetName) {
+      window.sessionStorage.setItem("sellerActivePanel", targetName);
+      const nextUrl = new URL(window.location.href);
+      nextUrl.searchParams.set("panel", targetName);
+      window.history.replaceState({}, "", nextUrl);
+
+      tabs.forEach((tab) => {
+        tab.classList.toggle("is-active", tab.dataset.sellerTab === targetName);
+      });
+
+      panels.forEach((panel) => {
+        panel.classList.toggle("is-active", panel.dataset.sellerPanel === targetName);
+      });
+    }
+
+    const availablePanels = new Set(Array.from(panels).map((panel) => panel.dataset.sellerPanel));
+    const initialPanel = availablePanels.has(requestedPanel)
+      ? requestedPanel
+      : availablePanels.has(savedPanel)
+        ? savedPanel
+      : "dashboard";
+
+    setActivePanel(initialPanel);
+
+    tabs.forEach((tab) => {
+      tab.addEventListener("click", function () {
+        setActivePanel(tab.dataset.sellerTab);
+      });
+    });
+
+    document.querySelectorAll("[data-completed-edit-toggle]").forEach((button) => {
+      button.addEventListener("click", function () {
+        const container = button.closest(".completed-order-meta");
+        const panel = container?.querySelector("[data-completed-edit-panel]");
+        if (!panel) {
+          return;
+        }
+        panel.removeAttribute("hidden");
+        button.setAttribute("hidden", "");
+      });
+    });
+
+    document.querySelectorAll("[data-completed-edit-cancel]").forEach((button) => {
+      button.addEventListener("click", function () {
+        const panel = button.closest("[data-completed-edit-panel]");
+        const container = button.closest(".completed-order-meta");
+        const toggle = container?.querySelector("[data-completed-edit-toggle]");
+        if (panel) {
+          panel.setAttribute("hidden", "");
+        }
+        if (toggle) {
+          toggle.removeAttribute("hidden");
+        }
+      });
+    });
+
+    document.querySelectorAll("[data-payout-form]").forEach((form) => {
+      const statusInput = form.querySelector("[data-payout-status-input]");
+      const statusButtons = form.querySelectorAll("[data-status-value]");
+      const noteToggle = form.querySelector("[data-note-toggle]");
+      const notePanel = form.querySelector("[data-note-panel]");
+      const proofPanel = form.querySelector("[data-proof-panel]");
+      const courierInput = form.querySelector("[data-courier-input]");
+      const slipInput = form.querySelector("[data-slip-input]");
+      const feedback = form.querySelector("[data-feedback]");
+      const statusDisplay = form.closest("tr")?.querySelector("[data-status-display]");
+      const statusUpdatedAt = form.closest("tr")?.querySelector("[data-status-updated-at]");
+      const noteInput = form.querySelector("[data-note-input]");
+      let autoSubmitting = false;
+
+      function showFeedback(message, kind) {
+        if (!feedback) {
+          return;
+        }
+        feedback.textContent = message;
+        feedback.classList.remove("hidden", "is-success", "is-error");
+        feedback.classList.add(kind === "error" ? "is-error" : "is-success");
+      }
+
+      function clearFeedback() {
+        if (!feedback) {
+          return;
+        }
+        feedback.textContent = "";
+        feedback.classList.add("hidden");
+        feedback.classList.remove("is-success", "is-error");
+      }
+
+      function canSubmitDelivered() {
+        const hasCourier = courierInput && courierInput.value.trim() !== "";
+        const hasSlip = (slipInput && slipInput.files && slipInput.files.length > 0) || !!form.querySelector("[data-existing-slip]");
+        return hasCourier && hasSlip;
+      }
+
+      async function submitForm() {
+        if (autoSubmitting) {
+          return;
+        }
+        autoSubmitting = true;
+        clearFeedback();
+
+        const formData = new FormData(form);
+
+        try {
+          const response = await fetch(form.action, {
+            method: "POST",
+            body: formData,
+            headers: {
+              "X-Requested-With": "XMLHttpRequest"
+            }
+          });
+          const payload = await response.json();
+
+          if (!response.ok || !payload.ok) {
+            showFeedback(payload.message || "Could not update delivery status.", "error");
+            return;
+          }
+
+          if (statusDisplay) {
+            statusDisplay.textContent = payload.delivery_status_display || "";
+          }
+          if (statusUpdatedAt) {
+            statusUpdatedAt.textContent = payload.delivery_status_updated_at || "";
+          }
+          if (courierInput && payload.courier_number !== undefined) {
+            courierInput.value = payload.courier_number;
+          }
+          if (payload.has_courier_slip && !form.querySelector("[data-existing-slip]")) {
+            const slipLink = document.createElement("a");
+            slipLink.href = payload.courier_slip_url;
+            slipLink.target = "_blank";
+            slipLink.className = "inline-flex text-xs font-semibold text-indigo-700 hover:text-indigo-800";
+            slipLink.setAttribute("data-existing-slip", "true");
+            slipLink.textContent = "View uploaded courier slip";
+            slipInput?.insertAdjacentElement("afterend", slipLink);
+          } else if (payload.has_courier_slip && form.querySelector("[data-existing-slip]")) {
+            form.querySelector("[data-existing-slip]").href = payload.courier_slip_url;
+          }
+
+          showFeedback(payload.message || "Updated.", "success");
+        } catch (error) {
+          showFeedback("Network error while updating status.", "error");
+        } finally {
+          autoSubmitting = false;
+        }
+      }
+
+      form.addEventListener("submit", function (event) {
+        event.preventDefault();
+        void submitForm();
+      });
+
+      if (statusInput && statusInput.value === "delivered" && proofPanel) {
+        proofPanel.removeAttribute("hidden");
+      }
+
+      statusButtons.forEach((button) => {
+        button.addEventListener("click", function () {
+          if (statusInput) {
+            statusInput.value = button.dataset.statusValue || "";
+          }
+          statusButtons.forEach((chip) => chip.classList.remove("is-selected"));
+          button.classList.add("is-selected");
+
+          if (button.dataset.statusValue === "delivered") {
+            if (proofPanel) {
+              proofPanel.removeAttribute("hidden");
+            }
+            if (canSubmitDelivered()) {
+              void submitForm();
+            }
+            return;
+          }
+
+          if (proofPanel) {
+            proofPanel.setAttribute("hidden", "");
+          }
+          void submitForm();
+        });
+      });
+
+      if (noteToggle && notePanel) {
+        noteToggle.addEventListener("click", function () {
+          const isHidden = notePanel.hasAttribute("hidden");
+          if (isHidden) {
+            notePanel.removeAttribute("hidden");
+          } else {
+            notePanel.setAttribute("hidden", "");
+          }
+        });
+      }
+
+      if (courierInput) {
+        courierInput.addEventListener("change", function () {
+          if (statusInput && statusInput.value === "delivered" && canSubmitDelivered()) {
+            void submitForm();
+          }
+        });
+        courierInput.addEventListener("blur", function () {
+          if (statusInput && statusInput.value === "delivered" && canSubmitDelivered()) {
+            void submitForm();
+          }
+        });
+      }
+
+      if (slipInput) {
+        slipInput.addEventListener("change", function () {
+          if (statusInput && statusInput.value === "delivered" && canSubmitDelivered()) {
+            void submitForm();
+          }
+        });
+      }
+
+      if (noteInput) {
+        noteInput.addEventListener("blur", function () {
+          if (statusInput && statusInput.value === "delivered" && canSubmitDelivered()) {
+            void submitForm();
+          }
+        });
+      }
+    });
+  });
+</script>
+{% endblock %}

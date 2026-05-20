@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+{% block title %}Write a Review - {{ product.name }}{% endblock %}
+
+{% block content %}
+<section class="bg-gradient-to-b from-white via-slate-50 to-indigo-50/40 py-10">
+  <div class="max-w-2xl mx-auto px-4 sm:px-6">
+    <div class="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 shadow-sm">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <h2 class="text-2xl font-bold text-slate-900">Write a Review</h2>
+          <p class="text-sm text-slate-500 mt-2">Your review goes live immediately after posting, and you can submit more than one review over time.</p>
+        </div>
+        {% if is_verified_purchase %}
+        <span class="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">Verified Purchase</span>
+        {% endif %}
+      </div>
+
+      <div class="mt-6 p-4 bg-slate-50 rounded-lg border border-slate-200">
+        <div class="flex items-center gap-4">
+          {% if product.image %}
+          <img src="{{ product.image.url }}" alt="{{ product.name }}" class="w-12 h-12 rounded-lg object-cover">
+          {% else %}
+          <div class="w-12 h-12 rounded-lg bg-slate-200 flex items-center justify-center text-xs text-slate-400">No image</div>
+          {% endif %}
+          <div class="flex-grow">
+            <p class="font-semibold text-slate-900">{{ product.name }}</p>
+            <p class="text-sm text-slate-500">Share an honest review to help other shoppers.</p>
+          </div>
+        </div>
+      </div>
+
+      <form method="post" enctype="multipart/form-data" class="mt-8 space-y-6">
+        {% csrf_token %}
+        <input type="hidden" name="product_id" value="{{ product.id }}">
+        <input type="hidden" name="next" value="{{ next_url }}">
+
+        {{ form.non_field_errors }}
+
+        <div>
+          <label class="block text-sm font-semibold text-slate-700 mb-3">Rating *</label>
+          <div class="space-y-2">
+            {% for value, label in form.rating.field.choices %}
+            <div class="flex items-center">
+              <input type="radio" id="rating_{{ value }}" name="rating" value="{{ value }}" class="h-4 w-4 cursor-pointer accent-indigo-600" {% if form.rating.value == value %}checked{% endif %}>
+              <label for="rating_{{ value }}" class="ml-3 text-sm text-slate-600 cursor-pointer flex items-center gap-1">
+                <span>{{ label }}</span>
+                <span class="text-sm">
+                  {% for i in "12345" %}
+                    {% if i|add:0 <= value %}⭐{% else %}☆{% endif %}
+                  {% endfor %}
+                </span>
+              </label>
+            </div>
+            {% endfor %}
+          </div>
+          {% if form.rating.errors %}
+          <span class="text-xs text-red-600 mt-1">{{ form.rating.errors.0 }}</span>
+          {% endif %}
+        </div>
+
+        <div>
+          <label for="id_comment" class="block text-sm font-semibold text-slate-700 mb-2">Comment</label>
+          {{ form.comment }}
+          <p class="text-xs text-slate-500 mt-1">Maximum 1000 characters. HTML is stripped automatically for safety.</p>
+          {% if form.comment.errors %}
+          <span class="text-xs text-red-600 mt-1">{{ form.comment.errors.0 }}</span>
+          {% endif %}
+        </div>
+
+        <div>
+          <label for="id_images" class="block text-sm font-semibold text-slate-700 mb-2">Add Images (Optional)</label>
+          {{ form.images }}
+          <p class="text-xs text-slate-500 mt-2">{{ form.images.help_text }}</p>
+          <p id="review-image-error" class="mt-2 hidden text-xs font-medium text-red-600"></p>
+          <div id="review-image-preview-section" class="mt-4 hidden">
+            <div class="mb-3 flex items-center justify-between gap-3">
+              <p class="text-sm font-semibold text-slate-700">Selected images</p>
+              <p id="review-image-count" class="text-xs text-slate-500">0 / 5</p>
+            </div>
+            <div id="review-image-preview-list" class="grid grid-cols-2 gap-3 sm:grid-cols-3"></div>
+          </div>
+          {% if form.images.errors %}
+          <span class="text-xs text-red-600 mt-1">{{ form.images.errors.0 }}</span>
+          {% endif %}
+        </div>
+
+        <div class="flex gap-3 pt-4">
+          <button type="submit" class="flex-1 bg-indigo-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-indigo-700 transition">
+            Post Review
+          </button>
+          <a href="{{ next_url }}" class="flex-1 border border-slate-300 text-slate-700 px-6 py-3 rounded-xl font-semibold hover:bg-slate-50 transition text-center">
+            Cancel
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const imageInput = document.getElementById("id_images");
+    const errorBox = document.getElementById("review-image-error");
+    const previewSection = document.getElementById("review-image-preview-section");
+    const previewList = document.getElementById("review-image-preview-list");
+    const countLabel = document.getElementById("review-image-count");
+
+    if (!imageInput || !window.DataTransfer) {
+      return;
+    }
+
+    const maxImages = 5;
+    let selectedFiles = [];
+    let previewUrls = [];
+
+    const clearPreviewUrls = () => {
+      previewUrls.forEach((url) => URL.revokeObjectURL(url));
+      previewUrls = [];
+    };
+
+    const setError = (message) => {
+      errorBox.textContent = message || "";
+      errorBox.classList.toggle("hidden", !message);
+    };
+
+    const syncInputFiles = () => {
+      const transfer = new DataTransfer();
+      selectedFiles.forEach((file) => transfer.items.add(file));
+      imageInput.files = transfer.files;
+    };
+
+    const renderPreview = () => {
+      clearPreviewUrls();
+      previewList.innerHTML = "";
+      countLabel.textContent = `${selectedFiles.length} / ${maxImages}`;
+      previewSection.classList.toggle("hidden", selectedFiles.length === 0);
+
+      selectedFiles.forEach((file, index) => {
+        const previewUrl = URL.createObjectURL(file);
+        previewUrls.push(previewUrl);
+
+        const item = document.createElement("div");
+        item.className = "overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm";
+
+        item.innerHTML = `
+          <div class="relative">
+            <img src="${previewUrl}" alt="${file.name}" class="h-28 w-full object-cover">
+            <button type="button" class="absolute right-2 top-2 rounded-full bg-white/95 px-2.5 py-1 text-xs font-semibold text-red-600 shadow-sm transition hover:bg-red-50" data-remove-index="${index}">
+              Delete
+            </button>
+          </div>
+          <div class="px-3 py-2">
+            <p class="truncate text-xs text-slate-600" title="${file.name}">${file.name}</p>
+          </div>
+        `;
+
+        previewList.appendChild(item);
+      });
+
+      previewList.querySelectorAll("[data-remove-index]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const removeIndex = Number(button.dataset.removeIndex);
+          selectedFiles = selectedFiles.filter((_, index) => index !== removeIndex);
+          setError("");
+          syncInputFiles();
+          renderPreview();
+        });
+      });
+    };
+
+    imageInput.addEventListener("change", (event) => {
+      const newFiles = Array.from(event.target.files || []);
+      if (!newFiles.length) {
+        syncInputFiles();
+        renderPreview();
+        return;
+      }
+
+      const availableSlots = maxImages - selectedFiles.length;
+      const filesToAdd = newFiles.slice(0, Math.max(availableSlots, 0));
+
+      if (newFiles.length > availableSlots) {
+        setError(`You can upload a maximum of ${maxImages} images.`);
+      } else {
+        setError("");
+      }
+
+      selectedFiles = selectedFiles.concat(filesToAdd);
+      syncInputFiles();
+      renderPreview();
+    });
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,280 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block extrastyle %}
+    {{ block.super }}
+    <script>
+        tailwind = { config: { corePlugins: { preflight: false } } };
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{% static 'admin/css/admin_theme.css' %}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block extrahead %}
+    {{ block.super }}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var body = document.body;
+            var toggle = document.getElementById("adminSidebarToggle");
+            // Check if we're on mobile and collapse sidebar by default
+            if (window.innerWidth <= 900) {
+                body.classList.add("sidebar-collapsed");
+            }
+            if (toggle) {
+                toggle.addEventListener("click", function () {
+                    body.classList.toggle("sidebar-collapsed");
+                    // document.body.classList.toggle("sidebar-open");
+                });
+            }
+            // Close sidebar when clicking on overlay (mobile only)
+            body.addEventListener("click", function (event) {
+                if (window.innerWidth <= 900 && 
+                    !body.classList.contains("sidebar-collapsed") && 
+                    !event.target.closest("#nav-sidebar") && 
+                    !event.target.closest("#adminSidebarToggle")) {
+                    body.classList.add("sidebar-collapsed");
+                }
+            });
+      
+        // document.addEventListener("DOMContentLoaded", function () {
+
+        //     const toggle = document.getElementById("adminSidebarToggle");
+        
+        //     if(toggle){
+        //         toggle.addEventListener("click", function(){
+        
+        //             if(window.innerWidth <= 768){
+        //                 document.body.classList.toggle("sidebar-open");
+        //             }else{
+        //                 document.body.classList.toggle("sidebar-collapsed");
+        //             }
+        
+        //         });
+        //     }
+
+            // document.addEventListener("click", function(e){
+            //   if(e.target.closest("#adminSidebarToggle")){
+            //       document.body.classList.toggle("sidebar-open");
+            //     }
+            // });
+ 
+
+            var sidebarLinks = document.querySelectorAll("#nav-sidebar a");
+            var currentPath = window.location.pathname.replace(/\/$/, "");
+            sidebarLinks.forEach(function (link) {
+                var linkPath = (new URL(link.href, window.location.origin)).pathname.replace(/\/$/, "");
+                if (linkPath && currentPath === linkPath) {
+                    link.classList.add("is-active-link");
+                }
+            });
+
+            var main = document.getElementById("main");
+            var navSidebar = document.getElementById("nav-sidebar");
+            // if (main && navSidebar) {
+            if (main && navSidebar && window.innerWidth > 900) {
+                main.classList.add("shifted");
+                navSidebar.setAttribute("aria-expanded", "true");
+                try {
+                    localStorage.setItem("django.admin.navSidebarIsOpen", "true");
+                } catch (e) {}
+            }
+
+            var navFilter = document.getElementById("nav-filter");
+            if (navFilter) {
+                navFilter.value = "";
+                try {
+                    sessionStorage.removeItem("django.admin.navSidebarFilterValue");
+                } catch (e) {}
+                navFilter.dispatchEvent(new Event("input", { bubbles: true }));
+            }
+
+            var modelTotal = 0;
+            var modelTotalEl = document.getElementById("modelsTotal");
+            if (modelTotalEl) {
+                document.querySelectorAll("[data-model-count]").forEach(function (node) {
+                    modelTotal += parseInt(node.getAttribute("data-model-count"), 10) || 0;
+                });
+                modelTotalEl.textContent = modelTotal;
+            }
+
+	            var changelist = document.getElementById("changelist");
+	            if (changelist) {
+	                var changelistFilter = document.getElementById("changelist-filter");
+	                if (changelistFilter) {
+	                    var filterToggleBtn = document.createElement("button");
+	                    filterToggleBtn.type = "button";
+	                    filterToggleBtn.className = "filter-toggle-btn";
+	                    filterToggleBtn.setAttribute("aria-controls", "changelist-filter");
+	                    filterToggleBtn.setAttribute("aria-expanded", "false");
+	                    filterToggleBtn.innerHTML = '<i class="fa-solid fa-filter"></i> Show Filters';
+	                    changelistFilter.hidden = true;
+	                    changelistFilter.style.display = "none";
+	                    changelistFilter.setAttribute("aria-hidden", "true");
+
+	                    var changelistFormTop = changelist.querySelector("#changelist-form");
+	                    if (changelistFormTop && changelistFormTop.parentNode) {
+	                        changelistFormTop.parentNode.insertBefore(filterToggleBtn, changelistFormTop);
+	                    } else {
+	                        changelist.insertBefore(filterToggleBtn, changelist.firstChild);
+	                    }
+
+	                    filterToggleBtn.addEventListener("click", function () {
+	                        var isHidden = changelistFilter.hidden;
+	                        changelistFilter.hidden = !isHidden;
+	                        changelistFilter.style.display = isHidden ? "" : "none";
+	                        changelistFilter.setAttribute("aria-hidden", isHidden ? "false" : "true");
+	                        filterToggleBtn.setAttribute("aria-expanded", isHidden ? "true" : "false");
+	                        filterToggleBtn.innerHTML = isHidden
+	                            ? '<i class="fa-solid fa-filter-circle-xmark"></i> Hide Filters'
+	                            : '<i class="fa-solid fa-filter"></i> Show Filters';
+	                    });
+	                }
+
+	                var totalCount = 0;
+	                var selectedCount = 0;
+	                var visibleRows = 0;
+
+                var actionCounter = changelist.querySelector(".action-counter");
+                if (actionCounter) {
+                    var selectedMatch = actionCounter.textContent.match(/(\d+)\s+of\s+(\d+)/i);
+                    if (selectedMatch) {
+                        selectedCount = parseInt(selectedMatch[1], 10) || 0;
+                        totalCount = parseInt(selectedMatch[2], 10) || 0;
+                    }
+                }
+
+                var paginator = changelist.querySelector(".paginator");
+                if (paginator) {
+                    if (!totalCount) {
+                        var totalMatch = paginator.textContent.replace(/,/g, "").match(/(\d+)/);
+                        if (totalMatch) {
+                            totalCount = parseInt(totalMatch[1], 10) || 0;
+                        }
+                    }
+                }
+
+                visibleRows = changelist.querySelectorAll("#result_list tbody tr").length;
+
+                var statRow = document.createElement("div");
+                statRow.className = "admin-inline-stats";
+                statRow.innerHTML =
+                    '<div class="inline-stat-card"><i class="fa-solid fa-database"></i><div><p>Total Records</p><strong>' + totalCount + "</strong></div></div>" +
+                    '<div class="inline-stat-card"><i class="fa-solid fa-table-list"></i><div><p>On This Page</p><strong>' + visibleRows + "</strong></div></div>" +
+                    '<div class="inline-stat-card"><i class="fa-solid fa-square-check"></i><div><p>Selected Rows</p><strong data-selected-count>' + selectedCount + "</strong></div></div>";
+
+                var userRoleCounts = changelist.querySelector("#user-role-counts");
+                if (userRoleCounts) {
+                    var sellerCount = parseInt(userRoleCounts.getAttribute("data-seller-count"), 10) || 0;
+                    var buyerCount = parseInt(userRoleCounts.getAttribute("data-buyer-count"), 10) || 0;
+                    statRow.classList.add("has-five-cards");
+                    statRow.innerHTML +=
+                        '<div class="inline-stat-card"><i class="fa-solid fa-store"></i><div><p>No of Sellers</p><strong>' + sellerCount + "</strong></div></div>" +
+                        '<div class="inline-stat-card"><i class="fa-solid fa-cart-plus"></i><div><p>No of Buyers</p><strong>' + buyerCount + "</strong></div></div>";
+                }
+
+                var changelistForm = changelist.querySelector("#changelist-form") || changelist.firstElementChild;
+                if (changelistForm && changelistForm.parentNode) {
+                    changelistForm.parentNode.insertBefore(statRow, changelistForm);
+                }
+
+                var selectedCounter = statRow.querySelector("[data-selected-count]");
+                var rowCheckboxes = changelist.querySelectorAll("input.action-select");
+                function refreshRowSelectionState() {
+                    var selectedRows = 0;
+                    rowCheckboxes.forEach(function (checkbox) {
+                        var row = checkbox.closest("tr");
+                        var isSelected = checkbox.checked;
+                        if (isSelected) {
+                            selectedRows += 1;
+                        }
+                        if (row) {
+                            row.classList.toggle("is-row-selected", isSelected);
+                        }
+                    });
+                    if (selectedCounter) {
+                        selectedCounter.textContent = selectedRows;
+                    }
+                }
+
+                rowCheckboxes.forEach(function (checkbox) {
+                    checkbox.addEventListener("change", refreshRowSelectionState);
+                });
+
+                var actionToggle = changelist.querySelector("input.action-toggle");
+                if (actionToggle) {
+                    actionToggle.addEventListener("change", function () {
+                        setTimeout(refreshRowSelectionState, 0);
+                    });
+                }
+
+                changelist.querySelectorAll("#result_list tbody tr").forEach(function (row) {
+                    row.addEventListener("click", function (event) {
+                        if (event.target.closest("a, button, input, select, label, textarea")) {
+                            return;
+                        }
+                        changelist.querySelectorAll("#result_list tbody tr.is-row-focused").forEach(function (activeRow) {
+                            activeRow.classList.remove("is-row-focused");
+                        });
+                        row.classList.add("is-row-focused");
+                    });
+                });
+
+                refreshRowSelectionState();
+            }
+        });
+        
+      
+    </script>
+{% endblock %}
+
+{% block branding %}
+<div class="brand-wrap">
+    <div class="brand-copy">
+        <h1 id="site-name"><a href="{% url 'admin:index' %}">Mykartstore Admin Panel</a></h1>
+        <p class="brand-subtitle">Catalog, orders, and operations</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block nav-sidebar %}
+    <button type="button" id="adminSidebarToggle" class="sidebar-toggle-btn sidebar-toggle-inside" aria-label="Toggle sidebar">
+        <i class="fa-solid fa-bars"></i>
+    </button>
+    {{ block.super }}
+{% endblock %}
+
+{% block usertools %}
+<div id="user-tools">
+    {% if user.is_active and user.is_staff %}
+        {% url 'django-admindocs-docroot' as docsroot %}
+        {% if docsroot %}
+            <a href="{{ docsroot }}"><i class="fa-solid fa-book"></i> Docs</a>
+        {% endif %}
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block nav-global %}
+<nav class="shop-top-nav">
+    <a href="{% url 'admin:index' %}"><i class="fa-solid fa-house"></i> Dashboard</a>
+    <a href="{% url 'products:home' %}"><i class="fa-solid fa-bag-shopping"></i> Shop</a>
+    {% if has_permission %}
+    <details class="settings-menu">
+        <summary><i class="fa-solid fa-gear"></i> Settings</summary>
+        <div class="settings-menu-panel">
+            <a href="{% url 'admin:password_change' %}"><i class="fa-solid fa-key"></i> Change Password</a>
+            <form id="logout-form" method="post" action="{% url 'admin:logout' %}">
+                {% csrf_token %}
+                <button type="submit" class="settings-menu-action"><i class="fa-solid fa-right-from-bracket"></i> Log out</button>
+            </form>
+        </div>
+    </details>
+    {% endif %}
+</nav>
+{% endblock %}
+
+

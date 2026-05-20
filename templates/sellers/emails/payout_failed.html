@@ -1,0 +1,73 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background-color: #f8d7da; padding: 20px; border-radius: 4px; margin-bottom: 20px; border-left: 4px solid #dc3545; }
+        .content { padding: 20px; background-color: #ffffff; border: 1px solid #ddd; border-radius: 4px; }
+        .footer { text-align: center; margin-top: 20px; font-size: 12px; color: #666; }
+        .warning { color: #dc3545; font-weight: bold; }
+        .amount { font-size: 24px; font-weight: bold; color: #dc3545; }
+        .info-row { margin: 10px 0; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        .label { color: #666; font-weight: bold; }
+        .button { display: inline-block; padding: 10px 20px; background-color: #007bff; color: white; text-decoration: none; border-radius: 4px; margin-top: 20px; }
+        .support { background-color: #f8f9fa; padding: 15px; border-radius: 4px; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2 class="warning">⚠ Payout Failed</h2>
+        </div>
+        
+        <div class="content">
+            <p>Hello {{ seller_name }},</p>
+            
+            <p>Unfortunately, we encountered an issue while processing your payout. The amount remains in your seller account and will be available for the next payout attempt.</p>
+            
+            <div class="info-row">
+                <span class="label">Amount:</span>
+                <div class="amount">₹{{ amount }}</div>
+            </div>
+            
+            <div class="info-row">
+                <span class="label">Reference ID:</span>
+                {{ reference }}
+            </div>
+            
+            <div class="info-row">
+                <span class="label">Reason:</span>
+                {{ failure_reason }}
+            </div>
+            
+            <div class="info-row">
+                <span class="label">Date Attempted:</span>
+                {{ created_at }}
+            </div>
+            
+            <div class="support">
+                <p><strong>What should you do?</strong></p>
+                <ul>
+                    <li>Check your account details in your dashboard</li>
+                    <li>Ensure your bank account information is correct</li>
+                    <li>Try requesting another payout after a few hours</li>
+                    <li>Contact our support team if the issue persists</li>
+                </ul>
+            </div>
+            
+            <p>
+                <a href="{{ dashboard_url }}" class="button">View Dashboard</a>
+            </p>
+            
+            <p>If you need assistance, please contact us at: <strong>{{ support_email }}</strong></p>
+        </div>
+        
+        <div class="footer">
+            <p>This is an automated message. Please don't reply to this email.</p>
+            <p>&copy; 2026 MyKartStore. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,249 @@
+{% extends "base.html" %}
+{% block title %}Return Item - Order #{{ order.id }}{% endblock %}
+
+{% block content %}
+<section class="py-8 sm:py-10" style="background: linear-gradient(180deg, #f8fafc 0%, #eef2ff 100%);">
+  <div class="max-w-5xl mx-auto px-4 sm:px-6">
+    <div class="rounded-3xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+      <div class="px-6 sm:px-8 py-7 sm:py-8 border-b border-indigo-100" style="background-image: linear-gradient(rgba(255,255,255,0.84), rgba(255,255,255,0.90)), url('https://images.unsplash.com/photo-1601599810694-8a8b1c40791e?auto=format&fit=crop&w=1600&q=80'); background-size: cover; background-position: center;">
+        <p class="text-xs uppercase tracking-[0.24em] text-indigo-700 font-semibold">Return Request</p>
+        <h1 class="text-3xl sm:text-4xl font-extrabold mt-2 text-slate-900">Return Items</h1>
+        <p class="text-slate-700 mt-2">Order #{{ order.id }} placed on {{ order.created_at|date:"M d, Y" }}</p>
+      </div>
+
+      <div class="p-6 sm:p-8 bg-gradient-to-b from-white to-slate-50/60">
+        <a href="{% url 'orders:order_tracking_detail' order.id %}" class="inline-flex items-center text-sm font-semibold text-indigo-700 hover:text-indigo-800 transition mb-6">
+          &larr; Back to Order
+        </a>
+
+        <div class="mb-6 rounded-lg border border-cyan-200 bg-cyan-50 p-4">
+          <p class="text-sm text-cyan-900">
+            <span class="font-semibold">Return Window:</span> You have until <strong>{{ order.return_deadline|date:"M d, Y" }}</strong> to initiate a return.
+          </p>
+        </div>
+
+        <div class="mb-6">
+          <h3 class="font-semibold text-slate-900 mb-3">Delivered Products Available for Return:</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 rounded-lg bg-slate-50 border border-slate-200">
+            {% for item in eligible_items %}
+            <div class="flex gap-3 p-3 rounded-lg bg-white border border-slate-200">
+              {% if item.product.image %}
+              <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="w-16 h-16 rounded object-cover">
+              {% else %}
+              <div class="w-16 h-16 rounded bg-slate-100 flex items-center justify-center text-xs text-slate-500">No image</div>
+              {% endif %}
+              <div class="flex-1 text-sm">
+                <p class="font-semibold text-slate-900">{{ item.product.name }}</p>
+                <p class="text-slate-600">Qty: {{ item.quantity }} | Price: Rs.{{ item.price }}</p>
+                <p class="text-xs text-green-700 mt-1">Delivered</p>
+                {% if item.has_existing_return_request %}
+                <p class="text-xs font-semibold text-amber-700 mt-1">Return request already submitted</p>
+                {% else %}
+                <p class="text-xs font-semibold text-indigo-700 mt-1">Select this product below to return it</p>
+                {% endif %}
+              </div>
+            </div>
+            {% empty %}
+            <div class="sm:col-span-2 rounded-lg border border-slate-200 bg-white px-4 py-5 text-sm text-slate-600">
+              No delivered products are available for return in this order.
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <form method="post" enctype="multipart/form-data" class="space-y-6">
+          {% csrf_token %}
+
+          {% if form_errors %}
+          <div class="rounded-lg border border-red-200 bg-red-50 p-4 space-y-1">
+            {% for error in form_errors %}
+            <p class="text-red-800">{{ error }}</p>
+            {% endfor %}
+          </div>
+          {% endif %}
+
+          <div class="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5">
+            <h3 class="text-lg font-bold text-slate-900">Select Products to Return</h3>
+            <p class="mt-1 text-sm text-slate-600">Choose one or more products. Each selected product has its own reason, details, and screenshot upload.</p>
+          </div>
+
+          <div class="space-y-4">
+            {% for item in eligible_items %}
+            <div class="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+              <div class="flex flex-col gap-4 sm:flex-row sm:items-start p-4 sm:p-5">
+                <div class="flex items-start gap-3 flex-1">
+                  {% if item.has_existing_return_request %}
+                  <input type="checkbox" disabled class="mt-1 h-4 w-4 rounded border-slate-300 text-indigo-600">
+                  {% else %}
+                  <input
+                    type="checkbox"
+                    name="selected_products"
+                    value="{{ item.product_id }}"
+                    id="select_product_{{ item.product_id }}"
+                    class="return-product-toggle mt-1 h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                    data-product-id="{{ item.product_id }}"
+                    {% if item.is_selected_for_return %}checked{% endif %}
+                  >
+                  {% endif %}
+
+                  {% if item.product.image %}
+                  <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="w-20 h-20 rounded-lg object-cover border border-slate-200">
+                  {% else %}
+                  <div class="w-20 h-20 rounded-lg bg-slate-100 flex items-center justify-center text-xs text-slate-500">No image</div>
+                  {% endif %}
+
+                  <div class="flex-1">
+                    <label for="select_product_{{ item.product_id }}" class="block text-base font-bold text-slate-900 {% if item.has_existing_return_request %}cursor-default{% else %}cursor-pointer{% endif %}">
+                      {{ item.product.name }}
+                    </label>
+                    <p class="mt-1 text-sm text-slate-600">Qty: {{ item.quantity }} | Refund amount: Rs.{{ item.return_refund_amount|floatformat:2 }}</p>
+                    {% if item.has_existing_return_request %}
+                    <p class="mt-2 text-xs font-semibold text-amber-700">This product already has a return request.</p>
+                    {% else %}
+                    <p class="mt-2 text-xs font-semibold text-green-700">Tick the checkbox to add reason and screenshot for this product.</p>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+
+              {% if not item.has_existing_return_request %}
+              <div
+                class="return-product-fields border-t border-slate-100 bg-slate-50/70 p-4 sm:p-5 {% if not item.is_selected_for_return %}hidden{% endif %}"
+                data-product-fields="{{ item.product_id }}"
+              >
+                <div class="grid gap-4">
+                  <div>
+                    <label for="reason_{{ item.product_id }}" class="block text-sm font-semibold text-slate-900 mb-2">
+                      Return Reason <span class="text-red-600">*</span>
+                    </label>
+                    <select
+                      id="reason_{{ item.product_id }}"
+                      name="reason_{{ item.product_id }}"
+                      class="return-reason-select w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                      data-product-id="{{ item.product_id }}"
+                    >
+                      <option value="">-- Choose a reason --</option>
+                      {% for value, label in return_reason_choices %}
+                      <option value="{{ value }}" {% if item.selected_return_reason == value %}selected{% endif %}>{{ label }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+
+                  <div
+                    class="{% if item.selected_return_reason != 'other' %}hidden {% endif %}"
+                    data-other-reason-fields="{{ item.product_id }}"
+                  >
+                    <label for="other_reason_{{ item.product_id }}" class="block text-sm font-semibold text-slate-900 mb-2">
+                      Other Reason <span class="text-red-600">*</span>
+                    </label>
+                    <textarea
+                      id="other_reason_{{ item.product_id }}"
+                      name="other_reason_{{ item.product_id }}"
+                      rows="3"
+                      class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                      placeholder="Tell us the exact reason for this return..."
+                    >{{ item.selected_other_reason }}</textarea>
+                  </div>
+
+                  <div>
+                    <label for="photos_{{ item.product_id }}" class="block text-sm font-semibold text-slate-900 mb-2">
+                      Upload Screenshots / Photos <span class="text-red-600">*</span>
+                    </label>
+                    <input
+                      id="photos_{{ item.product_id }}"
+                      type="file"
+                      name="photos_{{ item.product_id }}"
+                      accept="image/*"
+                      multiple
+                      class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-600 file:mr-4 file:rounded-lg file:border-0 file:bg-indigo-50 file:px-4 file:py-2 file:font-semibold file:text-indigo-700 hover:file:bg-indigo-100"
+                    >
+                    <p class="mt-1 text-xs text-slate-600">Upload 1 to 5 screenshots or photos for this product.</p>
+                  </div>
+                </div>
+              </div>
+              {% endif %}
+            </div>
+            {% endfor %}
+          </div>
+
+          <div class="pt-4 flex gap-3 sm:flex-row">
+            <button type="submit" class="flex-1 rounded-lg bg-indigo-600 px-4 py-3 font-semibold text-white transition hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2">
+              Submit Return Request
+            </button>
+            <a href="{% url 'orders:order_tracking_detail' order.id %}" class="flex-1 rounded-lg border border-slate-300 px-4 py-3 font-semibold text-slate-900 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-300 focus:ring-offset-2 text-center">
+              Cancel
+            </a>
+          </div>
+        </form>
+
+        <div class="mt-8 rounded-lg border border-slate-200 bg-slate-50 p-4">
+          <h3 class="font-semibold text-slate-900 mb-3">Important Notes:</h3>
+          <ul class="space-y-2 text-sm text-slate-700">
+            <li class="flex gap-2">
+              <span class="text-indigo-600 font-bold">•</span>
+              <span>Each selected product will create its own return request entry.</span>
+            </li>
+            <li class="flex gap-2">
+              <span class="text-indigo-600 font-bold">•</span>
+              <span>Select the correct reason separately for every product you are returning.</span>
+            </li>
+            <li class="flex gap-2">
+              <span class="text-indigo-600 font-bold">•</span>
+              <span>Upload 1 to 5 screenshots separately for each selected product.</span>
+            </li>
+            <li class="flex gap-2">
+              <span class="text-indigo-600 font-bold">•</span>
+              <span>Refunds are processed after return approval and verification.</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const toggles = document.querySelectorAll(".return-product-toggle");
+    const reasonSelects = document.querySelectorAll(".return-reason-select");
+
+    toggles.forEach((toggle) => {
+      const productId = toggle.dataset.productId;
+      const fields = document.querySelector('[data-product-fields="' + productId + '"]');
+      if (!fields) {
+        return;
+      }
+
+      const syncVisibility = function () {
+        fields.classList.toggle("hidden", !toggle.checked);
+      };
+
+      syncVisibility();
+      toggle.addEventListener("change", syncVisibility);
+    });
+
+    reasonSelects.forEach((select) => {
+      const productId = select.dataset.productId;
+      const otherReasonFields = document.querySelector('[data-other-reason-fields="' + productId + '"]');
+      const otherReasonInput = document.getElementById("other_reason_" + productId);
+      if (!otherReasonFields) {
+        return;
+      }
+
+      const syncOtherReasonVisibility = function () {
+        const isOther = select.value === "other";
+        otherReasonFields.classList.toggle("hidden", !isOther);
+        if (otherReasonInput) {
+          otherReasonInput.required = isOther;
+          if (!isOther) {
+            otherReasonInput.value = "";
+          }
+        }
+      };
+
+      syncOtherReasonVisibility();
+      select.addEventListener("change", syncOtherReasonVisibility);
+    });
+  });
+</script>
+{% endblock %}

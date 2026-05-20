@@ -1,0 +1,113 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static admin_dashboard %}
+
+{% block content %}
+{% get_admin_dashboard_metrics as metrics %}
+{% get_top_products_by_revenue 8 as top_products %}
+{% get_products_stock 12 as products_stock %}
+
+<div class="admin-kpi-grid">
+    <div class="admin-kpi-card kpi-revenue">
+        <div class="kpi-icon"><i class="fa-solid fa-coins"></i></div>
+        <p class="kpi-label">Total Revenue</p>
+        <p class="kpi-value text-lg">Rs.{{ metrics.total_revenue|floatformat:2 }}</p>
+        <p class="kpi-trend {% if metrics.revenue_change >= 0 %}is-up{% else %}is-down{% endif %}">
+            {% if metrics.revenue_change >= 0 %}<i class="fa-solid fa-arrow-up"></i>{% else %}<i class="fa-solid fa-arrow-down"></i>{% endif %}
+            {{ metrics.revenue_change|floatformat:1 }}% vs last week
+        </p>
+    </div>
+    <div class="admin-kpi-card kpi-orders">
+        <div class="kpi-icon"><i class="fa-solid fa-cart-shopping"></i></div>
+        <p class="kpi-label">Total Orders</p>
+        <p class="kpi-value">{{ metrics.total_orders }}</p>
+        <p class="kpi-trend {% if metrics.orders_change >= 0 %}is-up{% else %}is-down{% endif %}">
+            {% if metrics.orders_change >= 0 %}<i class="fa-solid fa-arrow-up"></i>{% else %}<i class="fa-solid fa-arrow-down"></i>{% endif %}
+            {{ metrics.orders_change|floatformat:1 }}% vs last week
+        </p>
+    </div>
+    <div class="admin-kpi-card kpi-users">
+        <div class="kpi-icon"><i class="fa-solid fa-users"></i></div>
+        <p class="kpi-label">Active Users</p>
+        <p class="kpi-value">{{ metrics.active_users }}</p>
+        <p class="kpi-trend {% if metrics.active_users_change >= 0 %}is-up{% else %}is-down{% endif %}">
+            {% if metrics.active_users_change >= 0 %}<i class="fa-solid fa-arrow-up"></i>{% else %}<i class="fa-solid fa-arrow-down"></i>{% endif %}
+            {{ metrics.active_users_change|floatformat:1 }}% vs last week
+        </p>
+    </div>
+    <div class="admin-kpi-card kpi-signups">
+        <div class="kpi-icon"><i class="fa-solid fa-user-plus"></i></div>
+        <p class="kpi-label">New Signups (this week)</p>
+        <p class="kpi-value">{{ metrics.new_signups_week }}</p>
+        <p class="kpi-trend {% if metrics.signups_change >= 0 %}is-up{% else %}is-down{% endif %}">
+            {% if metrics.signups_change >= 0 %}<i class="fa-solid fa-arrow-up"></i>{% else %}<i class="fa-solid fa-arrow-down"></i>{% endif %}
+            {{ metrics.signups_change|floatformat:1 }}% vs last week
+        </p>
+    </div>
+</div>
+
+<section class="top-products-panel">
+    <h2>Top Products <span>(by revenue)</span></h2>
+    <div class="top-products-table-wrap">
+        <table class="top-products-table">
+            <thead>
+                <tr>
+                    <th>Product Name</th>
+                    <th>Orders</th>
+                    <th>Revenue</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in top_products %}
+                    <tr>
+                        <td><i class="fa-solid fa-shirt"></i> {{ item.product__name }}</td>
+                        <td>{{ item.orders }}</td>
+                        <td>${{ item.revenue|floatformat:2 }}</td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="3">No product revenue data yet.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="top-products-panel">
+    <h2>Inventory Stock <span>(lowest stock first)</span></h2>
+    <div class="top-products-table-wrap">
+        <table class="top-products-table">
+            <thead>
+                <tr>
+                    <th>Product Name</th>
+                    <th>Category</th>
+                    <th>Stock</th>
+                    <th>Available</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in products_stock %}
+                    <tr>
+                        <td><i class="fa-solid fa-box"></i> {{ item.name }}</td>
+                        <td>{{ item.category__name }}</td>
+                        <td>{{ item.stock }}</td>
+                        <td>{% if item.available %}Yes{% else %}No{% endif %}</td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="4">No products available.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<!-- <section class="top-products-panel">
+    <h2>Seller Payout Management</h2>
+    <div class="top-products-table-wrap">
+        <p>Manage seller payouts and earnings from a centralized dashboard.</p>
+        <a href="{% url 'sellers:admin_payout_management' %}" class="button">View Payout Management</a>
+    </div>
+</section> -->
+{% endblock %}

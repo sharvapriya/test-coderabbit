@@ -1,0 +1,763 @@
+{% extends "base.html" %}
+
+{% block title %}Create Seller Profile{% endblock %}
+
+{% block content %}
+<style>
+  .seller-registration-shell {
+    background:
+      radial-gradient(circle at top left, rgba(251, 191, 36, 0.18), transparent 24%),
+      radial-gradient(circle at top right, rgba(59, 130, 246, 0.15), transparent 28%),
+      linear-gradient(180deg, #fffdf6 0%, #f8fafc 48%, #eef2ff 100%);
+  }
+
+  .seller-registration-wrap {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 2.5rem 1rem 4rem;
+  }
+
+  .seller-registration-hero {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(226, 232, 240, 0.9);
+    border-radius: 2rem;
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.98) 0%, rgba(30, 41, 59, 0.96) 44%, rgba(30, 64, 175, 0.9) 100%);
+    color: #fff;
+    box-shadow: 0 28px 70px rgba(15, 23, 42, 0.22);
+  }
+
+  .seller-registration-hero::before,
+  .seller-registration-hero::after {
+    content: "";
+    position: absolute;
+    border-radius: 999px;
+    pointer-events: none;
+  }
+
+  .seller-registration-hero::before {
+    width: 240px;
+    height: 240px;
+    top: -90px;
+    right: -60px;
+    background: radial-gradient(circle, rgba(251, 191, 36, 0.25), transparent 68%);
+  }
+
+  .seller-registration-hero::after {
+    width: 280px;
+    height: 280px;
+    left: -110px;
+    bottom: -160px;
+    background: radial-gradient(circle, rgba(96, 165, 250, 0.22), transparent 70%);
+  }
+
+  .seller-registration-hero-grid {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(280px, 0.8fr);
+    gap: 1.5rem;
+    padding: 2rem;
+  }
+
+  .seller-registration-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.55rem 0.9rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    color: #fcd34d;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
+  .seller-registration-title {
+    margin-top: 1rem;
+    font-size: clamp(2rem, 3.2vw, 3.4rem);
+    line-height: 1.02;
+    font-weight: 900;
+    letter-spacing: -0.03em;
+  }
+
+  .seller-registration-copy {
+    max-width: 700px;
+    margin-top: 1rem;
+    color: rgba(226, 232, 240, 0.9);
+    font-size: 1rem;
+    line-height: 1.75;
+  }
+
+  .seller-registration-panel {
+    display: grid;
+    gap: 1rem;
+    align-content: start;
+    padding: 1.35rem;
+    border-radius: 1.5rem;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(12px);
+  }
+
+  .seller-registration-panel-title {
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: #bfdbfe;
+  }
+
+  .seller-registration-panel strong {
+    display: block;
+    font-size: 1.4rem;
+    line-height: 1.25;
+    font-weight: 800;
+    color: #ffffff;
+  }
+
+  .seller-registration-panel p {
+    margin: 0;
+    color: rgba(226, 232, 240, 0.88);
+    line-height: 1.6;
+    font-size: 0.96rem;
+  }
+
+  .seller-registration-form {
+    margin-top: 1.5rem;
+    border: 1px solid rgba(226, 232, 240, 0.9);
+    border-radius: 2rem;
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.08);
+    overflow: hidden;
+  }
+
+  .seller-registration-form-body {
+    padding: 1.4rem;
+  }
+
+  .seller-form-alert {
+    border-radius: 1.1rem;
+    border: 1px solid #fecaca;
+    background: linear-gradient(180deg, #fff5f5 0%, #fff1f2 100%);
+    color: #b91c1c;
+    padding: 1rem 1.1rem;
+    font-size: 0.95rem;
+    line-height: 1.55;
+  }
+
+  .seller-registration-grid {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 1rem;
+    margin-top: 1.15rem;
+  }
+
+  .seller-card {
+    grid-column: span 12;
+    border: 1px solid #e2e8f0;
+    border-radius: 1.55rem;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.96) 100%);
+    box-shadow: 0 16px 38px rgba(15, 23, 42, 0.06);
+    overflow: hidden;
+  }
+
+  .seller-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1.2rem;
+    border-bottom: 1px solid #e2e8f0;
+    background: linear-gradient(180deg, rgba(248, 250, 252, 0.95) 0%, rgba(255, 255, 255, 0.96) 100%);
+  }
+
+  .seller-card-step {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.4rem;
+    height: 2.4rem;
+    border-radius: 0.95rem;
+    background: linear-gradient(135deg, #0f172a 0%, #2563eb 100%);
+    color: #fff;
+    font-size: 0.85rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    flex-shrink: 0;
+  }
+
+  .seller-card-title {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+  }
+
+  .seller-card-title h2 {
+    margin: 0;
+    font-size: 1.08rem;
+    font-weight: 800;
+    color: #0f172a;
+  }
+
+  .seller-card-title p {
+    margin: 0.2rem 0 0;
+    color: #64748b;
+    font-size: 0.9rem;
+  }
+
+  .seller-card-body {
+    padding: 1.15rem 1.2rem 1.3rem;
+  }
+
+  .seller-fields-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  .seller-field-full {
+    grid-column: 1 / -1;
+  }
+
+  .seller-field label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #0f172a;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .seller-field .help-text {
+    margin: 0 0 0.7rem;
+    color: #64748b;
+    font-size: 0.9rem;
+    line-height: 1.55;
+  }
+
+  .seller-field input:not([type="checkbox"]),
+  .seller-field textarea,
+  .seller-field select {
+    width: 100%;
+    border-radius: 1rem;
+    border: 1px solid #cbd5e1;
+    background: #ffffff;
+    color: #0f172a;
+    padding: 0.9rem 1rem;
+    font-size: 0.96rem;
+    line-height: 1.45;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 8px 22px rgba(15, 23, 42, 0.04);
+    transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+  }
+
+  .seller-field textarea {
+    min-height: 132px;
+    resize: vertical;
+  }
+
+  .seller-field input:not([type="checkbox"]):focus,
+  .seller-field textarea:focus,
+  .seller-field select:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12), 0 18px 38px rgba(37, 99, 235, 0.08);
+    transform: translateY(-1px);
+  }
+
+  .seller-file-field input[type="file"] {
+    display: block;
+    width: 100%;
+    border-radius: 1rem;
+    border: 1px dashed #94a3b8;
+    background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+    padding: 1rem;
+    color: #334155;
+  }
+
+  .seller-checkbox-grid ul {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .seller-checkbox-grid li label {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    border: 1px solid #dbe3ef;
+    border-radius: 1rem;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+    padding: 0.85rem 1rem;
+    font-size: 0.94rem;
+    font-weight: 700;
+    letter-spacing: normal;
+    text-transform: none;
+    color: #0f172a;
+    margin: 0;
+    cursor: pointer;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+  }
+
+  .seller-checkbox-grid li label:hover {
+    border-color: #93c5fd;
+    box-shadow: 0 12px 24px rgba(15, 23, 42, 0.06);
+    transform: translateY(-1px);
+  }
+
+  .seller-checkbox-grid input[type="checkbox"] {
+    width: 1rem;
+    height: 1rem;
+    accent-color: #2563eb;
+    flex-shrink: 0;
+  }
+
+  .seller-terms-box {
+    border: 1px solid #dbe3ef;
+    border-radius: 1.25rem;
+    background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+    padding: 1rem 1.1rem;
+    color: #334155;
+    font-size: 0.92rem;
+    line-height: 1.7;
+    max-height: 280px;
+    overflow: auto;
+  }
+
+  .seller-terms-check {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.8rem;
+    margin-top: 1rem;
+    padding: 1rem 1.05rem;
+    border-radius: 1.15rem;
+    background: linear-gradient(180deg, #eff6ff 0%, #ffffff 100%);
+    border: 1px solid #bfdbfe;
+  }
+
+  .seller-terms-check label {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: normal;
+    text-transform: none;
+    color: #0f172a;
+  }
+
+  .seller-terms-check input[type="checkbox"] {
+    margin-top: 0.2rem;
+    width: 1rem;
+    height: 1rem;
+    accent-color: #2563eb;
+    flex-shrink: 0;
+  }
+
+  .seller-error {
+    margin-top: 0.45rem;
+    color: #dc2626;
+    font-size: 0.82rem;
+    font-weight: 600;
+  }
+
+  .seller-success-note {
+    margin-top: 0.45rem;
+    color: #047857;
+    font-size: 0.84rem;
+    font-weight: 700;
+  }
+
+  .seller-registration-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.25rem 1.4rem 1.4rem;
+    border-top: 1px solid #e2e8f0;
+    background: linear-gradient(180deg, rgba(248, 250, 252, 0.95) 0%, rgba(255, 255, 255, 0.98) 100%);
+  }
+
+  .seller-primary-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 140px;
+    border: 0;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #0f172a 0%, #2563eb 100%);
+    color: #ffffff;
+    padding: 0.95rem 1.4rem;
+    font-size: 0.96rem;
+    font-weight: 800;
+    letter-spacing: 0.01em;
+    box-shadow: 0 16px 32px rgba(37, 99, 235, 0.24);
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+  }
+
+  .seller-primary-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 22px 40px rgba(37, 99, 235, 0.26);
+  }
+
+  .seller-secondary-link {
+    color: #1d4ed8;
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 800;
+  }
+
+  .seller-secondary-link:hover {
+    text-decoration: underline;
+  }
+
+  @media (max-width: 1023px) {
+    .seller-registration-hero-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 767px) {
+    .seller-registration-wrap {
+      padding: 1.4rem 0.85rem 3rem;
+    }
+
+    .seller-registration-hero-grid,
+    .seller-registration-form-body,
+    .seller-registration-footer {
+      padding-left: 1rem;
+      padding-right: 1rem;
+    }
+
+    .seller-fields-grid,
+    .seller-checkbox-grid ul {
+      grid-template-columns: 1fr;
+    }
+
+    .seller-registration-footer {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .seller-primary-btn,
+    .seller-secondary-link {
+      width: 100%;
+      text-align: center;
+    }
+  }
+</style>
+
+<section class="seller-registration-shell">
+  <div class="seller-registration-wrap">
+    <div class="seller-registration-hero">
+      <div class="seller-registration-hero-grid">
+        <div>
+          <span class="seller-registration-kicker">Seller Onboarding</span>
+          <h1 class="seller-registration-title">Build a trusted seller profile with a polished, verified presence.</h1>
+          <p class="seller-registration-copy">
+            Complete all required sections, then review everything once before final submission.
+          </p>
+        </div>
+        <div class="seller-registration-panel">
+          <span class="seller-registration-panel-title">What Happens Next</span>
+          <div>
+            <strong>Fast, clear registration flow</strong>
+            <p>Your existing details, categories, verification inputs, and payout information stay exactly the same. This page now presents them in a cleaner premium layout for easier completion.</p>
+          </div>
+          <div>
+            <strong>Review before final submit</strong>
+            <p>Finish each section carefully, save your signature, and move to the review step with everything preserved.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="seller-registration-form">
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <div class="seller-registration-form-body">
+          {% if form.non_field_errors %}
+            <div class="seller-form-alert">
+              {{ form.non_field_errors }}
+            </div>
+          {% endif %}
+
+          <div class="seller-registration-grid">
+            <section class="seller-card">
+              <div class="seller-card-header">
+                <div class="seller-card-title">
+                  <span class="seller-card-step">01</span>
+                  <div>
+                    <h2>1. Supplier Details</h2>
+                    <p>Core business identity for your store profile.</p>
+                  </div>
+                </div>
+              </div>
+              <div class="seller-card-body">
+                <div class="seller-fields-grid">
+                  <div class="seller-field">
+                    <label>Business Name *</label>
+                    {{ form.business_name }}
+                    {% if form.business_name.errors %}<p class="seller-error">{{ form.business_name.errors.0 }}</p>{% endif %}
+                  </div>
+                  <div class="seller-field">
+                    <label>Brand Name</label>
+                    {{ form.brand_name }}
+                    {% if form.brand_name.errors %}<p class="seller-error">{{ form.brand_name.errors.0 }}</p>{% endif %}
+                  </div>
+                  <div class="seller-field seller-field-full">
+                    <label>Business Description *</label>
+                    {{ form.supplier_details }}
+                    {% if form.supplier_details.errors %}<p class="seller-error">{{ form.supplier_details.errors.0 }}</p>{% endif %}
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section class="seller-card">
+              <div class="seller-card-header">
+                <div class="seller-card-title">
+                  <span class="seller-card-step">02</span>
+                  <div>
+                    <h2>2. Contact Information</h2>
+                    <p>Primary contact details used for seller communication.</p>
+                  </div>
+                </div>
+              </div>
+              <div class="seller-card-body">
+                <div class="seller-fields-grid">
+                  <div class="seller-field">
+                    <label>Contact Person Name *</label>
+                    {{ form.contact_person_name }}
+                    {% if form.contact_person_name.errors %}<p class="seller-error">{{ form.contact_person_name.errors.0 }}</p>{% endif %}
+                  </div>
+                  <div class="seller-field">
+                    <label>Contact Email *</label>
+                    {{ form.contact_email }}
+                    {% if form.contact_email.errors %}<p class="seller-error">{{ form.contact_email.errors.0 }}</p>{% endif %}
+                  </div>
+                  <div class="seller-field">
+                    <label>Primary Phone *</label>
+                    {{ form.phone }}
+                    {% if form.phone.errors %}<p class="seller-error">{{ form.phone.errors.0 }}</p>{% endif %}
+                  </div>
+                  <div class="seller-field">
+                    <label>Alternate Phone</label>
+                    {{ form.alternate_phone }}
+                    {% if form.alternate_phone.errors %}<p class="seller-error">{{ form.alternate_phone.errors.0 }}</p>{% endif %}
+                  </div>
+                  <div class="seller-field seller-field-full">
+                    <label>Website (Optional)</label>
+                    {{ form.website }}
+                    {% if form.website.errors %}<p class="seller-error">{{ form.website.errors.0 }}</p>{% endif %}
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section class="seller-card">
+              <div class="seller-card-header">
+                <div class="seller-card-title">
+                  <span class="seller-card-step">03</span>
+                  <div>
+                    <h2>3. Signature Upload</h2>
+                    <p>Signature saved here is used during review and verification.</p>
+                  </div>
+                </div>
+              </div>
+              <div class="seller-card-body">
+                <div class="seller-field seller-file-field">
+                  <label>Upload Signature *</label>
+                  {{ form.seller_signature }}
+                  {% if saved_signature_name %}
+                    <p class="seller-success-note">Saved for review: {{ saved_signature_name }}</p>
+                  {% endif %}
+                  {% if form.seller_signature.errors %}
+                    <p class="seller-error">{{ form.seller_signature.errors.0 }}</p>
+                  {% endif %}
+                </div>
+              </div>
+            </section>
+
+            <section class="seller-card">
+              <div class="seller-card-header">
+                <div class="seller-card-title">
+                  <span class="seller-card-step">04</span>
+                  <div>
+                    <h2>4. PAN Card Details</h2>
+                    <p>Business and tax identity details for onboarding.</p>
+                  </div>
+                </div>
+              </div>
+              <div class="seller-card-body">
+                <div class="seller-fields-grid">
+                  <div class="seller-field">
+                    <label>PAN Card Number *</label>
+                    {{ form.pan_card_number }}
+                    {% if form.pan_card_number.errors %}<p class="seller-error">{{ form.pan_card_number.errors.0 }}</p>{% endif %}
+                  </div>
+                  <div class="seller-field">
+                    <label>Business PAN Card Number (Optional)</label>
+                    {{ form.business_pan_card_number }}
+                    {% if form.business_pan_card_number.errors %}<p class="seller-error">{{ form.business_pan_card_number.errors.0 }}</p>{% endif %}
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section class="seller-card">
+              <div class="seller-card-header">
+                <div class="seller-card-title">
+                  <span class="seller-card-step">05</span>
+                  <div>
+                    <h2>5. Aadhar Details</h2>
+                    <p>Personal identity and optional GST registration details.</p>
+                  </div>
+                </div>
+              </div>
+              <div class="seller-card-body">
+                <div class="seller-fields-grid">
+                  <div class="seller-field">
+                    <label>Aadhar Number *</label>
+                    {{ form.aadhar_number }}
+                    {% if form.aadhar_number.errors %}<p class="seller-error">{{ form.aadhar_number.errors.0 }}</p>{% endif %}
+                  </div>
+                  <div class="seller-field">
+                    <label>GST Number (Optional)</label>
+                    {{ form.gst_number }}
+                    {% if form.gst_number.errors %}<p class="seller-error">{{ form.gst_number.errors.0 }}</p>{% endif %}
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section class="seller-card">
+              <div class="seller-card-header">
+                <div class="seller-card-title">
+                  <span class="seller-card-step">06</span>
+                  <div>
+                    <h2>6. Business Office Address</h2>
+                    <p>Registered office address for business and verification records.</p>
+                  </div>
+                </div>
+              </div>
+              <div class="seller-card-body">
+                <div class="seller-field seller-field-full">
+                  <label>Address *</label>
+                  {{ form.registered_office_address }}
+                  {% if form.registered_office_address.errors %}<p class="seller-error">{{ form.registered_office_address.errors.0 }}</p>{% endif %}
+                </div>
+              </div>
+            </section>
+
+            <section class="seller-card">
+              <div class="seller-card-header">
+                <div class="seller-card-title">
+                  <span class="seller-card-step">07</span>
+                  <div>
+                    <h2>7. Product Category</h2>
+                    <p>Select one or more categories you plan to sell.</p>
+                  </div>
+                </div>
+              </div>
+              <div class="seller-card-body">
+                <div class="seller-field seller-field-full seller-checkbox-grid">
+                  {{ form.product_categories }}
+                  {% if form.product_categories.errors %}<p class="seller-error">{{ form.product_categories.errors.0 }}</p>{% endif %}
+                </div>
+              </div>
+            </section>
+
+            <section class="seller-card">
+              <div class="seller-card-header">
+                <div class="seller-card-title">
+                  <span class="seller-card-step">08</span>
+                  <div>
+                    <h2>8. Bank / Payout Details</h2>
+                    <p>Settlement details used for payouts and financial processing.</p>
+                  </div>
+                </div>
+              </div>
+              <div class="seller-card-body">
+                <div class="seller-fields-grid">
+                  <div class="seller-field">
+                    <label>Payout Account Name *</label>
+                    {{ form.payout_account_name }}
+                    {% if form.payout_account_name.errors %}<p class="seller-error">{{ form.payout_account_name.errors.0 }}</p>{% endif %}
+                  </div>
+                  <div class="seller-field">
+                    <label>Payout Account Number *</label>
+                    {{ form.payout_account_number }}
+                    {% if form.payout_account_number.errors %}<p class="seller-error">{{ form.payout_account_number.errors.0 }}</p>{% endif %}
+                  </div>
+                  <div class="seller-field">
+                    <label>IFSC *</label>
+                    {{ form.payout_ifsc }}
+                    {% if form.payout_ifsc.errors %}<p class="seller-error">{{ form.payout_ifsc.errors.0 }}</p>{% endif %}
+                  </div>
+                  <div class="seller-field">
+                    <label>UPI id *</label>
+                    {{ form.payout_upi_id }}
+                    {% if form.payout_upi_id.errors %}<p class="seller-error">{{ form.payout_upi_id.errors.0 }}</p>{% endif %}
+                  </div>
+                  <div class="seller-field seller-field-full">
+                    <label>PhonePe / GPay Number</label>
+                    {{ form.payout_phonepay_gpay_number }}
+                    {% if form.payout_phonepay_gpay_number.errors %}<p class="seller-error">{{ form.payout_phonepay_gpay_number.errors.0 }}</p>{% endif %}
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section class="seller-card">
+              <div class="seller-card-header">
+                <div class="seller-card-title">
+                  <span class="seller-card-step">09</span>
+                  <div>
+                    <h2>9. Terms and Conditions</h2>
+                    <p>Review the seller conditions before moving to the final review step.</p>
+                  </div>
+                </div>
+              </div>
+              <div class="seller-card-body">
+                <div class="seller-terms-box">
+                  <p><strong>Tax:</strong> Seller must provide valid tax details and comply with all GST and statutory requirements applicable to products sold.</p>
+                  <p><strong>Platform Commission:</strong> Platform commission is applied on each successful order as per agreed commercial slabs and may vary by category/campaign.</p>
+                  <p><strong>Delivery Charges:</strong> For hub delivery mode, pickup/hub handling/last-mile components are chargeable and may be adjusted against payable settlement.</p>
+                  <p><strong>Repayment and Settlements:</strong> Seller payouts are settled only for successfully delivered and non-returned orders as per settlement cycle.</p>
+                  <p><strong>Returns / Refund Adjustments:</strong> Any refund, return, RTO, dispute, or fraud adjustment can be set off from current/future settlements.</p>
+                  <p><strong>Compliance:</strong> Seller is responsible for listing only legal, compliant products and accurate product information.</p>
+                  <p><strong>Verification:</strong> The platform can request additional documents and reject or suspend registration for incorrect or unverifiable details.</p>
+                </div>
+                <div class="seller-terms-check">
+                  {{ form.terms_accepted }}
+                  <label>I have read and agree to the seller terms and conditions.</label>
+                </div>
+                {% if form.terms_accepted.errors %}<p class="seller-error">{{ form.terms_accepted.errors.0 }}</p>{% endif %}
+              </div>
+            </section>
+          </div>
+        </div>
+
+        <div class="seller-registration-footer">
+          <button type="submit" class="seller-primary-btn">Next</button>
+
+          <div>
+            <h2 class="text-lg font-semibold text-slate-800 mb-2">
+              Already Applied?
+                          </h2>
+          <a href="{% url 'sellers:registration_status' %}" class="seller-secondary-link">
+            Track Registration Status
+          </a>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+{% endblock %}

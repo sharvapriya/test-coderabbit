@@ -1,0 +1,60 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background-color: #f8f9fa; padding: 20px; border-radius: 4px; margin-bottom: 20px; }
+        .content { padding: 20px; background-color: #ffffff; border: 1px solid #ddd; border-radius: 4px; }
+        .footer { text-align: center; margin-top: 20px; font-size: 12px; color: #666; }
+        .success { color: #28a745; font-weight: bold; }
+        .amount { font-size: 24px; font-weight: bold; color: #28a745; }
+        .info-row { margin: 10px 0; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        .label { color: #666; font-weight: bold; }
+        .button { display: inline-block; padding: 10px 20px; background-color: #007bff; color: white; text-decoration: none; border-radius: 4px; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2 class="success">✓ Payout Released Successfully</h2>
+        </div>
+        
+        <div class="content">
+            <p>Hello {{ seller_name }},</p>
+            
+            <p>Great news! Your payout has been processed and released to your account.</p>
+            
+            <div class="info-row">
+                <span class="label">Amount:</span>
+                <div class="amount">₹{{ amount }}</div>
+            </div>
+            
+            <div class="info-row">
+                <span class="label">Reference ID:</span>
+                {{ reference }}
+            </div>
+            
+            <div class="info-row">
+                <span class="label">Status:</span>
+                {{ status }}
+            </div>
+            
+            <div class="info-row">
+                <span class="label">Date:</span>
+                {{ created_at }}
+            </div>
+            
+            <p>You can track your payout status and view detailed history in your seller dashboard.</p>
+            
+            <a href="{{ dashboard_url }}" class="button">View Dashboard</a>
+        </div>
+        
+        <div class="footer">
+            <p>This is an automated message. Please don't reply to this email.</p>
+            <p>&copy; 2026 MyKartStore. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

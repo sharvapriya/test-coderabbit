@@ -1,0 +1,398 @@
+{% extends "base.html" %}
+{% block title %}Online Payment{% endblock %}
+
+{% block content %}
+<section class="bg-gradient-to-b from-white via-slate-50 to-indigo-50/40 py-10">
+  <div class="max-w-3xl mx-auto px-4 sm:px-6">
+    <div class="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 shadow-sm">
+      <h2 class="text-2xl font-bold text-slate-900">Online Payment</h2>
+      <p class="text-sm text-slate-500 mt-2">Your wallet has already been considered. Pay only the remaining amount using Razorpay.</p>
+
+      <div class="mt-6 rounded-xl border border-slate-200 bg-slate-50 p-5 space-y-2 text-sm">
+        <p><span class="font-semibold">Payment Method:</span> Online Payment (Razorpay)</p>
+        <p><span class="font-semibold">Order Total:</span> Rs.{{ final_total }}</p>
+        <p><span class="font-semibold">Wallet Applied:</span> Rs.{{ wallet_applied }}</p>
+        <div class="flex items-center justify-between pt-2 border-t border-slate-200 mt-2">
+          <span class="text-slate-600">Total Payable Now</span>
+          <span class="text-xl font-extrabold text-indigo-600">Rs.{{ remaining_payable }}</span>
+        </div>
+        {% if coupon_code %}
+        <p class="text-xs text-slate-500 mt-2">Discount applied: {{ coupon_code }} (-Rs.{{ discount_amount }})</p>
+        {% endif %}
+        <div class="text-xs text-slate-500 mt-2">
+          <p><span class="font-semibold">Subtotal:</span> Rs.{{ subtotal }}</p>
+          <p><span class="font-semibold">Wallet Balance:</span> Rs.{{ wallet_balance }}</p>
+        </div>
+      </div>
+
+      <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+      <button id="rzp-button" class="mt-6 w-full rounded-xl bg-indigo-600 px-6 py-3 text-sm font-bold text-white hover:bg-indigo-700 transition">
+        Pay Rs.{{ remaining_payable }} Now
+      </button>
+
+      <div id="payment-feedback" class="mt-4 hidden rounded-xl border px-4 py-3 text-sm"></div>
+
+      <!-- <script>
+      const paymentButton = document.getElementById('rzp-button');
+      const paymentFeedback = document.getElementById('payment-feedback');
+      let paymentOutcomeHandled = false;
+      let paymentPoller = null;
+
+      function showPaymentFeedback(kind, message) {
+          paymentFeedback.className = 'mt-4 rounded-xl border px-4 py-3 text-sm';
+          if (kind === 'error') {
+              paymentFeedback.classList.add('border-rose-200', 'bg-rose-50', 'text-rose-700');
+          } else {
+              paymentFeedback.classList.add('border-emerald-200', 'bg-emerald-50', 'text-emerald-700');
+          }
+          paymentFeedback.textContent = message;
+      }
+
+      function sendPaymentUpdate(payload) {
+          return fetch(url 'orders:payment_success' ", {
+              method: "POST",
+              headers: {
+                  "Content-Type": "application/json",
+                  "X-CSRFToken": "{{ csrf_token }}"
+              },
+              body: JSON.stringify(payload)
+          }).then(async (res) => {
+              const data = await res.json().catch(() => ({}));
+              if (!res.ok) {
+                  throw new Error(data.message || "Payment update failed");
+              }
+              return data;
+          });
+      }
+
+      function stopPaymentPolling() {
+          if (paymentPoller) {
+              window.clearInterval(paymentPoller);
+              paymentPoller = null;
+          }
+      }
+
+      function startPaymentPolling() {
+          stopPaymentPolling();
+          paymentPoller = window.setInterval(() => {
+              if (paymentOutcomeHandled) {
+                  stopPaymentPolling();
+                  return;
+              }
+              fetch(" url 'orders:payment_status' ", {
+                  headers: {
+                      "X-Requested-With": "XMLHttpRequest"
+                  }
+              })
+              .then(async (res) => {
+                  const data = await res.json().catch(() => ({}));
+                  if (!res.ok) {
+                      throw new Error(data.message || "Unable to verify payment status.");
+                  }
+                  return data;
+              })
+              .then((data) => {
+                  if (paymentOutcomeHandled) {
+                      stopPaymentPolling();
+                      return;
+                  }
+                  if (data.status === "success") {
+                      paymentOutcomeHandled = true;
+                      stopPaymentPolling();
+                      window.location.href = "{% url 'orders:order_create' %}";
+                      return;
+                  }
+                  if (data.status === "failed") {
+                      paymentOutcomeHandled = true;
+                      stopPaymentPolling();
+                      paymentButton.disabled = false;
+                      paymentButton.textContent = "Try UPI / Razorpay Again";
+                      showPaymentFeedback('error', data.message || "Payment failed. Please try again.");
+                  }
+              })
+              .catch(() => {
+                  // Ignore transient polling errors and allow explicit callbacks to continue.
+              });
+          }, 5000);
+      }
+
+      function handlePaymentFailure(details) {
+          if (paymentOutcomeHandled) {
+              return;
+          }
+          paymentOutcomeHandled = true;
+          stopPaymentPolling();
+          sendPaymentUpdate({
+              status: "failed",
+              amount: "{{ amount }}",
+              ...details
+          })
+          .finally(() => {
+              paymentButton.disabled = false;
+              paymentButton.textContent = "Try UPI / Razorpay Again";
+              showPaymentFeedback('error', details.failure_reason || details.error_description || "Payment was cancelled, timed out, or failed. Try again or choose another method.");
+          });
+      }
+
+      var options = {
+          "key": "{{ razorpay_key }}",
+          "amount": "{{ amount }}",
+          "currency": "INR",
+          "name": "eCart",
+          "description": "Order Payment",
+          "order_id": "{{ razorpay_order_id }}",
+          "timeout": 300,
+            method: {
+            upi: true,
+            card: true
+        },
+
+        upi: {
+            flow: "collect"   // 🔥 THIS IS CRITICAL
+        },
+        theme: {
+        color: "#4f46e5"
+    },
+          "modal": {
+              "ondismiss": function () {
+                  handlePaymentFailure({
+                      razorpay_order_id: "{{ razorpay_order_id }}",
+                      failure_reason: "Payment was cancelled or timed out.",
+                      error_step: "modal_dismissed"
+                  });
+              }
+          },
+          "handler": function (response) {
+              console.log("SUCCESS RESPONSE:", response);
+              paymentOutcomeHandled = true;
+              stopPaymentPolling();
+              sendPaymentUpdate({
+                  status: "success",
+                  razorpay_payment_id: response.razorpay_payment_id,
+                  razorpay_order_id: response.razorpay_order_id,
+                  razorpay_signature: response.razorpay_signature,
+                  amount: "{{ amount }}"
+              })
+              .then(data => {
+                  if (data.status === "success") {
+                      window.location.href = "{% url 'orders:order_create' %}";
+                  } else {
+                      throw new Error("Payment could not be confirmed.");
+                  }
+              })
+              .catch(error => {
+                  paymentButton.disabled = false;
+                  paymentButton.textContent = "Try UPI / Razorpay Again";
+                  showPaymentFeedback('error', error.message || "An error occurred while processing your payment. Please try again.");
+              });
+          }
+      };
+
+      var rzp = new Razorpay(options);
+      rzp.on('payment.failed', function (response) {
+          const error = response.error || {};
+          handlePaymentFailure({
+              razorpay_payment_id: error.metadata && error.metadata.payment_id ? error.metadata.payment_id : "",
+              razorpay_order_id: error.metadata && error.metadata.order_id ? error.metadata.order_id : "{{ razorpay_order_id }}",
+              failure_reason: error.description || "UPI payment failed.",
+              error_code: error.code || "",
+              error_description: error.description || "",
+              error_source: error.source || "",
+              error_step: error.step || "",
+              error_reason: error.reason || ""
+          });
+      });
+
+      document.getElementById('rzp-button').onclick = function(e){
+          console.log("CLICK WORKED");   // 👈 ADD THIS
+          paymentOutcomeHandled = false;
+          paymentButton.disabled = true;
+          paymentButton.textContent = "Waiting for Razorpay...";
+          paymentFeedback.className = 'mt-4 hidden rounded-xl border px-4 py-3 text-sm';
+          paymentFeedback.textContent = '';
+          startPaymentPolling();
+          console.log("AMOUNT (paise):", amountPaise, "ORDER ID:", razorpayOrderId);
+          rzp.open();
+          e.preventDefault();
+      }
+      </script> -->
+      <script>
+const paymentButton = document.getElementById('rzp-button');
+const paymentFeedback = document.getElementById('payment-feedback');
+let paymentOutcomeHandled = false;
+let paymentPoller = null;
+
+const amountPaise = {{ amount }};                        // ✅ number, no quotes
+const razorpayOrderId = "{{ razorpay_order_id }}";       // ✅ string is correct here
+const csrfToken = "{{ csrf_token }}";
+
+console.log("AMOUNT (paise):", amountPaise, "ORDER ID:", razorpayOrderId);  // ✅ now defined
+
+function showPaymentFeedback(kind, message) {
+    paymentFeedback.className = 'mt-4 rounded-xl border px-4 py-3 text-sm';
+    if (kind === 'error') {
+        paymentFeedback.classList.add('border-rose-200', 'bg-rose-50', 'text-rose-700');
+    } else {
+        paymentFeedback.classList.add('border-emerald-200', 'bg-emerald-50', 'text-emerald-700');
+    }
+    paymentFeedback.textContent = message;
+}
+
+function sendPaymentUpdate(payload) {
+    return fetch("{% url 'orders:payment_success' %}", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": csrfToken
+        },
+        body: JSON.stringify(payload)
+    }).then(async (res) => {
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+            throw new Error(data.message || "Payment update failed");
+        }
+        return data;
+    });
+}
+
+function stopPaymentPolling() {
+    if (paymentPoller) {
+        clearInterval(paymentPoller);
+        paymentPoller = null;
+    }
+}
+
+function startPaymentPolling() {
+    stopPaymentPolling();
+    paymentPoller = setInterval(() => {
+        if (paymentOutcomeHandled) {
+            stopPaymentPolling();
+            return;
+        }
+        fetch("{% url 'orders:payment_status' %}", {
+            headers: { "X-Requested-With": "XMLHttpRequest" }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (paymentOutcomeHandled) { stopPaymentPolling(); return; }
+            if (data.status === "success") {
+                paymentOutcomeHandled = true;
+                stopPaymentPolling();
+                window.location.href = "{% url 'orders:order_create' %}";
+            } else if (data.status === "failed") {
+                paymentOutcomeHandled = true;
+                stopPaymentPolling();
+                paymentButton.disabled = false;
+                paymentButton.textContent = "Try UPI / Razorpay Again";
+                showPaymentFeedback('error', data.message || "Payment failed. Please try again.");
+            }
+        })
+        .catch(() => {});
+    }, 5000);
+}
+
+function handlePaymentFailure(details) {
+    if (paymentOutcomeHandled) return;
+    paymentOutcomeHandled = true;
+    stopPaymentPolling();
+    sendPaymentUpdate({
+        status: "failed",
+        amount: amountPaise,                             // ✅ number
+        ...details
+    }).finally(() => {
+        paymentButton.disabled = false;
+        paymentButton.textContent = "Try UPI / Razorpay Again";
+        showPaymentFeedback('error', details.failure_reason || details.error_description || "Payment was cancelled or failed. Try again.");
+    });
+}
+
+var options = {
+    key: "{{ razorpay_key_id }}",
+    amount: amountPaise,                                 // ✅ number, no quotes
+    currency: "INR",
+    name: "MyKart",
+    description: "Order Payment",
+    order_id: razorpayOrderId  ,
+    timeout: 300,
+    theme: { color: "#4f46e5" },
+    modal: {
+        ondismiss: function () {
+            handlePaymentFailure({
+                razorpay_order_id: razorpayOrderId,
+                failure_reason: "Payment was cancelled.",
+                error_step: "modal_dismissed"
+            });
+        }
+    },
+    handler: function (response) {
+        console.log("SUCCESS:", response);
+        paymentOutcomeHandled = true;
+        stopPaymentPolling();
+        sendPaymentUpdate({
+            status: "success",
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_signature: response.razorpay_signature,
+            amount: amountPaise                          // ✅ number
+        })
+        .then(data => {
+            if (data.status === "success") {
+                window.location.href = "{% url 'orders:order_create' %}";
+            } else {
+                throw new Error("Payment could not be confirmed.");
+            }
+        })
+        .catch(error => {
+            paymentButton.disabled = false;
+            paymentButton.textContent = "Try UPI / Razorpay Again";
+            showPaymentFeedback('error', error.message || "An error occurred. Please try again.");
+        });
+    }
+};
+
+var rzp = new Razorpay(options);
+
+rzp.on('payment.failed', function (response) {
+    const error = response.error || {};
+    handlePaymentFailure({
+        razorpay_payment_id: (error.metadata && error.metadata.payment_id) || "",
+        razorpay_order_id: (error.metadata && error.metadata.order_id) || razorpayOrderId,
+        failure_reason: error.description || "Payment failed.",
+        error_code: error.code || "",
+        error_description: error.description || "",
+        error_source: error.source || "",
+        error_step: error.step || "",
+        error_reason: error.reason || ""
+    });
+});
+
+// document.getElementById('rzp-button').onclick = function(e) {
+//     e.preventDefault();
+//     paymentOutcomeHandled = false;
+//     paymentButton.disabled = true;
+//     paymentButton.textContent = "Waiting for Razorpay...";
+//     paymentFeedback.className = 'mt-4 hidden rounded-xl border px-4 py-3 text-sm';
+//     paymentFeedback.textContent = '';
+//     startPaymentPolling();
+//     rzp.open();
+// };
+
+document.getElementById('rzp-button').onclick = function(e) {
+    e.preventDefault();
+    paymentOutcomeHandled = false;
+    paymentFeedback.className = 'mt-4 hidden rounded-xl border px-4 py-3 text-sm';
+    paymentFeedback.textContent = '';
+    startPaymentPolling();
+    rzp.open();                          // ← open FIRST
+    paymentButton.disabled = true;       // ← disable AFTER
+    paymentButton.textContent = "Waiting for Razorpay...";
+};
+</script>
+      <a href="{% url 'orders:payment_step' %}" class="inline-flex mt-6 text-sm font-semibold text-indigo-700 hover:text-indigo-800">
+        Back to payment options
+      </a>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,1131 @@
+{% extends "base.html" %}
+{% block title %}Publish Seller Product{% endblock %}
+{% block content %}
+<section class="publish-page py-8">
+  <div class="mx-auto max-w-6xl px-4">
+    <form method="post" enctype="multipart/form-data" class="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-xl" data-publish-form novalidate>
+      {% csrf_token %}
+      <input type="hidden" name="submission_key" value="{{ submission_key }}">
+      {{ product_formset.management_form }}
+      <div class="hero px-6 py-7">
+        <div class="flex flex-col gap-4 lg:flex-row lg:items-end">
+          <div>
+            <p class="eyebrow">Seller Workspace</p>
+            <h1 class="mt-2 text-3xl font-black text-slate-950">Publish Products </h1>
+            <p class="mt-2 max-w-2xl text-sm text-slate-700">Every new product is submitted as pending and stays hidden from customers until admin approval.</p>
+          </div>
+          <div class="stats ml-auto">
+            <div><span>Products</span><strong id="product-count-pill">{{ product_formset.total_form_count }}</strong></div>
+            <!-- <div><span>Images</span><strong>Max 6</strong></div>
+            <div><span>Discount</span><strong>Auto</strong></div> -->
+          </div>
+        </div>
+      </div>
+
+      <div class="space-y-6 px-4 py-5 sm:px-6">
+        <div class="alert alert-warn">Products submitted here are not published immediately. Customers can only see and buy them after admin approval.</div>
+        {% if product_formset.non_form_errors or settings_form.non_field_errors %}
+          <div class="alert alert-error">{{ product_formset.non_form_errors }}{{ settings_form.non_field_errors }}</div>
+        {% endif %}
+        {% if product_formset.errors %}
+          <div class="alert alert-error">
+            <strong>Product validation errors:</strong>
+            {% for form in product_formset %}
+              {% if form.errors %}
+                <div class="mt-2 ml-4">
+                  <strong>Product {{ forloop.counter }}:</strong>
+                  <ul class="list-disc ml-4 mt-1">
+                    {% for field, errors in form.errors.items %}
+                      {% for error in errors %}
+                        <li>{{ field|upper|cut:"_" }} : {{ error }}</li>
+                      {% endfor %}
+                    {% endfor %}
+                  </ul>
+                </div>
+              {% endif %}
+            {% endfor %}
+          </div>
+        {% endif %}
+        {% if settings_form.errors %}
+          <div class="alert alert-error">
+            <strong>Settings validation errors:</strong>
+            <ul class="list-disc ml-4 mt-1">
+              {% for field, errors in settings_form.errors.items %}
+                {% for error in errors %}
+                  <li>{{ field|upper|cut:"_" }} : {{ error }}</li>
+                {% endfor %}
+              {% endfor %}
+            </ul>
+          </div>
+        {% endif %}
+
+        <section class="panel">
+          <div class="flex flex-col gap-3 border-b border-slate-200 pb-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p class="eyebrow text-slate-500">Product Blocks</p>
+              <h2 class="mt-1 text-xl font-bold text-slate-950">Basic Info, Media, Pricing &amp; Inventory</h2>
+            </div>
+          </div>
+
+          <div id="product-form-list" class="mt-5 space-y-4">
+            {% for form in product_formset %}
+              <article class="product-block card" data-product-block>
+                <div class="hidden">{{ form.DELETE }}</div>
+                <div class="flex flex-col gap-3 border-b border-slate-100 pb-4 sm:flex-row sm:justify-between">
+                  <div>
+                    <p class="eyebrow text-slate-400">Product <span data-product-index>{{ forloop.counter }}</span></p>
+                    <h3 class="mt-1 text-lg font-bold text-slate-950">Variant-ready product details</h3>
+                  </div>
+                  <button type="button" class="remove-product-btn btn btn-light">Remove</button>
+                </div>
+
+                <div class="mt-5 grid gap-4 lg:grid-cols-2">
+                  <section class="section-card">
+                    <h4 class="section-title">Basic Info</h4>
+                    <!-- <div class="grid gap-3 sm:grid-cols-2">
+	                      <div><label class="field-label">Category</label>{{ form.category }}<div class="field-error">{{ form.category.errors }}</div></div>
+	                      <div><label class="field-label">New Category</label>{{ form.new_category_name }}<div class="field-error">{{ form.new_category_name.errors }}</div></div>
+	                    </div> -->
+
+                      <div class="grid gap-3 sm:grid-cols-2">
+  <div>
+    <label class="field-label">Category</label>
+    {{ form.category }}
+    <div class="field-error">{{ form.category.errors }}</div>
+  </div>
+
+  <div class="hidden" data-new-category-wrapper>
+    <label class="field-label">New Category</label>
+    {{ form.new_category_name }}
+    <div class="field-error">{{ form.new_category_name.errors }}</div>
+  </div>
+</div>
+	                    <div class="grid gap-3 sm:grid-cols-2">
+	                      <div><label class="field-label">Product Name</label>{{ form.name }}<div class="field-error">{{ form.name.errors }}</div></div>
+	                      <div>
+  <label class="field-label">Slug</label>
+  {{ form.slug }}
+  <div class="field-error">{{ form.slug.errors }}</div>
+</div>
+	                    </div>
+                  </section>
+
+                  <section class="section-card section-card-blue">
+                    <h4 class="section-title">Media</h4>
+                    <div class="upload-box">
+                      <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                          <p class="font-semibold text-slate-800">Product Images</p>
+                          <p class="text-xs text-slate-500">Upload up to 6 JPG, PNG, or WEBP images.</p>
+                        </div>
+                        <label class="btn btn-dark">
+                          <span>Choose Images</span>
+                          {{ form.images }}
+                        </label>
+                      </div>
+                      <div class="field-error mt-2">{{ form.images.errors }}</div>
+                      <div class="image-grid mt-4" data-image-preview-grid></div>
+                      <p class="text-xs text-slate-400" data-empty-preview-note>No images selected yet.</p>
+                    </div>
+                    <label class="field-label">Description</label>{{ form.description }}<div class="field-error">{{ form.description.errors }}</div>
+                  </section>
+                </div>
+
+                <section class="section-card section-card-amber mt-4">
+                  <h4 class="section-title">Pricing &amp; Inventory</h4>
+                  <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                    <div><label class="field-label">Price</label>{{ form.price }}<div class="field-error">{{ form.price.errors }}</div>(Enter MRP inclusive of all taxes and charges)</div>
+                    <div><label class="field-label">GST Rate (%)</label>{{ form.gst_rate }}<p class="text-black">(GST is applied based on your product category as per government regulations)</p><div class="field-error">{{ form.gst_rate.errors }}</div></div>
+                    <div><label class="field-label">HSN Code</label>{{ form.hsn_code }}<div class="field-error">{{ form.hsn_code.errors }}</div></div>
+                  </div>
+                  <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4 mt-3">
+                    <div data-stock-row><label class="field-label">Stock Quantity</label>{{ form.stock }}<div class="field-error">{{ form.stock.errors }}</div></div>
+                    <div><label class="field-label">Variant product?</label><label class="inline-flex items-center gap-2"><input type="checkbox" name="{{ form.has_variants.html_name }}" id="{{ form.has_variants.id_for_label }}" class="h-4 w-4 rounded border-slate-300"{% if form.has_variants.value %} checked{% endif %}>Yes, this product has variants</label><div class="field-error">{{ form.has_variants.errors }}</div></div>
+                
+                  </div>
+                  <div class="variant-builder hidden mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4" data-variant-panel>
+                    <div class="grid gap-3 sm:grid-cols-2">
+                      <div><label class="field-label">Sizes</label>{{ form.variant_sizes }}<div class="field-error">{{ form.variant_sizes.errors }}</div></div>
+                      <div><label class="field-label">Colors</label>{{ form.variant_colors }}<div class="field-error">{{ form.variant_colors.errors }}</div></div>
+                    </div>
+                    <div class="mt-4 text-sm text-slate-600">
+                      Add sizes and colors to build variants. Leave either sizes or colors blank for single-axis variants.
+                    </div>
+                    <div class="mt-4 overflow-x-auto">
+                      <table class="w-full text-sm border-collapse">
+                        <thead>
+                          <tr class="bg-slate-100 text-left text-xs uppercase tracking-[0.14em] text-slate-500">
+                            <th class="px-3 py-2 border border-slate-200">Size</th>
+                            <th class="px-3 py-2 border border-slate-200">Color</th>
+                            <th class="px-3 py-2 border border-slate-200">Stock</th>
+                            <th class="px-3 py-2 border border-slate-200">SKU</th>
+                          </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-200" data-variant-rows>
+                          <tr><td colspan="4" class="px-3 py-4 text-slate-500">Enter sizes and colors to build variants.</td></tr>
+                        </tbody>
+                      </table>
+                    </div>
+                    <div class="field-error text-rose-600 text-sm mt-2">{{ form.variant_payload.errors }}</div>
+                    {{ form.variant_payload }}
+                  </div>
+                  <div class="sm:col-span-2">
+                      <label class="field-label">Are you willing to give discounts?</label>
+                      <div class="toggle-row">
+                        {% for radio in form.offer_discount %}
+                          <label class="toggle-pill">{{ radio.tag }}<span>{{ radio.choice_label }}</span></label>
+                        {% endfor %}
+                      </div>
+                      <div class="field-error">{{ form.offer_discount.errors }}</div>
+                    </div>
+                  <div class="discount-panel hidden mt-4" data-discount-panel>
+                    <div class="grid gap-3 lg:grid-cols-2">
+                      <div>
+                        <label class="field-label">Select Discount %</label>
+                        <div class="discount-row" data-discount-buttons>
+                          {% for value, label in form.fields.discount_percent.choices %}{% if value %}<button type="button" class="discount-choice-btn" data-discount-value="{{ value }}">{{ label }}</button>{% endif %}{% endfor %}
+                        </div>
+                        <div class="sr-only">{{ form.discount_percent }}</div>
+                        <div class="field-error">{{ form.discount_percent.errors }}</div>
+                      </div>
+                      <div><label class="field-label">Discounted Amount (Auto-calculated)</label>{{ form.discounted_amount }}<div class="field-error">{{ form.discounted_amount.errors }}</div></div>
+                    </div>
+                  </div>
+                </section>
+
+                <!-- Per-product Payout Snapshot -->
+                <div class="panel panel-amber mt-4" data-payout-snapshot>
+                  <h4 class="section-title">Payout Snapshot</h4>
+                  <div class="upload-box mt-3">
+                    <p class="eyebrow text-amber-700">Approximate Payout</p>
+                    <p class="approx-payout-text mt-2 text-2xl font-black text-slate-950" data-platform-commission="{{ payout_preview_config.platform_commission_rate }}" data-gateway-fee="{{ payout_preview_config.payment_gateway_fee_rate }}" data-gst-rate="{{ payout_preview_config.gst_rate }}" data-tds-rate="{{ payout_preview_config.tds_rate }}">You will earn approximately Rs.0.00 after deductions</p>
+                  </div>
+                </div>
+
+              </article>
+            {% endfor %}
+          </div>
+        </section>
+
+        <section class="panel panel-action">
+          <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p class="eyebrow text-slate-500">Add More</p>
+              <h2 class="mt-1 text-lg font-bold text-slate-950">Need another product block?</h2>
+              <p class="mt-1 text-sm text-slate-600">Add another product card without losing what you already filled in.</p>
+            </div>
+            <button type="button" id="add-product-btn" class="btn btn-dark btn-large">+ Add New Product</button>
+          </div>
+        </section>
+
+   <!-- uncomment the below code for enabling seller coupon -->
+
+        <!-- <section class="panel">
+          <div class="flex items-center justify-between gap-3">
+            <div>
+              <p class="eyebrow text-slate-500">Seller Coupon</p>
+              <h2 class="mt-1 text-xl font-bold text-slate-950">Discount &amp; Coupon</h2>
+              <p class="mt-1 text-sm text-slate-600">Create one optional coupon for this seller. It can be used across this seller’s products.</p>
+            </div>
+            <label class="inline-flex items-center gap-2 text-sm font-semibold text-slate-700">
+              {{ coupon_form.coupon_active }}
+              Enable Coupon
+            </label>
+          </div>
+          <div class="coupon-panel hidden mt-4" data-coupon-panel>
+            <div class="grid gap-3 lg:grid-cols-[1.2fr_0.8fr]">
+              <div>
+                <label class="field-label">Coupon Code</label>
+                <div class="flex gap-2">
+                  {{ coupon_form.coupon_code }}
+                  <button type="button" class="btn btn-light whitespace-nowrap" data-generate-coupon>Generate Coupon Code</button>
+                </div>
+                <div class="field-error">{{ coupon_form.coupon_code.errors }}</div>
+              </div>
+              <div>
+                <label class="field-label">Discount %</label>
+                {{ coupon_form.coupon_discount_percent }}
+                <div class="field-error">{{ coupon_form.coupon_discount_percent.errors }}</div>
+              </div>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Minimum Purchase Amount</label>
+              {{ coupon_form.coupon_minimum_purchase_amount }}
+              <div class="text-rose-600 text-xs mt-1">{{ coupon_form.coupon_minimum_purchase_amount.errors }}</div>
+            </div>
+            <div class="mt-3 grid gap-3 sm:grid-cols-2">
+              <div><label class="field-label">Valid From</label>{{ coupon_form.coupon_valid_from }}<div class="field-error">{{ coupon_form.coupon_valid_from.errors }}</div></div>
+              <div><label class="field-label">Valid To</label>{{ coupon_form.coupon_valid_to }}<div class="field-error">{{ coupon_form.coupon_valid_to.errors }}</div></div>
+            </div>
+          </div>
+        </section> -->
+
+	        <section class="grid gap-4 grid-cols-1">
+	          <div class="panel panel-green w-full">
+	            <h2 class="text-xl font-bold text-slate-950">Shared Logistics &amp; Delivery</h2>
+	            <p class="mt-1 text-sm text-slate-600">These settings apply to every product block in this publish action.</p>
+	            <div class="mt-5 rounded-2xl border border-emerald-100 bg-white/80 p-4">
+	              <label class="field-label">Delivery Mode</label>
+	              <p class="text-sm font-semibold text-slate-700">Own Delivery</p>
+	              <p class="mt-1 text-sm text-slate-500">This publish flow now keeps only the active seller-managed delivery details.</p>
+	            </div>
+	            <div id="own-delivery-fields" class="mt-4"><label class="field-label">Shipping Details</label>{{ settings_form.shipping_details }}<div class="field-error">{{ settings_form.shipping_details.errors }}</div></div>
+	            {{ settings_form.payout_rate_own_delivery }}
+	            {{ settings_form.payout_rate_hub_delivery }}
+	            <div class="delivery-guide-card mt-5">
+              <button type="button" class="delivery-guide-toggle" data-delivery-guide-toggle aria-expanded="false" aria-controls="delivery-charges-guide">
+                <span>View Delivery Charges Guide</span>
+                <span class="delivery-guide-icon" aria-hidden="true">+</span>
+              </button>
+              <div id="delivery-charges-guide" class="delivery-guide-panel hidden" data-delivery-guide-panel>
+                <div class="delivery-guide-table-wrap">
+                  <table class="delivery-guide-table">
+                    <thead>
+                      <tr>
+                        <th>Distance Range</th>
+                        <th>Approx. Charge (~500g)</th>
+                        <th>Typical Use</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>Same city</td>
+                        <td>Rs.40 - Rs.70</td>
+                        <td>Quick local delivery within the same city</td>
+                      </tr>
+                      <tr>
+                        <td>Intra-city outskirts</td>
+                        <td>Rs.60 - Rs.90</td>
+                        <td>City edge or extended urban coverage</td>
+                      </tr>
+                      <tr>
+                        <td>Same state</td>
+                        <td>Rs.70 - Rs.110</td>
+                        <td>Shipments within the same state</td>
+                      </tr>
+                      <tr>
+                        <td>Inter-state</td>
+                        <td>Rs.90 - Rs.140</td>
+                        <td>Standard delivery across nearby states</td>
+                      </tr>
+                      <tr>
+                        <td>National</td>
+                        <td>Rs.120 - Rs.180</td>
+                        <td>Long-distance delivery across India</td>
+                      </tr>
+                      <tr>
+                        <td>Remote zones</td>
+                        <td>Rs.160 - Rs.260</td>
+                        <td>Hard-to-service pincodes and remote areas</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <p class="delivery-guide-note">These are approximate charges and may vary based on courier, location, and service type.</p>
+              </div>
+            </div>
+          </div>
+
+        </section>
+      </div>
+
+      <div class="border-t border-slate-100 bg-white px-4 py-4 sm:px-6">
+        <div class="flex flex-col gap-3 sm:flex-row sm:justify-end">
+          <a href="{% url 'sellers:dashboard' %}" class="btn btn-light">Cancel</a>
+          <button type="submit" class="btn btn-dark" data-submit-button>Publish Products</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</section>
+
+<template id="product-form-template">
+  <article class="product-block card" data-product-block>
+    __DELETE_FIELD__
+    <div class="flex flex-col gap-3 border-b border-slate-100 pb-4 sm:flex-row sm:justify-between">
+      <div><p class="eyebrow text-slate-400">Product <span data-product-index></span></p><h3 class="mt-1 text-lg font-bold text-slate-950">Variant-ready product details</h3></div>
+      <button type="button" class="remove-product-btn btn btn-light">Remove</button>
+    </div>
+    <div class="mt-5 grid gap-4 lg:grid-cols-2">
+      <section class="section-card">
+        <h4 class="section-title">Basic Info</h4>
+	        <!-- <div class="grid gap-3 sm:grid-cols-2">
+	          <div><label class="field-label">Category</label>{{ product_formset.empty_form.category }}</div>
+	          <div><label class="field-label">New Category</label>{{ product_formset.empty_form.new_category_name }}</div>
+	        </div> -->
+
+          <div class="grid gap-3 sm:grid-cols-2">
+  <div>
+    <label class="field-label">Category</label>
+    {{ product_formset.empty_form.category }}
+  </div>
+
+  <div class="hidden" data-new-category-wrapper>
+    <label class="field-label">New Category</label>
+    {{ product_formset.empty_form.new_category_name }}
+  </div>
+</div>
+	        <div class="grid gap-3 sm:grid-cols-2">
+	          <div><label class="field-label">Product Name</label>{{ product_formset.empty_form.name }}</div>
+	          <div><label class="field-label">Slug</label>{{ product_formset.empty_form.slug }}</div>
+	        </div>
+      </section>
+      <section class="section-card section-card-blue">
+        <h4 class="section-title">Media</h4>
+        <div class="upload-box">
+          <label class="btn btn-dark"><span>Choose Images</span>{{ product_formset.empty_form.images }}</label>
+          <div class="image-grid mt-4" data-image-preview-grid></div>
+          <p class="text-xs text-slate-400" data-empty-preview-note>No images selected yet.</p>
+        </div>
+        <label class="field-label">Description</label>{{ product_formset.empty_form.description }}
+      </section>
+    </div>
+    <section class="section-card section-card-amber mt-4">
+      <h4 class="section-title">Pricing &amp; Inventory</h4>
+      <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div><label class="field-label">Price</label>{{ product_formset.empty_form.price }}</div>
+        <div><label class="field-label">GST Rate (%)</label>{{ product_formset.empty_form.gst_rate }}</div>
+        <div><label class="field-label">HSN Code</label>{{ product_formset.empty_form.hsn_code }}</div>
+      </div>
+      <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4 mt-3">
+        <div data-stock-row><label class="field-label">Stock Quantity</label>{{ product_formset.empty_form.stock }}</div>
+        <div><label class="field-label">Variant product?</label><label class="inline-flex items-center gap-2"><input type="checkbox" name="{{ product_formset.empty_form.has_variants.html_name }}" id="{{ product_formset.empty_form.has_variants.id_for_label }}" class="h-4 w-4 rounded border-slate-300">Yes, this product has variants</label></div>
+        <div class="sm:col-span-2"><label class="field-label">Are you willing to give discounts?</label><div class="toggle-row">{% for radio in product_formset.empty_form.offer_discount %}<label class="toggle-pill">{{ radio.tag }}<span>{{ radio.choice_label }}</span></label>{% endfor %}</div></div>
+      </div>
+      <div class="variant-builder hidden mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4" data-variant-panel>
+        <div class="grid gap-3 sm:grid-cols-2">
+          <div><label class="field-label">Sizes</label>{{ product_formset.empty_form.variant_sizes }}<div class="field-error">{{ product_formset.empty_form.variant_sizes.errors }}</div></div>
+          <div><label class="field-label">Colors</label>{{ product_formset.empty_form.variant_colors }}<div class="field-error">{{ product_formset.empty_form.variant_colors.errors }}</div></div>
+        </div>
+        <div class="mt-4 text-sm text-slate-600">Add sizes and colors to build variants. Leave either sizes or colors blank for single-axis variants.</div>
+        <div class="mt-4 overflow-x-auto">
+          <table class="w-full text-sm border-collapse">
+            <thead>
+              <tr class="bg-slate-100 text-left text-xs uppercase tracking-[0.14em] text-slate-500">
+                <th class="px-3 py-2 border border-slate-200">Size</th>
+                <th class="px-3 py-2 border border-slate-200">Color</th>
+                <th class="px-3 py-2 border border-slate-200">Stock</th>
+                <th class="px-3 py-2 border border-slate-200">SKU</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200" data-variant-rows>
+              <tr><td colspan="4" class="px-3 py-4 text-slate-500">Enter sizes and colors to build variants.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="field-error text-rose-600 text-sm mt-2">{{ product_formset.empty_form.variant_payload.errors }}</div>
+        {{ product_formset.empty_form.variant_payload }}
+      </div>
+      <div class="discount-panel hidden mt-4" data-discount-panel>
+        <div class="grid gap-3 lg:grid-cols-2">
+          <div><label class="field-label">Select Discount %</label><div class="discount-row" data-discount-buttons>{% for value, label in product_formset.empty_form.fields.discount_percent.choices %}{% if value %}<button type="button" class="discount-choice-btn" data-discount-value="{{ value }}">{{ label }}</button>{% endif %}{% endfor %}</div><div class="sr-only">{{ product_formset.empty_form.discount_percent }}</div></div>
+          <div><label class="field-label">Discounted Amount (Auto-calculated)</label>{{ product_formset.empty_form.discounted_amount }}</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Per-product Payout Snapshot -->
+    <div class="panel panel-amber mt-4" data-payout-snapshot>
+      <h4 class="section-title">Payout Snapshot</h4>
+      <div class="upload-box mt-3">
+        <p class="eyebrow text-amber-700">Approximate Payout</p>
+        <p class="approx-payout-text mt-2 text-2xl font-black text-slate-950" data-platform-commission="{{ payout_preview_config.platform_commission_rate }}" data-gateway-fee="{{ payout_preview_config.payment_gateway_fee_rate }}" data-gst-rate="{{ payout_preview_config.gst_rate }}" data-tds-rate="{{ payout_preview_config.tds_rate }}">You will earn approximately Rs.0.00 after deductions</p>
+      </div>
+    </div>
+
+  </article>
+</template>
+
+{{ category_tax_data|json_script:"category-tax-data" }}
+<script>
+(() => {
+  const form = document.querySelector("[data-publish-form]");
+  const list = document.getElementById("product-form-list");
+  const addBtn = document.getElementById("add-product-btn");
+  const totalForms = document.getElementById("id_products-TOTAL_FORMS");
+  const template = document.getElementById("product-form-template");
+  const pill = document.getElementById("product-count-pill");
+  const submitButton = document.querySelector("[data-submit-button]");
+	  // approx-payout-text is now per-block; no global reference needed
+  const couponToggle = document.querySelector('[data-field="coupon-active"]');
+  const couponPanel = document.querySelector("[data-coupon-panel]");
+  const couponCode = document.querySelector('[data-field="coupon-code"]');
+  const couponButton = document.querySelector("[data-generate-coupon]");
+  let activeBlock = null;
+
+  // Critical elements check - only return if absolutely essential
+  if (!form || !list || !addBtn || !totalForms || !template) return;
+
+  const slugifyValue = (value) => (value || "").toLowerCase().trim().replace(/[^a-z0-9\\s-]/g, "").replace(/\\s+/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "");
+  const money = (value) => (Number.isFinite(value) ? value : 0).toFixed(2);
+
+  function updateLabels() {
+    const blocks = [...list.querySelectorAll("[data-product-block]")];
+    const activeBlocks = blocks.filter((block) => {
+      const deleteField = block.querySelector('input[type="checkbox"][name$="-DELETE"]');
+      return !(deleteField && deleteField.checked);
+    });
+    activeBlocks.forEach((block, index) => {
+      const counter = block.querySelector("[data-product-index]");
+      if (counter) counter.textContent = index + 1;
+      const removeBtn = block.querySelector(".remove-product-btn");
+      if (removeBtn) removeBtn.style.display = activeBlocks.length > 1 ? "" : "none";
+    });
+     if (pill) pill.textContent = activeBlocks.length;
+    if (addBtn) addBtn.disabled = false;
+  }
+
+  function applyDeletedState(block, deleteField) {
+    if (!block || !deleteField) return;
+    block.style.display = "none";
+    block.setAttribute("aria-hidden", "true");
+    block.querySelectorAll("input, textarea, select, button").forEach((field) => {
+      if (field !== deleteField) {
+        field.disabled = true;
+      }
+    });
+  }
+
+	  function initDeliveryGuide() {
+    const toggle = document.querySelector("[data-delivery-guide-toggle]");
+    const panel = document.querySelector("[data-delivery-guide-panel]");
+    const icon = toggle ? toggle.querySelector(".delivery-guide-icon") : null;
+    if (!toggle || !panel) return;
+
+    toggle.addEventListener("click", () => {
+      const isHidden = panel.classList.contains("hidden");
+      panel.classList.toggle("hidden", !isHidden);
+      panel.classList.toggle("delivery-guide-panel-open", isHidden);
+      toggle.setAttribute("aria-expanded", isHidden ? "true" : "false");
+      if (icon) icon.textContent = isHidden ? "−" : "+";
+    });
+  }
+
+  function syncFiles(block, input) {
+    const dt = new DataTransfer();
+    (block._files || []).forEach((file) => dt.items.add(file));
+    input.files = dt.files;
+  }
+
+  function renderPreviews(block) {
+    const grid = block.querySelector("[data-image-preview-grid]");
+    const note = block.querySelector("[data-empty-preview-note]");
+    if (!grid || !note) return;
+    const files = block._files || [];
+    grid.innerHTML = "";
+    note.style.display = files.length ? "none" : "";
+    files.forEach((file, index) => {
+      const card = document.createElement("div");
+      card.className = "preview-card";
+      const url = URL.createObjectURL(file);
+      card.innerHTML = `<img src="${url}" class="preview-image" alt="${file.name}"><div class="preview-meta"><span class="preview-badge">${index + 1}</span><span class="preview-name">${file.name}</span></div><div class="preview-actions"><button type="button" class="preview-action" data-move="-1">←</button><button type="button" class="preview-action" data-move="1">→</button><button type="button" class="preview-action preview-action-remove" data-remove="${index}">Remove</button></div>`;
+      card.querySelectorAll("[data-move]").forEach((btn) => btn.addEventListener("click", () => {
+        const target = index + Number(btn.dataset.move);
+        if (target < 0 || target >= files.length) return;
+        const next = [...files];
+        [next[index], next[target]] = [next[target], next[index]];
+        block._files = next;
+        syncFiles(block, block.querySelector('input[id$="-images"]'));
+        renderPreviews(block);
+      }));
+      card.querySelector("[data-remove]").addEventListener("click", () => {
+        block._files = files.filter((_, i) => i !== index);
+        syncFiles(block, block.querySelector('input[id$="-images"]'));
+        renderPreviews(block);
+      });
+      grid.appendChild(card);
+    });
+  }
+
+  function parseVariantList(text) {
+    return (text || "").split(/[\n,;]+/).map((item) => item.trim()).filter(Boolean);
+  }
+
+  function updateVariantPayload(block) {
+    const rows = [...block.querySelectorAll("[data-variant-row]")];
+    const payloadInput = block.querySelector('input[id$="-variant_payload"]');
+    if (!payloadInput) return;
+    const payload = rows.map((row) => {
+      return {
+        size: row.dataset.size || null,
+        color: row.dataset.color || null,
+        stock_quantity: Number(row.querySelector('input[name$="-stock_quantity"]').value || 0),
+        sku: row.querySelector('input[name$="-sku"]').value || "",
+      };
+    });
+    payloadInput.value = JSON.stringify(payload);
+  }
+
+  function buildVariantRows(block) {
+    const panel = block.querySelector("[data-variant-panel]");
+    const sizeInput = block.querySelector('input[id$="-variant_sizes"]');
+    const colorInput = block.querySelector('input[id$="-variant_colors"]');
+    const payloadInput = block.querySelector('input[id$="-variant_payload"]');
+    const tableBody = block.querySelector("[data-variant-rows]");
+    if (!panel || !tableBody || !payloadInput) return;
+
+    const sizes = parseVariantList(sizeInput && sizeInput.value);
+    const colors = parseVariantList(colorInput && colorInput.value);
+    const existing = [];
+    try {
+      existing.push(...JSON.parse(payloadInput.value || "[]"));
+    } catch (error) {
+      // ignore malformed existing payload
+    }
+    const existingMap = new Map(existing.map((item) => [`${item.size || ""}:::${item.color || ""}`, item]));
+
+    const rows = [];
+    if (sizes.length && colors.length) {
+      sizes.forEach((size) => colors.forEach((color) => rows.push({ size, color })));
+    } else if (sizes.length) {
+      sizes.forEach((size) => rows.push({ size, color: null }));
+    } else if (colors.length) {
+      colors.forEach((color) => rows.push({ size: null, color }));
+    }
+
+    tableBody.innerHTML = "";
+    if (!rows.length) {
+      tableBody.innerHTML = `<tr><td colspan="4" class="px-3 py-4 text-slate-500">Enter sizes and colors to build variants.</td></tr>`;
+      payloadInput.value = JSON.stringify([]);
+      return;
+    }
+
+    rows.forEach((variant) => {
+      const key = `${variant.size || ""}:::${variant.color || ""}`;
+      const existingVariant = existingMap.get(key) || {};
+      const stockValue = existingVariant.stock_quantity != null ? existingVariant.stock_quantity : 0;
+      const skuValue = existingVariant.sku || "";
+      const row = document.createElement("tr");
+      row.className = "border-t border-slate-200";
+      row.dataset.size = variant.size || "";
+      row.dataset.color = variant.color || "";
+      row.innerHTML = `
+        <td class="px-3 py-2">${variant.size || "-"}</td>
+        <td class="px-3 py-2">${variant.color || "-"}</td>
+        <td class="px-3 py-2"><input type="number" min="0" name="products-__prefix__-stock_quantity" value="${stockValue}" class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900" /></td>
+        <td class="px-3 py-2"><input type="text" name="products-__prefix__-sku" value="${skuValue}" class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900" placeholder="Auto generate or type SKU" /></td>
+      `;
+      row.querySelectorAll("input").forEach((input) => {
+        input.addEventListener("input", () => updateVariantPayload(block));
+      });
+      row.dataset.variantRow = "true";
+      tableBody.appendChild(row);
+    });
+    updateVariantPayload(block);
+  }
+
+  function syncVariantBuilder(block) {
+    const checkbox = block.querySelector('input[id$="-has_variants"]');
+    const panel = block.querySelector("[data-variant-panel]");
+    const stockRow = block.querySelector("[data-stock-row]");
+    if (!checkbox || !panel || !stockRow) return;
+    const enabled = checkbox.checked;
+    panel.classList.toggle("hidden", !enabled);
+    stockRow.style.display = enabled ? "none" : "";
+    if (enabled) {
+      buildVariantRows(block);
+    }
+  }
+
+  function bindVariantControls(block) {
+    const hasVariants = block.querySelector('input[id$="-has_variants"]');
+    const sizes = block.querySelector('input[id$="-variant_sizes"]');
+    const colors = block.querySelector('input[id$="-variant_colors"]');
+    if (hasVariants) {
+      hasVariants.addEventListener("change", () => {
+        syncVariantBuilder(block);
+      });
+    }
+    if (sizes) {
+      sizes.addEventListener("input", () => buildVariantRows(block));
+    }
+    if (colors) {
+      colors.addEventListener("input", () => buildVariantRows(block));
+    }
+    syncVariantBuilder(block);
+  }
+
+  function highlightDiscountButtons(block) {
+    const select = block.querySelector('select[id$="-discount_percent"]');
+    block.querySelectorAll(".discount-choice-btn").forEach((btn) => btn.classList.toggle("active", btn.dataset.discountValue === (select ? select.value : "")));
+  }
+
+  function buildCouponCode(brandValue) {
+    const brand = (brandValue || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+    const brandPart = brand || "PRODUCT";
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    const size = 5;
+    let random = "";
+    for (let index = 0; index < size; index += 1) {
+      random += chars[Math.floor(Math.random() * chars.length)];
+    }
+    return `MYKART-${brandPart}-${random}`;
+  }
+
+  function computeDiscount(block) {
+    const price = Number((block.querySelector('input[id$="-price"]') || {}).value || 0);
+    const radios = [...block.querySelectorAll('input[type="radio"][name$="offer_discount"]')];
+    const select = block.querySelector('select[id$="-discount_percent"]');
+    const discounted = block.querySelector('input[id$="-discounted_amount"]');
+    const panel = block.querySelector("[data-discount-panel]");
+    const wants = (radios.find((input) => input.checked) || {}).value === "yes";
+    panel.classList.toggle("hidden", !wants);
+    if (!wants) {
+      if (select) select.value = "";
+      if (discounted) discounted.value = price ? money(price) : "";
+      highlightDiscountButtons(block);
+      return;
+    }
+    const percent = Number(select ? select.value || 0 : 0);
+    if (discounted) discounted.value = price ? money(Math.max(price - (price * percent / 100), 0)) : "";
+    highlightDiscountButtons(block);
+  }
+  
+document.addEventListener("DOMContentLoaded", function () {
+  const slugInputs = document.querySelectorAll('input[name$="slug"]');
+  slugInputs.forEach(input => {
+    input.placeholder = "Automatically generated from product name";
+    input.style.color = "black"; // input text color
+  });
+});
+
+  
+
+  function updatePayout(block) {
+    if (!block) return;
+    const approxEl = block.querySelector(".approx-payout-text");
+    if (!approxEl) return;
+    const price = Number((block.querySelector('input[id$="-price"]') || {}).value || 0);
+    const discounted = Number((block.querySelector('input[id$="-discounted_amount"]') || {}).value || price);
+    const amount = discounted > 0 ? discounted : price;
+	    const pc = Number(approxEl.dataset.platformCommission || 0);
+    const gf = Number(approxEl.dataset.gatewayFee || 0);
+    const gstField = block.querySelector('[data-field="gst-rate"]');
+    const gst = Number((gstField && gstField.value) || approxEl.dataset.gstRate || 0);
+    const tds = Number(approxEl.dataset.tdsRate || 0);
+	    const payout = Math.max(amount - (amount * pc / 100) - (amount * gf / 100) - (amount * gst / 100) - (amount * tds / 100), 0);
+    approxEl.textContent = `You will earn approximately Rs.${money(payout)} after deductions`;
+  }
+
+  function bindBlock(block) {
+    const name = block.querySelector('input[id$="-name"]');
+    const slug = block.querySelector('input[id$="-slug"]');
+    const price = block.querySelector('input[id$="-price"]');
+    const images = block.querySelector('input[id$="-images"]');
+    const select = block.querySelector('select[id$="-discount_percent"]');
+    const removeBtn = block.querySelector(".remove-product-btn");
+    const deleteField = block.querySelector('input[type="checkbox"][name$="-DELETE"]');
+    block._files = block._files || [];
+    if (slug) slug.dataset.manual = slug.value ? "true" : "false";
+    if (name && slug) {
+      name.addEventListener("input", () => { if (slug.dataset.manual !== "true") slug.value = slugifyValue(name.value); });
+      slug.addEventListener("input", () => { slug.dataset.manual = slug.value && slug.value !== slugifyValue(name.value) ? "true" : "false"; });
+    }
+    if (price) {
+      price.addEventListener("input", () => { computeDiscount(block); updatePayout(block); });
+      price.addEventListener("focus", () => updatePayout(block));
+    }
+    block.querySelectorAll('input[type="radio"][name$="offer_discount"]').forEach((input) => input.addEventListener("change", () => { computeDiscount(block); updatePayout(block); }));
+    if (select) select.addEventListener("change", () => { computeDiscount(block); updatePayout(block); });
+    block.querySelectorAll(".discount-choice-btn").forEach((btn) => btn.addEventListener("click", () => { if (!select) return; select.value = btn.dataset.discountValue; computeDiscount(block); updatePayout(block); }));
+    if (images) {
+      images.addEventListener("change", () => {
+        const next = [...(block._files || []), ...[...images.files]];
+        if (next.length > 6) { window.alert("You can upload up to 6 images only."); return; }
+        block._files = next;
+        syncFiles(block, images);
+        renderPreviews(block);
+      });
+    }
+    bindVariantControls(block);
+    if (removeBtn && deleteField) {
+      removeBtn.addEventListener("click", () => {
+        deleteField.checked = true;
+        deleteField.value = "on";
+        applyDeletedState(block, deleteField);
+        updateLabels();
+      });
+    }
+
+     if (deleteField?.checked) {
+      applyDeletedState(block, deleteField);
+    } else if (deleteField) {
+      deleteField.classList.add("hidden");
+    }
+    block.addEventListener("focusin", () => updatePayout(block));
+    computeDiscount(block);
+    renderPreviews(block);
+  }
+
+  function addBlock() {
+    const index = Number(totalForms.value);
+    const html = template.innerHTML.replace(/__prefix__/g, index).replace("__DELETE_FIELD__", `<input type="checkbox" name="products-${index}-DELETE" id="id_products-${index}-DELETE" class="hidden">`);
+    const wrap = document.createElement("div");
+    wrap.innerHTML = html.trim();
+    const block = wrap.firstElementChild;
+    list.appendChild(block);
+    totalForms.value = index + 1;
+    bindBlock(block);
+    updateLabels();
+    block.classList.add("product-block-visible");
+  }
+
+  function validateVisibleBlocks() {
+    const blocks = [...list.querySelectorAll("[data-product-block]")].filter((block) => {
+      const deleteField = block.querySelector('input[type="checkbox"][name$="-DELETE"]');
+      return !(deleteField && deleteField.checked);
+    });
+    return blocks.some((block) => {
+      return [...block.querySelectorAll("input, textarea, select")].some((field) => {
+        if (!field.name || field.disabled || field.type === "hidden" || field.type === "checkbox" || field.type === "radio" || field.type === "file") {
+          return false;
+        }
+        return String(field.value || "").trim() !== "";
+      }) || Boolean((block.querySelector('input[type="file"][id$="-images"]') || {}).files?.length);
+    });
+  }
+
+  [...list.querySelectorAll("[data-product-block]")].forEach(bindBlock);
+  updateLabels();
+	  initDeliveryGuide();
+  
+  // Setup coupon toggle - with prefixed field support
+  function initCouponToggle() {
+    const toggle = document.querySelector('[data-field="coupon-active"]');
+    const panel = document.querySelector("[data-coupon-panel]");
+
+    if (!toggle || !panel) {
+      console.warn('Coupon elements not found - coupon toggle will not work');
+      return;
+    }
+
+    const syncCoupon = () => {
+      const isChecked = toggle.checked;
+      panel.classList.toggle("hidden", !isChecked);
+      panel.style.display = isChecked ? "" : "none";
+    };
+
+    toggle.addEventListener("change", syncCoupon);
+    syncCoupon();
+  }
+
+  // Call with a small delay to ensure DOM is ready
+  setTimeout(initCouponToggle, 100);
+
+  // Setup coupon code generation
+  if (couponButton && couponCode) {
+    couponButton.addEventListener("click", (e) => {
+      e.preventDefault();
+      couponCode.value = buildCouponCode("{{ seller.brand_name|default:''|escapejs }}");
+    });
+  }
+  
+	  if (addBtn) addBtn.addEventListener("click", addBlock);
+	  form.addEventListener("submit", (event) => {
+    if (submitButton && submitButton.disabled) {
+      event.preventDefault();
+      return;
+    }
+    if (!validateVisibleBlocks()) {
+      event.preventDefault();
+      window.console.error("Publish blocked because no active product blocks contain data.");
+      window.alert("Add at least 1 product before submitting.");
+      return;
+    }
+    if (submitButton) {
+      submitButton.disabled = true;
+      submitButton.dataset.originalText = submitButton.textContent;
+      submitButton.textContent = "Publishing...";
+    }
+  });
+})();
+
+(() => {
+  const raw = document.getElementById("category-tax-data");
+  if (!raw) return;
+  const categoryTaxData = JSON.parse(raw.textContent).reduce((acc, row) => {
+    acc[String(row.id)] = row;
+    return acc;
+  }, {});
+
+  const syncTaxFields = (block) => {
+    const categoryField = block.querySelector("[data-field='category']");
+    const newCategoryField = block.querySelector("[data-field='new-category']");
+    const gstField = block.querySelector("[data-field='gst-rate']");
+    const hsnField = block.querySelector("[data-field='hsn-code']");
+    if (!categoryField || !gstField || !hsnField) return;
+
+    const isNewCategory = (newCategoryField?.value || "").trim();
+    const taxRow = categoryTaxData[categoryField.value] || null;
+    if (taxRow && !isNewCategory) {
+      gstField.value = taxRow.gst_rate;
+      if (!hsnField.value || hsnField.dataset.synced === "true") {
+        hsnField.value = taxRow.hsn_code;
+      }
+      hsnField.dataset.synced = "true";
+    } else if (!isNewCategory && !taxRow) {
+      gstField.value = "18.00";
+      if (hsnField.dataset.synced === "true") {
+        hsnField.value = "";
+      }
+    }
+  };
+
+  const bindBlock = (block) => {
+    if (!block || block.dataset.taxBound === "true") return;
+    block.dataset.taxBound = "true";
+    const categoryField = block.querySelector("[data-field='category']");
+    const newCategoryField = block.querySelector("[data-field='new-category']");
+    const hsnField = block.querySelector("[data-field='hsn-code']");
+    categoryField?.addEventListener("change", () => syncTaxFields(block));
+    newCategoryField?.addEventListener("input", () => syncTaxFields(block));
+    hsnField?.addEventListener("input", () => {
+      hsnField.dataset.synced = hsnField.value ? "false" : "true";
+    });
+    syncTaxFields(block);
+  };
+
+  document.querySelectorAll("[data-product-block]").forEach(bindBlock);
+  const observer = new MutationObserver(() => {
+    document.querySelectorAll("[data-product-block]").forEach(bindBlock);
+  });
+  observer.observe(document.body, { childList: true, subtree: true });
+})();
+
+/* ── Draft persistence: save all form data to localStorage on every change,
+       restore it on page load so a refresh never loses filled-in values.   ── */
+(() => {
+  const STORAGE_KEY = 'publish_product_draft_' + window.location.pathname.replace(/[^a-z0-9]/gi, '_');
+  const form = document.querySelector('[data-publish-form]');
+  const addBtn = document.getElementById('add-product-btn');
+  const totalFormsInput = document.getElementById('id_products-TOTAL_FORMS');
+
+  if (!form) return;
+
+  /* ── Serialise every saveable field ── */
+  function serializeForm() {
+    const data = { __total_forms__: totalFormsInput ? totalFormsInput.value : '1' };
+    form.querySelectorAll('input, textarea, select').forEach(field => {
+      if (!field.name) return;
+      if (field.type === 'file') return;
+      if (field.name === 'csrfmiddlewaretoken') return;
+      if (field.name === 'submission_key') return;
+      // Skip the management-form hidden fields other than TOTAL_FORMS (already saved above)
+      if (/INITIAL_FORMS|MIN_NUM|MAX_NUM/.test(field.name)) return;
+
+      if (field.type === 'checkbox') {
+        data[field.name] = field.checked;
+      } else if (field.type === 'radio') {
+        // Only record the checked radio
+        if (field.checked) data[field.name] = field.value;
+      } else {
+        data[field.name] = field.value;
+      }
+    });
+    return data;
+  }
+
+  /* ── Restore field values and fire events so existing JS reacts ── */
+  function restoreField(field, value) {
+    if (field.type === 'checkbox') {
+      field.checked = Boolean(value);
+      field.dispatchEvent(new Event('change', { bubbles: true }));
+    } else if (field.type === 'radio') {
+      if (field.value === value) {
+        field.checked = true;
+        field.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    } else {
+      field.value = value;
+      field.dispatchEvent(new Event('input', { bubbles: true }));
+      field.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+  }
+
+  function restoreForm(data) {
+    // 1. Add extra product blocks if the user had added more than the initial count
+    if (addBtn && totalFormsInput && data.__total_forms__) {
+      const saved   = parseInt(data.__total_forms__, 10) || 1;
+      const current = parseInt(totalFormsInput.value, 10) || 1;
+      for (let i = current; i < saved; i++) addBtn.click();
+    }
+
+    // 2. Restore field values (small delay so newly-added blocks are bound)
+    setTimeout(() => {
+      form.querySelectorAll('input, textarea, select').forEach(field => {
+        if (!field.name || !(field.name in data)) return;
+        if (field.type === 'file') return;
+        if (field.name === 'csrfmiddlewaretoken') return;
+        if (field.name === 'submission_key') return;
+        restoreField(field, data[field.name]);
+      });
+
+      // 3. Re-trigger discount highlighting after restore
+      setTimeout(() => {
+        document.querySelectorAll('[data-product-block]').forEach(block => {
+          const discountSelect = block.querySelector('select[id$="-discount_percent"]');
+          if (discountSelect) discountSelect.dispatchEvent(new Event('change', { bubbles: true }));
+        });
+      }, 80);
+    }, 150);
+  }
+
+  /* ── Auto-save on any interaction ── */
+  function saveForm() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(serializeForm())); } catch (_) {}
+  }
+
+  form.addEventListener('input',  saveForm);
+  form.addEventListener('change', saveForm);
+
+  /* ── Clear draft on submit so completed forms don't pre-fill the next session ── */
+  form.addEventListener('submit', () => {
+    try { localStorage.removeItem(STORAGE_KEY); } catch (_) {}
+  });
+
+  /* ── Restore draft on page load (only when it's a fresh GET, not a POST-error re-render) ── */
+  // Detect POST re-render: Django populates fields server-side, so at least one product-price
+  // field will already have a non-empty value coming from the server.
+  function isServerPopulated() {
+    const firstPrice = form.querySelector('input[id$="-price"]');
+    return firstPrice && firstPrice.value.trim() !== '';
+  }
+
+  function attemptRestore() {
+    if (isServerPopulated()) {
+      // Server already returned data (validation error) – just re-save this state
+      saveForm();
+      return;
+    }
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      const data = JSON.parse(raw);
+      if (data && typeof data === 'object') restoreForm(data);
+    } catch (_) {}
+  }
+
+  // Scripts run after DOM is parsed; a short timeout ensures all other initialisers have run
+  setTimeout(attemptRestore, 250);
+})();
+
+
+
+
+
+
+
+
+(() => {
+
+  function toggleNewCategory(block) {
+    const categoryField = block.querySelector('select[name$="-category"]');
+    const newCategoryWrapper = block.querySelector('[data-new-category-wrapper]');
+
+    if (!categoryField || !newCategoryWrapper) return;
+
+    const selectedText =
+      categoryField.options[categoryField.selectedIndex]?.text?.toLowerCase() || "";
+
+    if (
+      selectedText.includes("other") ||
+      selectedText.includes("new category")
+    ) {
+      newCategoryWrapper.classList.remove("hidden");
+    } else {
+      newCategoryWrapper.classList.add("hidden");
+
+      const input = newCategoryWrapper.querySelector("input");
+      if (input) input.value = "";
+    }
+  }
+
+  function bindCategoryToggle(block) {
+    if (!block || block.dataset.categoryToggleBound === "true") return;
+
+    block.dataset.categoryToggleBound = "true";
+
+    const categoryField = block.querySelector('select[name$="-category"]');
+
+    if (!categoryField) return;
+
+    categoryField.addEventListener("change", () => {
+      toggleNewCategory(block);
+    });
+
+    toggleNewCategory(block);
+  }
+
+  document.querySelectorAll("[data-product-block]").forEach(bindCategoryToggle);
+
+  const observer = new MutationObserver(() => {
+    document.querySelectorAll("[data-product-block]").forEach(bindCategoryToggle);
+  });
+
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true
+  });
+
+})();
+
+</script>
+
+
+<style>
+.publish-page{background:radial-gradient(1000px 340px at 0% 0%,rgba(251,191,36,.16),transparent 55%),radial-gradient(780px 420px at 100% 10%,rgba(14,165,233,.14),transparent 55%),linear-gradient(180deg,#fffdf7 0%,#f8fafc 50%,#eef2ff 100%)}
+.hero{background:linear-gradient(135deg,rgba(255,251,235,.96),rgba(255,255,255,.94));border-bottom:1px solid #e2e8f0}
+.eyebrow{font-size:.68rem;font-weight:800;letter-spacing:.18em;text-transform:uppercase}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.75rem;width:100%;max-width:24rem}
+.stats div{border:1px solid rgba(148,163,184,.25);border-radius:1rem;background:rgba(255,255,255,.82);padding:.85rem 1rem;display:grid}
+.stats span{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.16em;color:#78716c}
+.stats strong{font-size:1rem;font-weight:800;color:#0f172a}
+.panel,.card,.section-card{border-radius:1.35rem;border:1px solid #e2e8f0;background:#fff;padding:1rem}
+.panel{background:rgba(248,250,252,.85)}
+.panel-action{background:linear-gradient(180deg,#f8fafc 0%,#ffffff 100%)}
+.panel-green{background:linear-gradient(180deg,#ecfdf5 0%,#f8fffb 100%);border-color:#bbf7d0}
+.panel-amber,.section-card-amber{background:linear-gradient(180deg,#fffbeb 0%,#fff8e7 100%);border-color:#fde68a}
+.section-card-blue{background:linear-gradient(180deg,#eff6ff 0%,#fff 100%);border-color:#bfdbfe}
+.section-title{font-size:1rem;font-weight:800;color:#020617}
+.field-label{display:block;margin:.1rem 0 .35rem;font-size:.72rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#475569}
+.field-error{margin-top:.25rem;font-size:.74rem;color:#e11d48}
+.btn{display:inline-flex;align-items:center;justify-content:center;border-radius:999px;padding:.8rem 1.1rem;font-size:.9rem;font-weight:700;transition:.2s}
+.btn-large{padding:1rem 1.4rem;font-size:1rem}
+.btn-dark{background:#0f172a;color:#fff}
+.btn-light{border:1px solid #cbd5e1;background:#fff;color:#334155}
+.alert{border-radius:1rem;padding:.9rem 1rem;font-size:.9rem}
+.alert-error{border:1px solid #fecaca;background:#fef2f2;color:#b91c1c}
+.alert-warn{border:1px solid #fde68a;background:#fffbeb;color:#92400e}
+.upload-box{border:1px dashed #cbd5e1;border-radius:1rem;background:rgba(255,255,255,.82);padding:1rem}
+.toggle-row,.discount-row,.preview-actions{display:flex;flex-wrap:wrap;gap:.55rem}
+.toggle-pill{position:relative;display:inline-flex;align-items:center;border:1px solid #cbd5e1;border-radius:999px;background:#fff;padding:.7rem 1rem;font-size:.85rem;font-weight:700;color:#334155;overflow:hidden}
+.toggle-pill input{position:absolute;inset:0;opacity:0}
+.toggle-pill:has(input:checked){background:#0f172a;border-color:#0f172a;color:#fff}
+.discount-choice-btn,.preview-action{border:1px solid #cbd5e1;border-radius:999px;background:#fff;padding:.45rem .8rem;font-size:.76rem;font-weight:700;color:#334155}
+.discount-choice-btn.active{background:#f59e0b;border-color:#f59e0b;color:#1c1917}
+.discount-panel.hidden{display:none}
+.coupon-panel.hidden{display:none}
+.delivery-guide-card{border:1px solid #dbe4f0;border-radius:1.15rem;background:linear-gradient(180deg,#ffffff 0%,#f8fafc 100%);box-shadow:0 10px 28px rgba(15,23,42,.06);overflow:hidden}
+.delivery-guide-toggle{width:100%;display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:1rem 1.1rem;background:transparent;color:#0f172a;font-size:.95rem;font-weight:800;border:0;cursor:pointer;text-align:left}
+.delivery-guide-icon{display:inline-flex;align-items:center;justify-content:center;width:1.8rem;height:1.8rem;border-radius:999px;background:#e2e8f0;color:#0f172a;font-size:1.1rem;line-height:1}
+.delivery-guide-panel{padding:0 1.1rem 1rem;opacity:0;max-height:0;overflow:hidden;transition:max-height .28s ease, opacity .22s ease}
+.delivery-guide-panel.delivery-guide-panel-open{opacity:1;max-height:900px}
+.delivery-guide-panel.hidden{display:block}
+.delivery-guide-table-wrap{overflow-x:auto;border:1px solid #e2e8f0;border-radius:1rem;background:#fff}
+.delivery-guide-table{width:100%;border-collapse:collapse;min-width:640px}
+.delivery-guide-table th,.delivery-guide-table td{padding:.9rem 1rem;border-bottom:1px solid #e2e8f0;text-align:left;font-size:.9rem;vertical-align:top}
+.delivery-guide-table th{background:#f8fafc;color:#334155;font-size:.78rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+.delivery-guide-table tbody tr:last-child td{border-bottom:0}
+.delivery-guide-note{margin-top:.85rem;font-size:.82rem;color:#64748b}
+.image-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:.75rem}
+.preview-card{display:grid;gap:.45rem;border:1px solid #dbeafe;border-radius:1rem;background:#fff;padding:.5rem;box-shadow:0 8px 20px rgba(37,99,235,.08)}
+.preview-image{width:100%;aspect-ratio:1;object-fit:cover;border-radius:.8rem;background:#eff6ff}
+.preview-meta{display:flex;align-items:center;gap:.4rem;min-width:0}
+.preview-badge{display:inline-flex;align-items:center;justify-content:center;width:1.3rem;height:1.3rem;border-radius:999px;background:#0f172a;color:#fff;font-size:.7rem;font-weight:800}
+.preview-name{font-size:.72rem;color:#475569;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.preview-action-remove{border-color:#fecdd3;background:#fff1f2;color:#be123c}
+.product-block-visible{animation:fadeIn .28s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@media (max-width:640px){.stats{grid-template-columns:1fr;max-width:none}}
+</style>
+{% endblock %}

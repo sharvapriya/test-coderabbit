@@ -1,0 +1,1579 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}MyKartStore{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'dist/styles.css' %}">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            top: 0 !important;
+        }
+
+        .goog-te-banner-frame.skiptranslate {
+            display: none !important;
+        }
+
+        .goog-logo-link,
+        .goog-te-gadget,
+        .goog-te-combo {
+            display: none !important;
+        }
+
+        .site-header-shell {
+            background: #131921;
+        }
+
+        .site-header-inner,
+        .site-category-inner {
+            max-width: 1280px;
+        }
+
+        .site-header-grid {
+            display: grid;
+            grid-template-columns: auto minmax(0, 1fr) auto;
+            gap: 0.8rem;
+            align-items: center;
+        }
+
+        .category-strip {
+            background: #2f4858;
+            border-top: 1px solid rgba(148, 163, 184, 0.35);
+            border-bottom: 0;
+        }
+
+        .site-brand-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: flex-start;
+            height: 100%;
+            padding: 0;
+            text-decoration: none;
+        }
+
+        .site-brand-lockup {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.2rem;
+        }
+
+        .site-brand-title {
+            margin: 0;
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: clamp(1rem, 1.35vw, 1.45rem);
+            font-weight: 700;
+            line-height: 1;
+            letter-spacing: 0.02em;
+            color: #ffffff;
+        }
+
+        .site-brand-logo {
+            display: block;
+            max-height: 56px;
+            height: auto;
+            max-width: min(190px, 100%);
+            width: auto;
+            object-fit: contain;
+        }
+
+        .category-strip-inner {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            overflow-y: hidden;
+            white-space: nowrap;
+            scrollbar-width: none;
+        }
+
+        .category-strip-inner::-webkit-scrollbar {
+            display: none;
+        }
+
+        .category-strip-menu {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.55rem;
+            height: 40px;
+            padding: 0 0.35rem;
+            border: 0;
+            background: transparent;
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .category-strip-menu:hover,
+        .category-strip-menu:focus-visible {
+            color: #fbbf24;
+        }
+
+        .category-strip-menu-icon {
+            font-size: 1.35rem;
+            line-height: 1;
+        }
+
+        .category-link {
+            display: inline-flex;
+            align-items: center;
+            height: 40px;
+            padding: 0 0.35rem;
+            color: #ffffff;
+            text-decoration: none;
+            font-size: 0.92rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            text-transform: none;
+            border-bottom: 2px solid transparent;
+            transition: color 0.2s ease, border-color 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .category-link:hover {
+            color: #fbbf24;
+            border-bottom-color: #fbbf24;
+        }
+
+        .search-category-menu {
+            max-height: 18rem;
+            overflow-y: auto;
+            overscroll-behavior: contain;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: thin;
+        }
+
+        .search-category-menu::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .search-category-menu::-webkit-scrollbar-thumb {
+            background: rgba(148, 163, 184, 0.75);
+            border-radius: 999px;
+        }
+
+        #searchCategoryDropdownContainer[open] #searchCategoryDropdownMenu {
+            display: block;
+        }
+
+        #searchCategoryDropdownBtn::-webkit-details-marker {
+            display: none;
+        }
+
+        .site-header-actions {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 0.6rem;
+            flex-wrap: wrap;
+        }
+
+        .site-search-form {
+            display: flex;
+            min-width: 0;
+            width: 100%;
+            max-width: 100%;
+            height: 38px;
+        }
+
+        .site-header-brand {
+            display: flex;
+            align-items: center;
+            min-width: 0;
+        }
+
+        .site-search-input {
+            min-width: 0;
+            font-size: 0.98rem;
+        }
+
+        .site-compact-pill {
+            min-height: 38px;
+            padding-block: 0.55rem;
+        }
+
+        .site-dropdown-label {
+            white-space: nowrap;
+        }
+
+        .site-mobile-shortcuts {
+            display: none;
+            background: #232f3e;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .site-mobile-shortcuts-inner {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .site-mobile-shortcuts-inner::-webkit-scrollbar {
+            display: none;
+        }
+
+        .site-drawer-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.56);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+            z-index: 1100;
+        }
+
+        .site-drawer-overlay.is-open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .site-drawer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: min(360px, calc(100vw - 1rem));
+            height: 100vh;
+            background: #ffffff;
+            box-shadow: 20px 0 45px rgba(15, 23, 42, 0.22);
+            transform: translateX(-105%);
+            transition: transform 0.24s ease;
+            z-index: 1101;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .site-drawer.is-open {
+            transform: translateX(0);
+        }
+
+        .site-drawer-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            padding: 1rem 1.1rem;
+            background: #232f3e;
+            color: #fff;
+        }
+
+        .site-drawer-title {
+            margin: 0;
+            font-size: 1.1rem;
+            font-weight: 800;
+        }
+
+        .site-drawer-close {
+            border: 0;
+            background: transparent;
+            color: inherit;
+            font-size: 1.9rem;
+            line-height: 1;
+            cursor: pointer;
+        }
+
+        .site-drawer-body {
+            overflow-y: auto;
+            padding: 0 0 1rem;
+        }
+
+        .site-drawer-section {
+            padding: 1.1rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .site-drawer-heading {
+            margin: 0 0 0.85rem;
+            font-size: 0.98rem;
+            font-weight: 800;
+            color: #111827;
+        }
+
+        .site-drawer-link {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            padding: 0.75rem 0;
+            color: #111827;
+            text-decoration: none;
+            font-size: 0.98rem;
+            border: 0;
+            background: transparent;
+            width: 100%;
+            text-align: left;
+        }
+
+        .site-drawer-link:hover,
+        .site-drawer-link:focus-visible {
+            color: #0f766e;
+        }
+
+        .site-drawer-support {
+            display: grid;
+            gap: 0.5rem;
+            margin-top: 0.65rem;
+        }
+
+        .site-drawer-support a {
+            color: #2563eb;
+            text-decoration: none;
+            font-size: 0.92rem;
+        }
+
+        .cart-badge-pop {
+            animation: cartBadgePop 0.35s ease;
+        }
+
+        .account-menu-panel {
+            width: min(24rem, calc(100vw - 1rem));
+            max-height: min(78vh, 44rem);
+            border: 1px solid rgba(226, 232, 240, 0.95);
+            border-radius: 1.15rem;
+            background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+            box-shadow: 0 24px 70px rgba(15, 23, 42, 0.18);
+            overflow-x: hidden;
+            overflow-y: auto;
+            overscroll-behavior: contain;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(148, 163, 184, 0.85) transparent;
+        }
+
+        .account-menu-panel::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .account-menu-panel::-webkit-scrollbar-thumb {
+            background: rgba(148, 163, 184, 0.85);
+            border-radius: 999px;
+        }
+
+        .account-menu-panel::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .account-menu-hover-bridge {
+            position: absolute;
+            right: 0;
+            top: 100%;
+            width: 100%;
+            height: 0.9rem;
+        }
+
+        .account-menu-header {
+            padding: 1rem 1.1rem;
+            border-bottom: 1px solid #e5e7eb;
+            background: linear-gradient(135deg, #111827 0%, #1e293b 100%);
+            color: #fff;
+        }
+
+        .account-menu-header-kicker {
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.68);
+        }
+
+        .account-menu-header-name {
+            margin-top: 0.35rem;
+            font-size: 1rem;
+            font-weight: 800;
+        }
+
+        .account-menu-header-note {
+            margin-top: 0.25rem;
+            font-size: 0.82rem;
+            color: rgba(255, 255, 255, 0.76);
+        }
+
+        .account-menu-links {
+            padding: 0.55rem;
+            background: transparent;
+        }
+
+        .account-menu-link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            width: 100%;
+            padding: 0.82rem 0.9rem;
+            border-radius: 0.95rem;
+            color: #0f172a;
+            text-decoration: none;
+            transition: background-color 0.2s ease, transform 0.2s ease, color 0.2s ease;
+        }
+
+        .account-menu-link:hover,
+        .account-menu-link:focus-visible {
+            background: #eef4ff;
+            color: #111827;
+            transform: translateX(2px);
+        }
+
+        .account-menu-link-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 2.1rem;
+            height: 2.1rem;
+            border-radius: 999px;
+            background: #eaf1ff;
+            color: #2563eb;
+            flex-shrink: 0;
+        }
+
+        .account-menu-link-copy {
+            display: flex;
+            min-width: 0;
+            flex: 1 1 auto;
+            flex-direction: column;
+            gap: 0.08rem;
+        }
+
+        .account-menu-link-title {
+            font-size: 0.92rem;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .account-menu-link-subtitle {
+            font-size: 0.75rem;
+            color: #64748b;
+            line-height: 1.3;
+        }
+
+        .account-menu-quick-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.7rem;
+            padding: 0 1rem 1rem;
+        }
+
+        .account-menu-quick-card {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+            padding: 0.95rem;
+            border: 1px solid #dbe7f5;
+            border-radius: 1rem;
+            background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+            color: #0f172a;
+            text-decoration: none;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+        }
+
+        .account-menu-quick-card:hover,
+        .account-menu-quick-card:focus-visible {
+            transform: translateY(-2px);
+            border-color: #93c5fd;
+            box-shadow: 0 14px 28px rgba(37, 99, 235, 0.12);
+        }
+
+        .account-menu-quick-card-title {
+            font-size: 0.86rem;
+            font-weight: 700;
+        }
+
+        .account-menu-quick-card-copy {
+            font-size: 0.73rem;
+            line-height: 1.35;
+            color: #64748b;
+        }
+
+        .account-menu-section-trigger {
+            display: flex;
+            width: 100%;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            padding: 0.9rem 1rem;
+            border-bottom: 1px solid #e5e7eb;
+            background: #f8fafc;
+            color: #0f172a;
+            font-size: 0.86rem;
+            font-weight: 700;
+            text-align: left;
+            text-decoration: none;
+            transition: background-color 0.2s ease;
+        }
+
+        .account-menu-section-trigger:hover,
+        .account-menu-section-trigger:focus-visible {
+            background: #eef4ff;
+        }
+
+        .account-menu-icon-svg {
+            width: 1.05rem;
+            height: 1.05rem;
+        }
+
+        .account-menu-address-toggle {
+            display: flex;
+            width: 100%;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            padding: 0.95rem 1rem;
+            border: 0;
+            border-bottom: 1px solid #e5e7eb;
+            background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+            color: #0f172a;
+            text-align: left;
+            transition: background-color 0.2s ease;
+        }
+
+        .account-menu-address-toggle:hover,
+        .account-menu-address-toggle:focus-visible {
+            background: #eef4ff;
+        }
+
+        .account-menu-address-toggle-copy {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            min-width: 0;
+        }
+
+        .account-menu-address-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 2.25rem;
+            height: 2.25rem;
+            border-radius: 999px;
+            background: #e0e7ff;
+            color: #312e81;
+            flex-shrink: 0;
+        }
+
+        .account-menu-address-chevron {
+            color: #64748b;
+            font-size: 0.9rem;
+            transition: transform 0.2s ease;
+        }
+
+        .account-menu-address-panel {
+            padding: 0 1rem 1rem 4rem;
+            border-bottom: 1px solid #e5e7eb;
+            background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+        }
+
+        .account-menu-address-panel.hidden {
+            display: none;
+        }
+
+        .account-menu-address-text {
+            line-height: 1.5;
+            color: #334155;
+            word-break: break-word;
+        }
+
+        .account-menu-address-toggle[aria-expanded="true"] .account-menu-address-chevron {
+            transform: rotate(180deg);
+        }
+
+        .account-category-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.75rem;
+            padding: 1rem;
+            background: #fff;
+        }
+
+        .account-category-card {
+            position: relative;
+            display: flex;
+            min-height: 5.4rem;
+            flex-direction: column;
+            justify-content: center;
+            gap: 0.4rem;
+            border: 1px solid #dbe3ef;
+            border-radius: 1rem;
+            padding: 0.9rem 0.95rem;
+            background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+            color: #0f172a;
+            text-decoration: none;
+            transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+        }
+
+        .account-category-card:hover,
+        .account-category-card:focus-visible,
+        .account-category-card:active {
+            transform: translateY(-2px);
+            border-color: #818cf8;
+            box-shadow: 0 16px 28px rgba(99, 102, 241, 0.16);
+        }
+
+        .account-category-icon {
+            font-size: 1.2rem;
+            line-height: 1;
+        }
+
+        .account-category-explore {
+            opacity: 0;
+            transform: translateY(4px);
+            transition: opacity 0.2s ease, transform 0.2s ease;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            color: #4f46e5;
+        }
+
+        .account-category-card:hover .account-category-explore,
+        .account-category-card:focus-visible .account-category-explore,
+        .account-category-card:active .account-category-explore {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .category-menu-caret {
+            transition: transform 0.2s ease;
+        }
+
+        .category-menu-open .category-menu-caret {
+            transform: rotate(180deg);
+        }
+
+        @keyframes cartBadgePop {
+            0% { transform: scale(0.7); }
+            60% { transform: scale(1.22); }
+            100% { transform: scale(1); }
+        }
+
+        @media (max-width: 1023px) {
+            .site-header-grid {
+                grid-template-columns: 1fr auto;
+            }
+
+            .site-header-brand {
+                min-width: 0;
+            }
+
+            .site-header-search-row {
+                grid-column: 1 / -1;
+                order: 3;
+            }
+
+            .site-header-actions {
+                gap: 0.45rem;
+            }
+
+            .site-header-actions .site-dropdown-text,
+            .site-header-actions .site-dropdown-caret,
+            .site-header-actions .site-account-greeting {
+                display: none;
+            }
+
+            .site-header-actions .site-compact-pill {
+                min-width: auto;
+                padding-inline: 0.8rem;
+            }
+
+            .site-mobile-shortcuts {
+                display: block;
+            }
+
+            .account-category-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 767px) {
+            .site-header-shell {
+                padding-top: 0.25rem;
+            }
+
+            .site-header-grid {
+                gap: 0.65rem;
+            }
+
+            .site-search-form {
+                flex-wrap: nowrap;
+            }
+
+            .site-search-form details {
+                max-width: 7rem;
+            }
+
+            #searchCategoryDropdownBtn {
+                min-width: 4.8rem !important;
+                padding-inline: 0.65rem;
+                font-size: 0.82rem;
+            }
+
+            .site-search-input {
+                font-size: 0.92rem;
+                padding-left: 0.85rem;
+                padding-right: 0.85rem;
+            }
+
+            .site-header-actions {
+                gap: 0.35rem;
+            }
+
+            .site-header-actions > * {
+                flex-shrink: 0;
+            }
+
+            .site-account-button {
+                padding-inline: 0.7rem !important;
+            }
+
+            .category-strip-inner {
+                gap: 0.85rem;
+                padding-inline: 0.95rem;
+            }
+
+            .category-link {
+                font-size: 0.86rem;
+                letter-spacing: 0.01em;
+            }
+
+            .site-brand-title {
+                font-size: 0.9rem;
+            }
+
+            .account-category-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .account-menu-quick-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col">
+    <div id="siteMenuDrawerOverlay" class="site-drawer-overlay" aria-hidden="true"></div>
+    <aside id="siteMenuDrawer" class="site-drawer" aria-hidden="true">
+        <div class="site-drawer-header">
+            <div>
+                <p class="site-drawer-title">Hello, {% if request.user.is_authenticated %}{{ request.user.username }}{% else %}Account{% endif %}</p>
+            </div>
+            <button type="button" id="siteMenuDrawerClose" class="site-drawer-close" aria-label="Close menu">&times;</button>
+        </div>
+        <div class="site-drawer-body">
+            <div class="site-drawer-section">
+                <h2 class="site-drawer-heading">Trending</h2>
+                <a href="{% url 'products:product_list' %}?q=Best%20Sellers" class="site-drawer-link">Best seller</a>
+                <a href="{% url 'products:product_list' %}?q=New%20Releases" class="site-drawer-link">New Releases</a>
+                <a href="{% url 'products:home' %}" class="site-drawer-link">MykartStore Wheelerz</a>
+            </div>
+            <div class="site-drawer-section">
+                <h2 class="site-drawer-heading">Shop by Category</h2>
+                <a href="{% url 'products:product_list' %}" class="site-drawer-link">All Categories</a>
+                {% for nav_category in navigation_categories %}
+                <a href="{% url 'products:product_list_by_category' nav_category.slug %}" class="site-drawer-link">{{ nav_category.name }}</a>
+                {% endfor %}
+            </div>
+            <div class="site-drawer-section">
+                <h2 class="site-drawer-heading">Settings</h2>
+                <a href="{% url 'contact_us' %}" class="site-drawer-link">Customer Support</a>
+                <div class="site-drawer-support" id="drawer-support">
+                    <a href="tel:{{ site_support_phone }}">{{ site_support_phone }}</a>
+                    <a href="mailto:{{ site_support_email }}">{{ site_support_email }}</a>
+                </div>
+            </div>
+            <div class="site-drawer-section">
+                {% if request.user.is_authenticated %}
+                <form method="post" action="{% url 'logout' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="site-drawer-link text-red-600">Logout</button>
+                </form>
+                {% else %}
+                <a href="{% url 'login' %}" class="site-drawer-link">Sign In</a>
+                {% endif %}
+            </div>
+        </div>
+    </aside>
+    <div class="sticky top-0 z-[1000] shadow-md">
+        <div class="site-header-shell text-white">
+            <div class="site-header-inner mx-auto px-3 sm:px-4 py-2 site-header-grid">
+                <div class="site-header-brand">
+                    <a href="{% url 'products:home' %}" class="site-brand-link no-underline" aria-label="MyKartStore home">
+                        <span class="site-brand-lockup">
+                             <span class="site-brand-title">Mykartstore</span>
+                             <img src="{% static 'images/mykart-logo.png' %}" alt="Mykartstore" class="site-brand-logo" width="190" height="56">
+                        </span>
+                    </a>
+                </div>
+
+                <div class="site-header-search-row min-w-0">
+                    <form action="{% url 'products:product_list' %}" method="get" class="site-search-form">
+                        <details class="relative shrink-0" id="searchCategoryDropdownContainer">
+                            <input type="hidden" name="category" id="searchCategoryInput" value="{% if selected_category_slug %}{{ selected_category_slug }}{% elif category %}{{ category.slug }}{% endif %}">
+                            <summary id="searchCategoryDropdownBtn" class="flex h-full min-w-[4.8rem] list-none items-center justify-between gap-2 bg-gray-200 px-3 rounded-l-md border-r border-gray-300 text-black outline-none cursor-pointer">
+                                <span id="selectedCategoryText" class="truncate">
+                                    {% if category %}
+                                        {{ category.name }}
+                                    {% elif selected_category_slug %}
+                                        {% for nav_category in navigation_categories %}{% if nav_category.slug == selected_category_slug %}{{ nav_category.name }}{% endif %}{% endfor %}
+                                    {% else %}
+                                        All
+                                    {% endif %}
+                                </span>
+                                <span class="text-xs">&#9662;</span>
+                            </summary>
+                            <div id="searchCategoryDropdownMenu" class="search-category-menu absolute left-0 top-full mt-2 hidden w-64 max-w-[calc(100vw-1.5rem)] rounded-2xl border border-slate-200 bg-white text-black shadow-2xl z-50">
+                                <button type="button" class="search-category-option flex w-full items-center justify-between px-4 py-3 text-left text-sm font-medium hover:bg-slate-50" data-value="" data-label="All" data-url="{% url 'products:product_list' %}">
+                                    <span>All</span>
+                                    {% if not selected_category_slug and not category %}<span>&#10003;</span>{% endif %}
+                                </button>
+                                {% for nav_category in navigation_categories %}
+                                <button type="button" class="search-category-option flex w-full items-center justify-between px-4 py-3 text-left text-sm font-medium hover:bg-slate-50" data-value="{{ nav_category.slug }}" data-label="{{ nav_category.name }}" data-url="{% url 'products:product_list_by_category' nav_category.slug %}">
+                                    <span>{{ nav_category.name }}</span>
+                                    {% if selected_category_slug == nav_category.slug or category.slug == nav_category.slug %}<span>&#10003;</span>{% endif %}
+                                </button>
+                                {% endfor %}
+                            </div>
+                        </details>
+
+                        <input type="text" name="q" placeholder="Search products" class="site-search-input flex-1 px-3 py-2 text-black outline-none border-0">
+
+                        <button type="submit" class="bg-yellow-400 hover:bg-yellow-500 px-3 rounded-r-md text-black text-base">
+                            &#128269;
+                        </button>
+                    </form>
+                </div>
+
+                <div class="site-header-actions">
+                    <div class="relative hidden sm:block">
+                        <button type="button" id="languageDropdownBtn" class="site-compact-pill flex items-center gap-2 bg-white text-black px-3 rounded-md min-w-[116px] hover:bg-gray-100 transition">
+                            <span id="selectedLanguageFlag">&#127760;</span>
+                            <span id="selectedLanguageText" class="site-dropdown-text text-sm font-medium">English</span>
+                            <span class="site-dropdown-caret ml-auto text-xs">&#9662;</span>
+                        </button>
+
+                        <div id="languageDropdownMenu" class="hidden absolute right-0 mt-2 w-52 bg-white text-black rounded-md shadow-lg z-50 overflow-hidden">
+                            <button type="button" class="language-option w-full text-left px-4 py-2 hover:bg-gray-100" data-lang="en" data-flag="&#127760;">English</button>
+                            <button type="button" class="language-option w-full text-left px-4 py-2 hover:bg-gray-100" data-lang="ta" data-flag="&#127470;&#127475;">Tamil</button>
+                            <button type="button" class="language-option w-full text-left px-4 py-2 hover:bg-gray-100" data-lang="hi" data-flag="&#127470;&#127475;">Hindi</button>
+                            <button type="button" class="language-option w-full text-left px-4 py-2 hover:bg-gray-100" data-lang="ml" data-flag="&#127470;&#127475;">Malayalam</button>
+                            <button type="button" class="language-option w-full text-left px-4 py-2 hover:bg-gray-100" data-lang="te" data-flag="&#127470;&#127475;">Telugu</button>
+                            <button type="button" class="language-option w-full text-left px-4 py-2 hover:bg-gray-100" data-lang="kn" data-flag="&#127470;&#127475;">Kannada</button>
+                            <button type="button" class="language-option w-full text-left px-4 py-2 hover:bg-gray-100" data-lang="ar" data-flag="&#127480;&#127462;">Arabic</button>
+                            <button type="button" class="language-option w-full text-left px-4 py-2 hover:bg-gray-100" data-lang="fr" data-flag="&#127467;&#127479;">French</button>
+                            <button type="button" class="language-option w-full text-left px-4 py-2 hover:bg-gray-100" data-lang="de" data-flag="&#127465;&#127466;">German</button>
+                            <button type="button" class="language-option w-full text-left px-4 py-2 hover:bg-gray-100" data-lang="es" data-flag="&#127466;&#127480;">Spanish</button>
+                        </div>
+                    </div>
+
+                    <div class="relative hidden sm:block">
+                        <button type="button" id="countryDropdownBtn" class="site-compact-pill flex items-center gap-2 bg-white text-black px-3 rounded-md min-w-[124px] hover:bg-gray-100 transition">
+                            <span id="selectedCountryFlag">&#127470;&#127475;</span>
+                            <span id="selectedCountryText" class="site-dropdown-text text-sm font-medium">India</span>
+                            <span class="site-dropdown-caret ml-auto text-xs">&#9662;</span>
+                        </button>
+
+                        <div id="countryDropdownMenu" class="hidden absolute right-0 mt-2 w-56 bg-white text-black rounded-md shadow-lg z-50 overflow-hidden">
+                            <button type="button" class="country-option w-full text-left px-4 py-2 hover:bg-gray-100" data-country="IN" data-flag="&#127470;&#127475;">India</button>
+                            <button type="button" class="country-option w-full text-left px-4 py-2 hover:bg-gray-100" data-country="US" data-flag="&#127482;&#127480;">United States</button>
+                            <button type="button" class="country-option w-full text-left px-4 py-2 hover:bg-gray-100" data-country="GB" data-flag="&#127468;&#127463;">United Kingdom</button>
+                            <button type="button" class="country-option w-full text-left px-4 py-2 hover:bg-gray-100" data-country="AE" data-flag="&#127462;&#127466;">UAE</button>
+                            <button type="button" class="country-option w-full text-left px-4 py-2 hover:bg-gray-100" data-country="CA" data-flag="&#127464;&#127462;">Canada</button>
+                            <button type="button" class="country-option w-full text-left px-4 py-2 hover:bg-gray-100" data-country="AU" data-flag="&#127462;&#127482;">Australia</button>
+                            <button type="button" class="country-option w-full text-left px-4 py-2 hover:bg-gray-100" data-country="SG" data-flag="&#127480;&#127468;">Singapore</button>
+                        </div>
+                    </div>
+
+                    {% if request.user.is_authenticated %}
+                    <div class="relative" id="accountDropdownContainer">
+                        <span class="account-menu-hover-bridge" aria-hidden="true"></span>
+                        <button id="accountDropdownBtn" type="button" class="site-account-button px-2 py-1.5 border border-transparent hover:border-white rounded text-left bg-transparent text-white">
+                            <div class="site-account-greeting text-xs text-gray-300">Hello, {{ request.user.username }}</div>
+                            <div class="text-sm font-bold">Account <span class="site-dropdown-caret">&#9662;</span></div>
+                        </button>
+
+                        <div id="accountDropdownMenu" class="account-menu-panel hidden absolute right-0 top-full mt-2 bg-white text-black rounded shadow-lg z-50 overflow-hidden">
+                            <div class="account-menu-header">
+                                <div class="account-menu-header-kicker">My Account</div>
+                                <div class="account-menu-header-name">Hi, {{ request.user.username }}</div>
+                                <div class="account-menu-header-note">Everything important, all in one place.</div>
+                            </div>
+                            <div class="account-menu-links">
+                                <a href="{% url 'products:home' %}" class="account-menu-link">
+                                    <span class="account-menu-link-icon">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="account-menu-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                            <path d="M3 10.5 12 3l9 7.5"></path>
+                                            <path d="M5 9.5V21h14V9.5"></path>
+                                            <path d="M9 21v-6h6v6"></path>
+                                        </svg>
+                                    </span>
+                                    <span class="account-menu-link-copy">
+                                        <span class="account-menu-link-title">Home</span>
+                                        <span class="account-menu-link-subtitle">Go back to the main storefront.</span>
+                                    </span>
+                                </a>
+                                <a href="{% url 'orders:order_tracking_list' %}" class="account-menu-link">
+                                    <span class="account-menu-link-icon">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="account-menu-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                            <path d="M9 6h11"></path>
+                                            <path d="M9 12h11"></path>
+                                            <path d="M9 18h11"></path>
+                                            <path d="M5 6h.01"></path>
+                                            <path d="M5 12h.01"></path>
+                                            <path d="M5 18h.01"></path>
+                                        </svg>
+                                    </span>
+                                    <span class="account-menu-link-copy">
+                                        <span class="account-menu-link-title">My Orders</span>
+                                        <span class="account-menu-link-subtitle">Track returns, deliveries, and purchases.</span>
+                                    </span>
+                                </a>
+                                <a href="{% url 'profile' %}" class="account-menu-link">
+                                    <span class="account-menu-link-icon">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="account-menu-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                            <path d="M20 21a8 8 0 0 0-16 0"></path>
+                                            <circle cx="12" cy="7" r="4"></circle>
+                                        </svg>
+                                    </span>
+                                    <span class="account-menu-link-copy">
+                                        <span class="account-menu-link-title">My Profile</span>
+                                        <span class="account-menu-link-subtitle">Update your personal account details.</span>
+                                    </span>
+                                </a>
+                                <a href="{% url 'orders:wallet_detail' %}" class="account-menu-link">
+                                    <span class="account-menu-link-icon">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="account-menu-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                            <path d="M3 7h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z"></path>
+                                            <path d="M16 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v2"></path>
+                                            <path d="M17 13h.01"></path>
+                                        </svg>
+                                    </span>
+                                    <span class="account-menu-link-copy">
+                                        <span class="account-menu-link-title">Wallet</span>
+                                        <span class="account-menu-link-subtitle">Check your available balance and credits.</span>
+                                    </span>
+                                </a>
+                                {% if request.user.user_profile != "Seller" %}
+                                <a href="{% url 'sellers:create_profile' %}" class="account-menu-link">
+                                    <span class="account-menu-link-icon">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="account-menu-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                            <path d="M3 21h18"></path>
+                                            <path d="M5 21V7l8-4 6 4v14"></path>
+                                            <path d="M9 9h.01"></path>
+                                            <path d="M9 13h.01"></path>
+                                            <path d="M9 17h.01"></path>
+                                            <path d="M13 9h.01"></path>
+                                            <path d="M13 13h.01"></path>
+                                            <path d="M13 17h.01"></path>
+                                        </svg>
+                                    </span>
+                                    <span class="account-menu-link-copy">
+                                        <span class="account-menu-link-title">Register Business Account</span>
+                                        <span class="account-menu-link-subtitle">Start selling on MyKartStore.</span>
+                                    </span>
+                                </a>
+                                {% endif %}
+                                {% if request.user.user_profile == "Seller" %}
+                                <a href="{% url 'sellers:dashboard' %}" class="account-menu-link">
+                                    <span class="account-menu-link-icon">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="account-menu-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                            <path d="M3 3v18h18"></path>
+                                            <path d="M7 14v3"></path>
+                                            <path d="M12 10v7"></path>
+                                            <path d="M17 6v11"></path>
+                                        </svg>
+                                    </span>
+                                    <span class="account-menu-link-copy">
+                                        <span class="account-menu-link-title">Seller Dashboard</span>
+                                        <span class="account-menu-link-subtitle">Manage products, sales, and payouts.</span>
+                                    </span>
+                                </a>
+                                {% endif %}
+                                {% if request.user.is_superuser %}
+                                <a href="{% url 'orders:delivery_dashboard' %}" class="account-menu-link">
+                                    <span class="account-menu-link-icon">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="account-menu-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                            <path d="M3 7h11v8H3z"></path>
+                                            <path d="M14 10h3l4 4v1h-7z"></path>
+                                            <circle cx="7.5" cy="18.5" r="1.5"></circle>
+                                            <circle cx="18.5" cy="18.5" r="1.5"></circle>
+                                        </svg>
+                                    </span>
+                                    <span class="account-menu-link-copy">
+                                        <span class="account-menu-link-title">Delivery Dashboard</span>
+                                        <span class="account-menu-link-subtitle">Oversee delivery assignments and progress.</span>
+                                    </span>
+                                </a>
+                                {% endif %}
+                            </div>
+                            <div class="account-menu-quick-grid">
+                                <a href="{% url 'wishlist:wishlist_view' %}" class="account-menu-quick-card">
+                                    <span class="account-menu-link-icon">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="account-menu-icon-svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                            <path d="M12.001 20.727 4.95 13.676a4.982 4.982 0 0 1 0-7.048 4.983 4.983 0 0 1 7.051 0L12 6.627l-.001.001.001-.001a4.983 4.983 0 0 1 7.051 0 4.982 4.982 0 0 1 0 7.048L12 20.727Z"></path>
+                                        </svg>
+                                    </span>
+                                    <span class="account-menu-quick-card-title">Wishlist</span>
+                                    <span class="account-menu-quick-card-copy">Open your saved favorites quickly.</span>
+                                </a>
+                                <a href="{% url 'cart:cart_detail' %}" class="account-menu-quick-card">
+                                    <span class="account-menu-link-icon">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="account-menu-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                            <circle cx="9" cy="20" r="1"></circle>
+                                            <circle cx="18" cy="20" r="1"></circle>
+                                            <path d="M3 4h2l2.4 10.2a1 1 0 0 0 1 .8h9.7a1 1 0 0 0 1-.8L21 7H6"></path>
+                                        </svg>
+                                    </span>
+                                    <span class="account-menu-quick-card-title">Cart</span>
+                                    <span class="account-menu-quick-card-copy">Jump into checkout-ready items.</span>
+                                </a>
+                                <a href="{% url 'products:category_directory' %}" class="account-menu-quick-card">
+                                    <span class="account-menu-link-icon">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="account-menu-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                            <rect x="3" y="3" width="7" height="7" rx="1.5"></rect>
+                                            <rect x="14" y="3" width="7" height="7" rx="1.5"></rect>
+                                            <rect x="14" y="14" width="7" height="7" rx="1.5"></rect>
+                                            <rect x="3" y="14" width="7" height="7" rx="1.5"></rect>
+                                        </svg>
+                                    </span>
+                                    <span class="account-menu-quick-card-title">Browse Categories</span>
+                                    <span class="account-menu-quick-card-copy">Explore every collection in one place.</span>
+                                </a>
+                                <a href="{% url 'contact_us' %}" class="account-menu-quick-card">
+                                    <span class="account-menu-link-icon">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="account-menu-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                            <path d="M4 6h16v12H4z"></path>
+                                            <path d="m4 7 8 6 8-6"></path>
+                                        </svg>
+                                    </span>
+                                    <span class="account-menu-quick-card-title">Support</span>
+                                    <span class="account-menu-quick-card-copy">Reach us for help, billing, or delivery issues.</span>
+                                </a>
+                            </div>
+                            <button type="button" class="account-menu-address-toggle" id="accountAddressToggle" aria-expanded="false">
+                                <span class="account-menu-address-toggle-copy">
+                                    <span class="account-menu-address-icon">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="account-menu-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                            <path d="M12 21s6-5.33 6-11a6 6 0 1 0-12 0c0 5.67 6 11 6 11Z"></path>
+                                            <circle cx="12" cy="10" r="2.5"></circle>
+                                        </svg>
+                                    </span>
+                                    <span class="text-sm font-semibold text-slate-800">My Address</span>
+                                </span>
+                                <span class="account-menu-address-chevron">&#9662;</span>
+                            </button>
+                            <div id="accountAddressPanel" class="account-menu-address-panel hidden">
+                                <p class="account-menu-address-text text-sm" title="{{ account_profile_address|default:'' }}">
+                                    {% if account_profile_address %}
+                                        {{ account_profile_address }}
+                                    {% else %}
+                                        Add your address in profile to auto-fill it here.
+                                    {% endif %}
+                                </p>
+                            </div>
+                            <a href="{% url 'products:category_directory' %}" class="account-menu-section-trigger text-black no-underline">
+                                <span class="flex items-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="account-menu-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M4 7h7"></path>
+                                        <path d="M4 12h10"></path>
+                                        <path d="M4 17h7"></path>
+                                        <circle cx="16.5" cy="7" r="2.5"></circle>
+                                        <circle cx="19.5" cy="12" r="2.5"></circle>
+                                        <circle cx="16.5" cy="17" r="2.5"></circle>
+                                    </svg>
+                                    <span>Categories</span>
+                                </span>
+                                <span>&#8594;</span>
+                            </a>
+                            <form method="post" action="{% url 'logout' %}">
+                                {% csrf_token %}
+                                <button type="submit" class="w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100 border-0 bg-white">
+                                    Logout
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    {% else %}
+                    <a href="{% url 'login' %}" class="px-3 py-2 text-sm font-semibold text-white no-underline rounded hover:bg-white/10 transition">
+                        Sign In
+                    </a>
+                    {% endif %}
+
+                    <a href="{% url 'wishlist:wishlist_view' %}" class="relative px-2 py-1.5 text-red-500 text-xl no-underline" aria-label="Wishlist">
+                        &#10084;
+                        {% if wishlist_count and wishlist_count > 0 %}
+                        <span class="absolute -top-2 right-0 bg-red-500 text-white text-[10px] min-w-[18px] h-[18px] flex items-center justify-center rounded-full px-1">
+                            {{ wishlist_count }}
+                        </span>
+                        {% endif %}
+                    </a>
+
+                    <a href="{% url 'cart:cart_detail' %}" id="site-cart-link" class="relative px-2 py-1.5 text-2xl no-underline text-white" aria-label="Cart">
+                        &#128722;
+                        <span id="site-cart-count" class="{% if not cart_count %}hidden {% endif %}absolute -top-2 right-0 bg-yellow-400 text-black text-[10px] min-w-[18px] h-[18px] flex items-center justify-center rounded-full px-1 font-bold">
+                            {{ cart_count }}
+                        </span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="site-mobile-shortcuts">
+            <div class="site-mobile-shortcuts-inner max-w-[1600px] mx-auto px-3 py-2 flex items-center gap-3 overflow-x-auto whitespace-nowrap text-xs text-white">
+                <span class="rounded-full bg-white/10 px-3 py-1.5 font-semibold">Delivery: <span id="mobileCountryText">India</span></span>
+                <span class="rounded-full bg-white/10 px-3 py-1.5 font-semibold">Language: <span id="mobileLanguageText">English</span></span>
+                {% if request.user.is_authenticated %}
+                <a href="{% url 'orders:order_tracking_list' %}" class="rounded-full bg-white/10 px-3 py-1.5 font-semibold text-white no-underline">Orders</a>
+                <a href="{% url 'profile' %}" class="rounded-full bg-white/10 px-3 py-1.5 font-semibold text-white no-underline">Profile</a>
+                {% if request.user.user_profile != "Seller" %}
+                <a href="{% url 'sellers:create_profile' %}" class="rounded-full bg-white/10 px-3 py-1.5 font-semibold text-white no-underline">Business Account</a>
+                {% endif %}
+                {% if request.user.user_profile == "Seller" %}
+                <a href="{% url 'sellers:dashboard' %}" class="rounded-full bg-white/10 px-3 py-1.5 font-semibold text-white no-underline">Seller Dashboard</a>
+                {% endif %}
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="category-strip">
+            <div class="site-category-inner mx-auto">
+                <div class="category-strip-inner px-4 sm:px-6 lg:px-12 py-2">
+                    <button type="button" id="siteMenuDrawerBtn" class="category-strip-menu" aria-label="Open categories menu">
+                        <span class="category-strip-menu-icon">&#9776;</span>
+                        <span>All</span>
+                    </button>
+                    {% for nav_category in navigation_categories %}
+                    <a href="{% url 'products:product_list_by_category' nav_category.slug %}" class="category-link">{{ nav_category.name }}</a>
+                    {% empty %}
+                    <a href="{% url 'products:product_list' %}" class="category-link">Shop</a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="google_translate_element" class="hidden"></div>
+
+    <main class="flex-1 pt-0">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="bg-[#131921] text-white mt-10">
+        <div class="max-w-[1600px] mx-auto px-4 py-10 grid gap-8 md:grid-cols-3">
+            <div>
+                <h2 class="text-lg font-semibold mb-3">{{ site_business_name }}</h2>
+                <p class="text-sm text-gray-300 mb-2">Customer support and order assistance</p>
+                <p class="text-sm"><a href="mailto:{{ site_support_email }}" class="text-white hover:text-yellow-300 no-underline">{{ site_support_email }}</a></p>
+                <p class="text-sm mt-1"><a href="tel:{{ site_support_phone }}" class="text-white hover:text-yellow-300 no-underline">{{ site_support_phone }}</a></p>
+                <div class="text-sm text-gray-300 mt-3 space-y-1">
+                    {% for line in site_address_lines %}
+                    <p class="mb-0">{{ line }}</p>
+                    {% endfor %}
+                </div>
+            </div>
+            <div>
+                <h2 class="text-lg font-semibold mb-3">Customer Policies</h2>
+                <div class="space-y-2 text-sm">
+                    <p class="mb-0"><a href="{% url 'privacy_policy' %}" class="text-white hover:text-yellow-300 no-underline">Privacy Policy</a></p>
+                    <p class="mb-0"><a href="{% url 'terms_conditions' %}" class="text-white hover:text-yellow-300 no-underline">Terms &amp; Conditions</a></p>
+                    <p class="mb-0"><a href="{% url 'refund_policy' %}" class="text-white hover:text-yellow-300 no-underline">Refund &amp; Cancellation Policy</a></p>
+                    <p class="mb-0"><a href="{% url 'shipping_policy' %}" class="text-white hover:text-yellow-300 no-underline">Shipping &amp; Delivery Policy</a></p>
+                    <p class="mb-0"><a href="{% url 'contact_us' %}" class="text-white hover:text-yellow-300 no-underline">Contact Us</a></p>
+                </div>
+            </div>
+            <div>
+                <h2 class="text-lg font-semibold mb-3">Why Shop With Us</h2>
+                <p class="text-sm text-gray-300 mb-2">Secure checkout, transparent support details, and clear post-purchase policies for every order.</p>
+                <p class="text-sm text-gray-300 mb-0">Service area: {{ site_service_regions }}</p>
+                <div class="mt-5">
+                    <h2 class="text-lg font-semibold mb-2">New Seller?</h2>
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'sellers:create_profile' %}" class="inline-block bg-black text-white font-semibold px-6 py-3 rounded-xl hover:bg-slate-800 transition">
+                        Apply for Registration
+                    </a>
+                    {% else %}
+                    <a href="{% url 'login' %}?next={% url 'sellers:create_profile' %}" class="inline-block bg-black text-white font-semibold px-6 py-3 rounded-xl hover:bg-slate-800 transition">
+                        Apply for Registration
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="border-t border-white/10 px-4 py-4 text-center">
+            <p class="text-sm mb-0">&copy; {{ site_current_year }} {{ site_business_name }}. All rights reserved.</p>
+            <p>Powered by Mykarate LLP</p>
+        </div>
+    </footer>
+
+    <script>
+        const accountBtn = document.getElementById("accountDropdownBtn");
+        const accountMenu = document.getElementById("accountDropdownMenu");
+        const accountContainer = document.getElementById("accountDropdownContainer");
+        const accountAddressToggle = document.getElementById("accountAddressToggle");
+        const accountAddressPanel = document.getElementById("accountAddressPanel");
+        const languageBtn = document.getElementById("languageDropdownBtn");
+        const languageMenu = document.getElementById("languageDropdownMenu");
+        const selectedLanguageText = document.getElementById("selectedLanguageText");
+        const selectedLanguageFlag = document.getElementById("selectedLanguageFlag");
+        const mobileLanguageText = document.getElementById("mobileLanguageText");
+        const countryBtn = document.getElementById("countryDropdownBtn");
+        const countryMenu = document.getElementById("countryDropdownMenu");
+        const selectedCountryText = document.getElementById("selectedCountryText");
+        const selectedCountryFlag = document.getElementById("selectedCountryFlag");
+        const mobileCountryText = document.getElementById("mobileCountryText");
+        const siteMenuDrawerBtn = document.getElementById("siteMenuDrawerBtn");
+        const siteMenuDrawer = document.getElementById("siteMenuDrawer");
+        const siteMenuDrawerOverlay = document.getElementById("siteMenuDrawerOverlay");
+        const siteMenuDrawerClose = document.getElementById("siteMenuDrawerClose");
+        const searchCategoryContainer = document.getElementById("searchCategoryDropdownContainer");
+        const searchCategoryInput = document.getElementById("searchCategoryInput");
+        const selectedCategoryText = document.getElementById("selectedCategoryText");
+
+        let activeTranslateTimer = null;
+        let isLanguageReloadPending = false;
+        let accountMenuHoverTimer = null;
+
+        function setFlagMarkup(element, flagMarkup) {
+            if (element && flagMarkup) {
+                element.innerHTML = flagMarkup;
+            }
+        }
+
+        function persistGoogleTranslateCookie(lang) {
+            const targetLang = lang || "en";
+            document.cookie = `googtrans=/en/${targetLang};path=/`;
+            document.cookie = `googtrans=/auto/${targetLang};path=/`;
+        }
+
+        function queueGoogleTranslateSync(lang) {
+            if (activeTranslateTimer) {
+                clearInterval(activeTranslateTimer);
+            }
+
+            let attempts = 0;
+            activeTranslateTimer = window.setInterval(() => {
+                const combo = document.querySelector(".goog-te-combo");
+                attempts += 1;
+                if (combo) {
+                    if (combo.value !== lang) {
+                        combo.value = lang;
+                        combo.dispatchEvent(new Event("change"));
+                    }
+                    clearInterval(activeTranslateTimer);
+                    activeTranslateTimer = null;
+                } else if (attempts >= 30) {
+                    clearInterval(activeTranslateTimer);
+                    activeTranslateTimer = null;
+                }
+            }, 200);
+        }
+
+        function applyLanguageSelection(lang, text, flagMarkup) {
+            if (!lang || isLanguageReloadPending) {
+                return;
+            }
+
+            if (selectedLanguageText) selectedLanguageText.textContent = text;
+            if (mobileLanguageText) mobileLanguageText.textContent = text;
+            setFlagMarkup(selectedLanguageFlag, flagMarkup);
+
+            localStorage.setItem("selectedLanguage", lang);
+            localStorage.setItem("selectedLanguageText", text);
+            localStorage.setItem("selectedLanguageFlag", flagMarkup);
+            persistGoogleTranslateCookie(lang);
+
+            if (lang !== "en") {
+                queueGoogleTranslateSync(lang);
+            }
+
+            languageMenu?.classList.add("hidden");
+            isLanguageReloadPending = true;
+            window.location.reload();
+        }
+
+        function setMenuState(container, menu, isOpen) {
+            if (!menu) return;
+            menu.classList.toggle("hidden", !isOpen);
+            if (container) {
+                container.dataset.open = isOpen ? "true" : "false";
+            }
+        }
+
+        function setDrawerState(isOpen) {
+            if (!siteMenuDrawer || !siteMenuDrawerOverlay) return;
+            siteMenuDrawer.classList.toggle("is-open", isOpen);
+            siteMenuDrawerOverlay.classList.toggle("is-open", isOpen);
+            siteMenuDrawer.setAttribute("aria-hidden", String(!isOpen));
+            siteMenuDrawerOverlay.setAttribute("aria-hidden", String(!isOpen));
+            document.body.style.overflow = isOpen ? "hidden" : "";
+        }
+
+        if (accountBtn && accountMenu && accountContainer) {
+            accountBtn.addEventListener("click", function (event) {
+                event.stopPropagation();
+                if (accountMenuHoverTimer) {
+                    clearTimeout(accountMenuHoverTimer);
+                    accountMenuHoverTimer = null;
+                }
+                setMenuState(accountContainer, accountMenu, accountMenu.classList.contains("hidden"));
+                languageMenu?.classList.add("hidden");
+                countryMenu?.classList.add("hidden");
+            });
+
+            accountContainer.addEventListener("mouseenter", function () {
+                if (accountMenuHoverTimer) {
+                    clearTimeout(accountMenuHoverTimer);
+                    accountMenuHoverTimer = null;
+                }
+                setMenuState(accountContainer, accountMenu, true);
+            });
+
+            accountContainer.addEventListener("mouseleave", function () {
+                accountMenuHoverTimer = window.setTimeout(() => {
+                    setMenuState(accountContainer, accountMenu, false);
+                }, 140);
+            });
+        }
+
+        if (accountAddressToggle && accountAddressPanel) {
+            accountAddressToggle.addEventListener("click", function (event) {
+                event.stopPropagation();
+                const isExpanded = this.getAttribute("aria-expanded") === "true";
+                this.setAttribute("aria-expanded", String(!isExpanded));
+                accountAddressPanel.classList.toggle("hidden", isExpanded);
+            });
+        }
+
+        if (languageBtn && languageMenu) {
+            languageBtn.addEventListener("click", function (event) {
+                event.stopPropagation();
+                languageMenu.classList.toggle("hidden");
+                countryMenu?.classList.add("hidden");
+                accountMenu?.classList.add("hidden");
+            });
+        }
+
+        document.querySelectorAll(".language-option").forEach((option) => {
+            option.addEventListener("click", function () {
+                applyLanguageSelection(this.getAttribute("data-lang"), this.textContent.trim(), this.getAttribute("data-flag"));
+            });
+        });
+
+        if (countryBtn && countryMenu) {
+            countryBtn.addEventListener("click", function (event) {
+                event.stopPropagation();
+                countryMenu.classList.toggle("hidden");
+                languageMenu?.classList.add("hidden");
+                accountMenu?.classList.add("hidden");
+            });
+        }
+
+        if (siteMenuDrawerBtn) {
+            siteMenuDrawerBtn.addEventListener("click", function () {
+                setDrawerState(true);
+            });
+        }
+
+        if (siteMenuDrawerClose) {
+            siteMenuDrawerClose.addEventListener("click", function () {
+                setDrawerState(false);
+            });
+        }
+
+        if (siteMenuDrawerOverlay) {
+            siteMenuDrawerOverlay.addEventListener("click", function () {
+                setDrawerState(false);
+            });
+        }
+
+        document.querySelectorAll(".search-category-option").forEach((option) => {
+            option.addEventListener("click", function () {
+                const value = this.getAttribute("data-value") || "";
+                const label = this.getAttribute("data-label") || "All";
+                const url = this.getAttribute("data-url");
+                if (searchCategoryInput) searchCategoryInput.value = value;
+                if (selectedCategoryText) selectedCategoryText.textContent = label;
+                if (searchCategoryContainer) searchCategoryContainer.open = false;
+                if (url) {
+                    window.location.href = url;
+                }
+            });
+        });
+
+        document.querySelectorAll(".country-option").forEach((option) => {
+            option.addEventListener("click", function () {
+                const country = this.getAttribute("data-country");
+                const flag = this.getAttribute("data-flag");
+                const text = this.textContent.trim();
+                if (selectedCountryText) selectedCountryText.textContent = text;
+                if (mobileCountryText) mobileCountryText.textContent = text;
+                setFlagMarkup(selectedCountryFlag, flag);
+                localStorage.setItem("selectedCountry", country);
+                localStorage.setItem("selectedCountryText", text);
+                localStorage.setItem("selectedCountryFlag", flag);
+                countryMenu?.classList.add("hidden");
+            });
+        });
+
+        document.addEventListener("click", function (event) {
+            if (accountContainer && !accountContainer.contains(event.target)) {
+                setMenuState(accountContainer, accountMenu, false);
+            }
+            if (languageBtn && !languageBtn.parentElement.contains(event.target)) {
+                languageMenu?.classList.add("hidden");
+            }
+            if (countryBtn && !countryBtn.parentElement.contains(event.target)) {
+                countryMenu?.classList.add("hidden");
+            }
+            if (searchCategoryContainer && !searchCategoryContainer.contains(event.target)) {
+                searchCategoryContainer.open = false;
+            }
+        });
+
+        document.addEventListener("keydown", function (event) {
+            if (event.key === "Escape") {
+                setDrawerState(false);
+            }
+        });
+
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement(
+                {
+                    pageLanguage: "en",
+                    includedLanguages: "ta,hi,ml,te,kn,ar,fr,de,es",
+                    autoDisplay: false
+                },
+                "google_translate_element"
+            );
+        }
+
+        window.addEventListener("load", function () {
+            const savedLanguage = localStorage.getItem("selectedLanguage");
+            const savedLanguageText = localStorage.getItem("selectedLanguageText");
+            const savedLanguageFlag = localStorage.getItem("selectedLanguageFlag");
+            const savedCountryText = localStorage.getItem("selectedCountryText");
+            const savedCountryFlag = localStorage.getItem("selectedCountryFlag");
+
+            if (savedLanguageText) {
+                if (selectedLanguageText) selectedLanguageText.textContent = savedLanguageText;
+                if (mobileLanguageText) mobileLanguageText.textContent = savedLanguageText;
+            }
+            if (savedLanguageFlag) {
+                setFlagMarkup(selectedLanguageFlag, savedLanguageFlag);
+            }
+
+            if (savedCountryText) {
+                if (selectedCountryText) selectedCountryText.textContent = savedCountryText;
+                if (mobileCountryText) mobileCountryText.textContent = savedCountryText;
+            }
+            if (savedCountryFlag) {
+                setFlagMarkup(selectedCountryFlag, savedCountryFlag);
+            }
+
+            if (savedLanguage) {
+                persistGoogleTranslateCookie(savedLanguage);
+                if (savedLanguage !== "en") {
+                    queueGoogleTranslateSync(savedLanguage);
+                }
+            } else {
+                persistGoogleTranslateCookie("en");
+            }
+        });
+
+    </script>
+
+    <script>
+        (function () {
+            const addToCartForms = Array.from(document.querySelectorAll("[data-card-add-to-cart-form]"));
+            if (!addToCartForms.length) return;
+
+            const cartLink = document.getElementById("site-cart-link");
+            const cartCountBadge = document.getElementById("site-cart-count");
+
+            const updateCartBadge = (count) => {
+                if (!cartCountBadge) return;
+                cartCountBadge.textContent = count;
+                cartCountBadge.classList.toggle("hidden", !count);
+                cartCountBadge.classList.remove("cart-badge-pop");
+                void cartCountBadge.offsetWidth;
+                cartCountBadge.classList.add("cart-badge-pop");
+            };
+
+            const animateProductToCart = (form) => {
+                if (!cartLink) return;
+
+                const productCard = form.closest("[data-product-card]");
+                const productImage = productCard ? productCard.querySelector("[data-product-image]") : null;
+                if (!productImage) return;
+
+                const imageRect = productImage.getBoundingClientRect();
+                const cartRect = cartLink.getBoundingClientRect();
+                const flyingImage = productImage.cloneNode(true);
+
+                flyingImage.style.position = "fixed";
+                flyingImage.style.left = imageRect.left + "px";
+                flyingImage.style.top = imageRect.top + "px";
+                flyingImage.style.width = imageRect.width + "px";
+                flyingImage.style.height = imageRect.height + "px";
+                flyingImage.style.objectFit = "cover";
+                flyingImage.style.borderRadius = "18px";
+                flyingImage.style.zIndex = "2000";
+                flyingImage.style.pointerEvents = "none";
+                flyingImage.style.transition = "transform 0.85s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.85s ease";
+                document.body.appendChild(flyingImage);
+
+                requestAnimationFrame(() => {
+                    const translateX = cartRect.left - imageRect.left + (cartRect.width / 2) - (imageRect.width / 2);
+                    const translateY = cartRect.top - imageRect.top + (cartRect.height / 2) - (imageRect.height / 2);
+                    flyingImage.style.transform = `translate(${translateX}px, ${translateY}px) scale(0.12)`;
+                    flyingImage.style.opacity = "0.2";
+                });
+
+                flyingImage.addEventListener("transitionend", () => {
+                    flyingImage.remove();
+                }, { once: true });
+            };
+
+            addToCartForms.forEach((form) => {
+                form.addEventListener("submit", (event) => {
+                    event.preventDefault();
+
+                    const formData = new FormData(form);
+                    const messageElement = form.closest("[data-product-card]")?.querySelector(".cart-message");
+
+                    fetch(form.action, {
+                        method: "POST",
+                        headers: {
+                            "X-CSRFToken": formData.get("csrfmiddlewaretoken"),
+                            "X-Requested-With": "XMLHttpRequest"
+                        },
+                        body: formData
+                    })
+                    .then((response) => response.json())
+                    .then((data) => {
+                        if (data.success) {
+                            if (messageElement) {
+                                messageElement.textContent = data.message;
+                                messageElement.classList.remove("text-red-600");
+                                messageElement.classList.add("text-green-600");
+                            }
+                            updateCartBadge(data.cart_count || 0);
+                            animateProductToCart(form);
+                        } else if (messageElement) {
+                            messageElement.textContent = data.message || "Failed to add to cart";
+                            messageElement.classList.remove("text-green-600");
+                            messageElement.classList.add("text-red-600");
+                        }
+                    })
+                    .catch(() => {
+                        if (messageElement) {
+                            messageElement.textContent = "Failed to add to cart";
+                            messageElement.classList.remove("text-green-600");
+                            messageElement.classList.add("text-red-600");
+                        }
+                    });
+                });
+            });
+        })();
+    </script>
+
+    <script type="text/javascript" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+</body>
+</html>

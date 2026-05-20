@@ -1,0 +1,569 @@
+{% extends "base.html" %}
+{% block title %}Order Tracking{% endblock %}
+
+{% block content %}
+<section class="relative overflow-hidden py-8 sm:py-10" style="background:
+  radial-gradient(circle at top left, rgba(14,165,233,0.16), transparent 28%),
+  radial-gradient(circle at top right, rgba(245,158,11,0.14), transparent 26%),
+  linear-gradient(180deg, #f8fafc 0%, #eef4ff 52%, #f7f4ee 100%);">
+  <div class="pointer-events-none absolute inset-0 opacity-70" style="background-image:
+    linear-gradient(rgba(255,255,255,0.6) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.6) 1px, transparent 1px);
+    background-size: 34px 34px;"></div>
+  <div class="relative mx-auto max-w-6xl px-4 sm:px-6">
+    <div class="overflow-hidden rounded-[2rem] border border-white/70 bg-white/90 shadow-[0_30px_90px_rgba(15,23,42,0.12)] backdrop-blur">
+      <div class="border-b border-white/60 px-6 py-7 sm:px-8 sm:py-9" style="background:
+        linear-gradient(135deg, rgba(15,23,42,0.96) 0%, rgba(30,41,59,0.94) 42%, rgba(14,116,144,0.88) 100%),
+        radial-gradient(circle at top right, rgba(255,255,255,0.18), transparent 34%);">
+        <div class="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+          <div class="max-w-3xl">
+            <p class="text-xs font-semibold uppercase tracking-[0.32em] text-cyan-200">Order Tracking</p>
+            <h1 class="mt-3 text-3xl font-black tracking-tight text-white sm:text-4xl">Order #{{ order.display_order_id }}</h1>
+            <p class="mt-3 max-w-2xl text-sm leading-6 text-slate-200 sm:text-base">
+              Placed on {{ order.created_at|date:"M d, Y - h:i A" }} by {{ order.full_name }}.
+              Follow every item, manage cancellation before dispatch, and review return details after delivery.
+            </p>
+          </div>
+          <div class="grid gap-3 sm:min-w-[320px]">
+            <div class="rounded-2xl border border-white/15 bg-white/10 px-4 py-3 text-sm text-white shadow-inner backdrop-blur">
+              <p class="text-[11px] font-semibold uppercase tracking-[0.22em] text-amber-200">Delivery Address</p>
+              <p class="mt-2 leading-6 text-slate-50">{{ order.address }}</p>
+            </div>
+            <div class="flex flex-wrap items-center gap-3">
+              <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold {% if order.status == 'cancelled' %}bg-rose-100 text-rose-800{% elif order.status == 'partially_cancelled' %}bg-amber-100 text-amber-800{% else %}bg-emerald-100 text-emerald-800{% endif %}">
+                Order Status: {{ order.get_status_display }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-gradient-to-b from-white via-white to-slate-50/90 p-6 sm:p-8">
+        <div class="mb-7 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <a href="{% url 'orders:order_tracking_list' %}" class="inline-flex items-center text-sm font-semibold text-slate-700 transition hover:text-slate-900">
+              &larr; Back to My Orders
+            </a>
+            <span class="hidden text-slate-300 sm:block">|</span>
+            <a href="{% url 'orders:return_request_list' %}" class="inline-flex items-center text-sm font-semibold text-rose-700 transition hover:text-rose-800">
+              View All Returns
+            </a>
+          </div>
+          <div class="rounded-2xl border border-slate-200 bg-gradient-to-r from-white to-slate-50 px-4 py-3 text-sm text-slate-600 shadow-sm">
+            <span class="font-semibold text-slate-900">Payment Method:</span>
+            {% if order.payment_method == "cod" %}Cash on delivery{% elif order.payment_method == "wallet" %}Wallet{% else %}Online payment{% endif %}
+          </div>
+        </div>
+
+        <div class="mb-6 rounded-2xl border border-slate-200 bg-gradient-to-r from-slate-950 via-slate-900 to-cyan-900 px-5 py-4 text-white shadow-lg">
+          <p class="text-xs font-semibold uppercase tracking-[0.28em] text-cyan-200">Tracking Details</p>
+          <h2 class="mt-2 text-xl font-bold">Ordered Products and current delivery progress</h2>
+        </div>
+
+        <div class="space-y-7">
+          {% for row in tracking_rows %}
+          <article class="rounded-[1.65rem] border border-slate-200 bg-white p-5 shadow-[0_14px_40px_rgba(15,23,42,0.06)] sm:p-6">
+            <div class="rounded-[1.4rem] border border-slate-200 bg-gradient-to-r from-white via-slate-50 to-amber-50/50 p-4">
+              <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                <div class="flex items-start gap-4">
+                  {% if row.item.product.image %}
+                  <img src="{{ row.item.product.image.url }}" alt="{{ row.item.product.name }}" class="h-20 w-20 rounded-2xl border border-slate-200 object-cover bg-white">
+                  {% else %}
+                  <div class="flex h-20 w-20 items-center justify-center rounded-2xl border border-slate-200 bg-slate-100 text-[11px] font-semibold text-slate-500">
+                    No image
+                  </div>
+                  {% endif %}
+                  <div>
+                    <h2 class="text-xl font-bold text-slate-900">{{ row.item.product.name }}</h2>
+                    <p class="mt-1 text-sm text-slate-500">{{ row.item.variant_summary|default:"Standard selection" }}</p>
+                    <div class="mt-3 flex flex-wrap gap-3 text-sm text-slate-600">
+                      <span class="rounded-full bg-slate-100 px-3 py-1 font-medium">Qty: {{ row.item.quantity }}</span>
+                      <span class="rounded-full bg-slate-100 px-3 py-1 font-medium">Price: Rs.{{ row.item.price }}</span>
+                      <span class="rounded-full bg-slate-100 px-3 py-1 font-medium">Subtotal: Rs.{{ row.item.get_cost }}</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="flex flex-wrap gap-2 lg:max-w-[260px] lg:justify-end">
+                  {% if row.item.status == 'cancelled' %}
+                  <span class="inline-flex items-center rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-700">Cancelled</span>
+                  {% elif row.payout and row.payout.delivery_status == 'delivered' %}
+                  <span class="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">Delivered</span>
+                  {% elif row.status_label %}
+                  <span class="inline-flex items-center rounded-full border border-cyan-200 bg-cyan-50 px-3 py-1 text-xs font-semibold text-cyan-700">{{ row.status_label }}</span>
+                  {% else %}
+                  <span class="inline-flex items-center rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">Order placed</span>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-5">
+              <div class="rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
+                <div class="flex flex-wrap items-center gap-2">
+                  <span class="text-sm font-semibold text-slate-900">Current Status</span>
+                  {% if row.item.status == 'cancelled' %}
+                  <span class="inline-flex items-center rounded-full bg-rose-600 px-3 py-1 text-xs font-semibold text-white shadow-sm">Cancellation Completed</span>
+                  {% elif row.payout and row.payout.delivery_status == 'delivered' %}
+                  <span class="inline-flex items-center rounded-full bg-emerald-600 px-3 py-1 text-xs font-semibold text-white shadow-sm">Delivered Successfully</span>
+                  {% elif row.status_label %}
+                  <span class="inline-flex items-center rounded-full bg-slate-900 px-3 py-1 text-xs font-semibold text-white shadow-sm">{{ row.status_label }}</span>
+                  {% else %}
+                  <span class="inline-flex items-center rounded-full bg-slate-700 px-3 py-1 text-xs font-semibold text-white shadow-sm">Awaiting Dispatch</span>
+                  {% endif %}
+                </div>
+
+                {% if row.item.status != 'cancelled' %}
+                <div class="mt-4 overflow-x-auto pb-2">
+                  <div class="min-w-[860px]">
+                    <div class="relative rounded-[1.6rem] border border-slate-200 bg-white px-5 py-6 shadow-sm">
+                      <div class="absolute left-8 right-8 top-[34px] h-2 rounded-full bg-slate-200"></div>
+                      <div class="absolute left-8 top-[34px] h-2 rounded-full bg-gradient-to-r from-cyan-400 via-violet-500 to-emerald-500"
+                        style="{% if row.stage_level == 1 %}width:0%;{% elif row.stage_level == 2 %}width:25%;{% elif row.stage_level == 3 %}width:50%;{% elif row.stage_level == 4 %}width:75%;{% else %}width:100%;{% endif %}"></div>
+                      <div class="absolute top-[14px] z-10 -translate-x-1/2 text-2xl transition-all duration-500"
+                        style="{% if row.stage_level == 1 %}left:10%;{% elif row.stage_level == 2 %}left:30%;{% elif row.stage_level == 3 %}left:50%;{% elif row.stage_level == 4 %}left:70%;{% else %}left:90%;{% endif %}">
+                        <span class="inline-flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-slate-950 to-cyan-800 text-white shadow-[0_14px_24px_rgba(15,23,42,0.22)]">&#128666;</span>
+                      </div>
+                      <div class="relative mt-10 grid grid-cols-5 gap-3">
+                        <div class="text-center">
+                          <div class="mx-auto h-4 w-4 rounded-full {% if row.stage_level >= 1 %}bg-cyan-500 ring-4 ring-cyan-100{% else %}bg-slate-300{% endif %}"></div>
+                          <p class="mt-3 text-xs font-semibold uppercase tracking-[0.16em] {% if row.stage_level >= 1 %}text-cyan-700{% else %}text-slate-400{% endif %}">Placed</p>
+                        </div>
+                        <div class="text-center">
+                          <div class="mx-auto h-4 w-4 rounded-full {% if row.stage_level >= 2 %}bg-amber-500 ring-4 ring-amber-100{% else %}bg-slate-300{% endif %}"></div>
+                          <p class="mt-3 text-xs font-semibold uppercase tracking-[0.16em] {% if row.stage_level >= 2 %}text-amber-700{% else %}text-slate-400{% endif %}">Packed</p>
+                        </div>
+                        <div class="text-center">
+                          <div class="mx-auto h-4 w-4 rounded-full {% if row.stage_level >= 3 %}bg-violet-500 ring-4 ring-violet-100{% else %}bg-slate-300{% endif %}"></div>
+                          <p class="mt-3 text-xs font-semibold uppercase tracking-[0.16em] {% if row.stage_level >= 3 %}text-violet-700{% else %}text-slate-400{% endif %}">Shipped</p>
+                        </div>
+                        <div class="text-center">
+                          <div class="mx-auto h-4 w-4 rounded-full {% if row.stage_level >= 4 %}bg-rose-500 ring-4 ring-rose-100{% else %}bg-slate-300{% endif %}"></div>
+                          <p class="mt-3 text-xs font-semibold uppercase tracking-[0.16em] {% if row.stage_level >= 4 %}text-rose-700{% else %}text-slate-400{% endif %}">Out for Delivery</p>
+                        </div>
+                        <div class="text-center">
+                          <div class="mx-auto h-4 w-4 rounded-full {% if row.stage_level >= 5 %}bg-emerald-500 ring-4 ring-emerald-100{% else %}bg-slate-300{% endif %}"></div>
+                          <p class="mt-3 text-xs font-semibold uppercase tracking-[0.16em] {% if row.stage_level >= 5 %}text-emerald-700{% else %}text-slate-400{% endif %}">Delivered</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                {% endif %}
+
+                {% if row.payout and row.payout.delivery_status_note %}
+                <p class="mt-4 rounded-2xl bg-white px-4 py-3 text-sm text-slate-700 shadow-sm">
+                  <span class="font-semibold text-slate-900">Update note:</span> {{ row.payout.delivery_status_note }}
+                </p>
+                {% endif %}
+
+                {% if row.payout and row.payout.delivery_status_updated_at %}
+                <p class="mt-3 text-xs text-slate-500">
+                  Last updated on {{ row.payout.delivery_status_updated_at|date:"M d, Y - h:i A" }}
+                  {% if row.payout.delivery_status_updated_by %}by {{ row.payout.delivery_status_updated_by }}{% endif %}
+                </p>
+                {% endif %}
+              </div>
+
+              <div class="mt-4 flex flex-wrap gap-3">
+                {% if row.payout and row.payout.delivery_status == 'delivered' %}
+                <a href="{% url 'reviews:add' %}?product_id={{ row.item.product.id }}&next={% url 'orders:order_tracking_detail' order.id %}" class="inline-flex items-center rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700">
+                  Write a Review
+                </a>
+                {% endif %}
+              </div>
+
+              {% if row.item.status == 'cancelled' %}
+              <p class="mt-4 text-sm text-rose-700">
+                This item was cancelled on {{ row.item.cancelled_at|date:"M d, Y - h:i A" }}.
+              </p>
+              {% endif %}
+            </div>
+          </article>
+          {% endfor %}
+        </div>
+
+        <div class="mt-8 rounded-[1.7rem] border border-slate-200 bg-white p-5 shadow-[0_14px_40px_rgba(15,23,42,0.06)] sm:p-6">
+          <h2 class="text-lg font-bold text-slate-900">Delivery & Payment Snapshot</h2>
+          {% if delivery_assignment %}
+          <div class="mt-4 grid gap-3 text-sm sm:grid-cols-2">
+            <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+              <p class="text-xs uppercase tracking-[0.16em] text-slate-500">Delivery Status</p>
+              <p class="mt-2 font-semibold text-slate-900">{{ delivery_assignment.get_status_display }}</p>
+              {% if delivery_assignment.delivery_agent %}
+              <p class="mt-1 text-slate-600">Agent: {{ delivery_assignment.delivery_agent }}</p>
+              {% endif %}
+            </div>
+            <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+              <p class="text-xs uppercase tracking-[0.16em] text-slate-500">Payment Status</p>
+              {% if order.payment_method == 'cod' %}
+              <p class="mt-2 font-semibold text-slate-900">COD - {{ delivery_assignment.get_cod_payment_status_display }}</p>
+              {% if delivery_assignment.cod_collected_at %}
+              <p class="mt-1 text-slate-600">Collected on {{ delivery_assignment.cod_collected_at|date:"M d, Y - h:i A" }}</p>
+              {% endif %}
+              {% else %}
+              <p class="mt-2 font-semibold text-slate-900">Paid online</p>
+              {% endif %}
+            </div>
+          </div>
+          {% if delivery_assignment.customer_note %}
+          <p class="mt-3 rounded-2xl bg-indigo-50 px-4 py-3 text-sm text-indigo-900">
+            <span class="font-semibold">Latest update:</span> {{ delivery_assignment.customer_note }}
+          </p>
+          {% endif %}
+          {% else %}
+          <p class="mt-3 text-sm text-slate-500">Delivery assignment is not available yet.</p>
+          {% endif %}
+        </div>
+
+        <div class="mt-8 rounded-[1.7rem] border border-slate-200 bg-white p-5 shadow-[0_14px_40px_rgba(15,23,42,0.06)] sm:p-6">
+          <div class="flex items-center justify-between gap-4">
+            <h2 class="text-lg font-bold text-slate-900">Payment Transactions</h2>
+            <a href="{% url 'orders:order_invoice' order.id %}" class="inline-flex shrink-0 items-center justify-center rounded-xl bg-violet-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-violet-700">
+              View Invoice
+            </a>
+          </div>
+          {% if transactions %}
+          <div class="mt-4 space-y-3">
+            {% for txn in transactions %}
+            <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm">
+              <p><span class="font-semibold">Txn ID:</span> {{ txn.id }} | <span class="font-semibold">Status:</span> {{ txn.get_status_display }} | <span class="font-semibold">Gateway:</span> {{ txn.get_gateway_display }}</p>
+              <p class="mt-1"><span class="font-semibold">Amount:</span> Rs.{{ txn.amount }} | <span class="font-semibold">Time:</span> {{ txn.created_at|date:"M d, Y - h:i A" }}</p>
+              {% if txn.gateway_order_id %}<p class="mt-1"><span class="font-semibold">Gateway Order ID:</span> {{ txn.gateway_order_id }}</p>{% endif %}
+              {% if txn.gateway_payment_id %}<p class="mt-1"><span class="font-semibold">Gateway Payment ID:</span> {{ txn.gateway_payment_id }}</p>{% endif %}
+              {% if txn.failure_reason %}<p class="mt-1 text-rose-700"><span class="font-semibold">Failure Reason:</span> {{ txn.failure_reason }}</p>{% endif %}
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <p class="mt-3 text-sm text-slate-500">No transaction records available.</p>
+          {% endif %}
+        </div>
+
+        {% if can_cancel_order %}
+        <div class="mt-8 rounded-[1.7rem] border border-slate-200 bg-white p-5 shadow-[0_14px_40px_rgba(15,23,42,0.06)] sm:p-6">
+          <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p class="text-xs font-semibold uppercase tracking-[0.26em] text-rose-600">Cancellation</p>
+              <h2 class="mt-2 text-lg font-bold text-slate-900">Cancel ordered products</h2>
+              <p class="mt-1 text-sm text-slate-500">Choose a product below, adjust quantity if needed, and use the cancel icon to continue.</p>
+            </div>
+            <button type="button" id="toggleCancelProducts" class="inline-flex items-center justify-center rounded-xl bg-rose-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-rose-700">
+              Cancel Order
+            </button>
+          </div>
+
+          <div id="cancelProductsPanel" class="mt-5 hidden space-y-3">
+            {% for row in tracking_rows %}
+              {% if row.item.status != 'cancelled' and row.is_cancellable %}
+              <div class="rounded-2xl border border-slate-200 bg-gradient-to-r from-white to-rose-50/40 p-4">
+                <form method="post" action="{% url 'orders:cancel_order_item' row.item.id %}" id="cancel-form-{{ row.item.id }}" class="flex items-center gap-4" data-cancel-form data-cancel-kind="item" data-product-name="{{ row.item.product.name|escape }}" data-max-quantity="{{ row.item.quantity }}">
+                  {% csrf_token %}
+                  <input type="hidden" name="reason" value="">
+                  <input type="hidden" name="cancel_quantity" value="1" data-cancel-quantity-input>
+                {% if row.item.product.image %}
+                <img src="{{ row.item.product.image.url }}" alt="{{ row.item.product.name }}" class="h-14 w-14 rounded-xl border border-slate-200 object-cover bg-white">
+                {% else %}
+                <div class="flex h-14 w-14 items-center justify-center rounded-xl border border-slate-200 bg-slate-100 text-[10px] font-semibold text-slate-500">
+                  No image
+                </div>
+                {% endif %}
+                <div class="min-w-0 flex-1">
+                  <div class="flex items-center gap-2">
+                    <p class="truncate text-sm font-bold text-slate-900">{{ row.item.product.name }}</p>
+                    <button type="submit" form="cancel-form-{{ row.item.id }}" class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-rose-600 text-lg font-bold leading-none text-white shadow-[0_10px_20px_rgba(225,29,72,0.28)] transition hover:scale-[1.03] hover:bg-rose-700" aria-label="Cancel {{ row.item.product.name }}" title="Remove product">
+                      &times;
+                    </button>
+                  </div>
+                  <p class="mt-1 text-xs text-slate-500">Qty: {{ row.item.quantity }} | Rs.{{ row.item.get_cost }}</p>
+                </div>
+                  {% if row.item.quantity > 1 %}
+                  <div class="inline-flex items-center rounded-full border border-slate-200 bg-white shadow-sm">
+                    <button type="button" class="flex h-9 w-9 items-center justify-center rounded-l-full text-lg font-bold text-slate-700 transition hover:bg-slate-100" data-qty-decrease aria-label="Decrease cancel quantity">-</button>
+                    <span class="min-w-[2.5rem] text-center text-sm font-bold text-slate-900" data-cancel-quantity-display>1</span>
+                    <button type="button" class="flex h-9 w-9 items-center justify-center rounded-r-full text-lg font-bold text-slate-700 transition hover:bg-slate-100" data-qty-increase aria-label="Increase cancel quantity">+</button>
+                  </div>
+                  {% endif %}
+                </form>
+              </div>
+              {% endif %}
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+        {% if show_return_refund_section %}
+        <div class="mt-8 rounded-[1.7rem] border border-slate-200 bg-white p-5 shadow-[0_14px_40px_rgba(15,23,42,0.06)] sm:p-6">
+          <div class="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <h2 class="text-lg font-bold text-slate-900">Return & Refund</h2>
+            {% if can_initiate_return %}
+            <a href="{% url 'orders:return_request_create' order.id %}" class="inline-flex items-center justify-center rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700">
+              Initiate Return
+            </a>
+            {% else %}
+            <div class="inline-flex items-center justify-center rounded-xl bg-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-500 blur-[1px] select-none">
+              Initiate Return
+            </div>
+            {% endif %}
+          </div>
+
+          {% if return_requests %}
+          <div class="space-y-4">
+            {% for return_request in return_requests %}
+            <div class="rounded-2xl border-l-4 p-4 {% if return_request.status == 'pending' %}border-yellow-400 bg-yellow-50{% elif return_request.status == 'approved' %}border-violet-400 bg-violet-50{% elif return_request.status == 'picked_up' %}border-cyan-400 bg-cyan-50{% elif return_request.status == 'refunded' or return_request.status == 'refund_completed' %}border-emerald-400 bg-emerald-50{% elif return_request.status == 'withdrawn' %}border-slate-400 bg-slate-50{% else %}border-rose-400 bg-rose-50{% endif %}">
+              <div class="flex flex-col gap-3">
+                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <span class="font-semibold text-slate-900">Return Status</span>
+                  <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold {% if return_request.status == 'pending' %}bg-yellow-100 text-yellow-800{% elif return_request.status == 'approved' %}bg-violet-100 text-violet-800{% elif return_request.status == 'picked_up' %}bg-cyan-100 text-cyan-800{% elif return_request.status == 'refunded' or return_request.status == 'refund_completed' %}bg-emerald-100 text-emerald-800{% elif return_request.status == 'withdrawn' %}bg-slate-200 text-slate-700{% else %}bg-rose-100 text-rose-800{% endif %}">
+                    {{ return_request.get_status_display }}
+                  </span>
+                </div>
+                <div class="grid gap-3 text-sm sm:grid-cols-2">
+                  <div>
+                    <span class="text-slate-600">Product:</span>
+                    <p class="font-semibold text-slate-900">{{ return_request.product.name }}</p>
+                  </div>
+                  <div>
+                    <span class="text-slate-600">Reason:</span>
+                    <p class="font-semibold text-slate-900">{{ return_request.get_reason_display }}</p>
+                  </div>
+                  <div>
+                    <span class="text-slate-600">Refund Amount:</span>
+                    <p class="font-semibold text-slate-900">Rs.{{ return_request.refund_amount }}</p>
+                  </div>
+                  <div>
+                    <span class="text-slate-600">Requested on:</span>
+                    <p class="font-semibold text-slate-900">{{ return_request.created_at|date:"M d, Y" }}</p>
+                  </div>
+                </div>
+                {% if return_request.description %}
+                <div>
+                  <span class="text-slate-600">Details:</span>
+                  <p class="text-slate-700">{{ return_request.description }}</p>
+                </div>
+                {% endif %}
+                {% if return_request.admin_notes %}
+                <div class="rounded-2xl bg-blue-50 p-3">
+                  <span class="text-slate-600">Admin notes:</span>
+                  <p class="mt-1 text-slate-700">{{ return_request.admin_notes }}</p>
+                </div>
+                {% endif %}
+                {% if return_request.status == return_request.STATUS_APPROVED and return_request.seller_return_address %}
+                <div class="rounded-2xl border border-violet-200 bg-violet-50 p-3">
+                  <p class="text-xs font-semibold uppercase tracking-[0.18em] text-violet-700">Ship to Seller's Address</p>
+                  <p class="mt-2 whitespace-pre-wrap text-sm text-slate-900">{{ return_request.seller_return_address }}</p>
+                </div>
+                {% endif %}
+                {% if return_request.status == return_request.STATUS_PENDING or return_request.status == return_request.STATUS_APPROVED %}
+                <form method="post" action="{% url 'orders:withdraw_return_request' return_request.id %}" class="mt-2">
+                  {% csrf_token %}
+                  <button type="submit" class="inline-flex items-center rounded-xl border border-rose-200 bg-rose-50 px-4 py-2.5 text-sm font-semibold text-rose-700 transition hover:bg-rose-100">
+                    Withdraw Request
+                  </button>
+                </form>
+                {% endif %}
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% elif order.is_returnable %}
+          <div class="rounded-2xl border-l-4 border-l-emerald-500 bg-emerald-50 p-4">
+            <p class="text-sm text-emerald-800"><span class="font-semibold">Your order is eligible for return.</span></p>
+            {% if order.return_deadline %}
+            <p class="mt-2 text-sm text-emerald-800">Return window closes on <strong>{{ order.return_deadline|date:"M d, Y \a\t h:i A" }}</strong>.</p>
+            {% else %}
+            <p class="mt-2 text-sm text-emerald-800">You can initiate a return within 7 days of delivery.</p>
+            {% endif %}
+          </div>
+          {% else %}
+          <div class="rounded-2xl border-l-4 border-slate-300 bg-slate-50 p-4">
+            <p class="text-sm text-slate-700"><span class="font-semibold">Return window has expired.</span></p>
+            <div class="mt-2 space-y-1 text-xs text-slate-600">
+              {% if delivery_assignment and delivery_assignment.delivered_at %}
+              <p>Delivered on: {{ delivery_assignment.delivered_at|date:"M d, Y \a\t h:i A" }}</p>
+              {% if order.return_deadline %}<p>Return window closed after: {{ order.return_deadline|date:"M d, Y \a\t h:i A" }}</p>{% endif %}
+              {% else %}
+              <p>Delivery information is not available.</p>
+              {% endif %}
+            </div>
+          </div>
+          {% endif %}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+
+<div id="cancelConfirmationModal" class="fixed inset-0 z-[1100] hidden items-center justify-center bg-slate-950/60 px-4">
+  <div class="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_24px_70px_rgba(15,23,42,0.28)]">
+    <div class="flex items-start justify-between gap-4">
+      <div>
+        <p class="text-xs font-semibold uppercase tracking-[0.24em] text-rose-600">Confirm Cancellation</p>
+        <h2 class="mt-2 text-2xl font-extrabold text-slate-900">Are you sure?</h2>
+      </div>
+      <button type="button" id="cancelModalClose" class="rounded-full border border-slate-200 px-3 py-1.5 text-sm font-semibold text-slate-500 transition hover:bg-slate-50 hover:text-slate-700">
+        Close
+      </button>
+    </div>
+
+    <p id="cancelModalDescription" class="mt-4 text-sm leading-6 text-slate-600">
+      Are you sure you need to cancel this order item? Select a reason to continue.
+    </p>
+
+    <div class="mt-5">
+      <label for="cancelReasonSelect" class="mb-2 block text-sm font-semibold text-slate-800">Cancellation reason</label>
+      <select id="cancelReasonSelect" class="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-rose-400 focus:ring-2 focus:ring-rose-100">
+        <option value="">Select a reason</option>
+        <option value="Changed my mind">Changed my mind</option>
+        <option value="Ordered by mistake">Ordered by mistake</option>
+        <option value="Found a better price elsewhere">Found a better price elsewhere</option>
+        <option value="Delivery is taking too long">Delivery is taking too long</option>
+        <option value="Need to change shipping address">Need to change shipping address</option>
+        <option value="Need to change payment method">Need to change payment method</option>
+        <option value="Ordered wrong quantity">Ordered wrong quantity</option>
+        <option value="Ordered wrong size or variant">Ordered wrong size or variant</option>
+        <option value="Product no longer needed">Product no longer needed</option>
+        <option value="Duplicate order placed">Duplicate order placed</option>
+        <option value="Want to reorder later">Want to reorder later</option>
+        <option value="Other personal reason">Other personal reason</option>
+      </select>
+      <p id="cancelReasonError" class="mt-2 hidden text-sm font-medium text-rose-600">Please choose a cancellation reason.</p>
+    </div>
+
+    <div class="mt-6 flex flex-wrap justify-end gap-3">
+      <button type="button" id="cancelModalDismiss" class="inline-flex items-center rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
+        Keep Order
+      </button>
+      <button type="button" id="cancelModalConfirm" class="inline-flex items-center rounded-xl bg-rose-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-rose-700">
+        Cancel Now
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function () {
+    const toggleCancelProducts = document.getElementById("toggleCancelProducts");
+    const cancelProductsPanel = document.getElementById("cancelProductsPanel");
+    const modal = document.getElementById("cancelConfirmationModal");
+    const closeButton = document.getElementById("cancelModalClose");
+    const dismissButton = document.getElementById("cancelModalDismiss");
+    const confirmButton = document.getElementById("cancelModalConfirm");
+    const reasonSelect = document.getElementById("cancelReasonSelect");
+    const reasonError = document.getElementById("cancelReasonError");
+    const description = document.getElementById("cancelModalDescription");
+    const cancelForms = Array.from(document.querySelectorAll("[data-cancel-form]"));
+
+    if (toggleCancelProducts && cancelProductsPanel) {
+      toggleCancelProducts.addEventListener("click", () => {
+        cancelProductsPanel.classList.toggle("hidden");
+      });
+    }
+
+    if (!modal || !closeButton || !dismissButton || !confirmButton || !reasonSelect || !reasonError || !description || !cancelForms.length) {
+      return;
+    }
+
+    let activeForm = null;
+
+    const closeModal = () => {
+      modal.classList.add("hidden");
+      modal.classList.remove("flex");
+      reasonSelect.value = "";
+      reasonError.classList.add("hidden");
+      activeForm = null;
+    };
+
+    const openModal = (form) => {
+      activeForm = form;
+      const productName = form.dataset.productName;
+
+      const quantityInput = form.querySelector('[data-cancel-quantity-input]');
+      const selectedQuantity = quantityInput ? Number(quantityInput.value || "1") : 1;
+
+      if (productName) {
+        description.textContent = 'Are you sure you need to cancel "' + productName + '" quantity ' + selectedQuantity + '? Select a reason to continue.';
+      } else {
+        description.textContent = "Are you sure you need to cancel this order item? Select a reason to continue.";
+      }
+
+      modal.classList.remove("hidden");
+      modal.classList.add("flex");
+      reasonSelect.focus();
+    };
+
+    cancelForms.forEach((form) => {
+      const quantityInput = form.querySelector("[data-cancel-quantity-input]");
+      const quantityDisplay = form.querySelector("[data-cancel-quantity-display]");
+      const decreaseButton = form.querySelector("[data-qty-decrease]");
+      const increaseButton = form.querySelector("[data-qty-increase]");
+      const maxQuantity = Number(form.dataset.maxQuantity || "1");
+
+      const syncQuantity = (nextQuantity) => {
+        if (!quantityInput) return;
+        const safeQuantity = Math.max(1, Math.min(maxQuantity, nextQuantity));
+        quantityInput.value = safeQuantity;
+        if (quantityDisplay) {
+          quantityDisplay.textContent = safeQuantity;
+        }
+      };
+
+      if (decreaseButton) {
+        decreaseButton.addEventListener("click", () => {
+          syncQuantity(Number(quantityInput.value || "1") - 1);
+        });
+      }
+
+      if (increaseButton) {
+        increaseButton.addEventListener("click", () => {
+          syncQuantity(Number(quantityInput.value || "1") + 1);
+        });
+      }
+
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        openModal(form);
+      });
+    });
+
+    confirmButton.addEventListener("click", () => {
+      if (!activeForm) return;
+      if (!reasonSelect.value) {
+        reasonError.classList.remove("hidden");
+        reasonSelect.focus();
+        return;
+      }
+
+      const reasonField = activeForm.querySelector('input[name="reason"]');
+      if (reasonField) {
+        reasonField.value = reasonSelect.value;
+      }
+
+      const formToSubmit = activeForm;
+      closeModal();
+      formToSubmit.submit();
+    });
+
+    reasonSelect.addEventListener("change", () => {
+      if (reasonSelect.value) {
+        reasonError.classList.add("hidden");
+      }
+    });
+
+    closeButton.addEventListener("click", closeModal);
+    dismissButton.addEventListener("click", closeModal);
+
+    modal.addEventListener("click", (event) => {
+      if (event.target === modal) {
+        closeModal();
+      }
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && !modal.classList.contains("hidden")) {
+        closeModal();
+      }
+    });
+  })();
+</script>
+{% endblock %}

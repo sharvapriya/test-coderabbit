@@ -1,0 +1,434 @@
+{% extends "base.html" %}
+{% block title %}My Wishlist{% endblock %}
+
+{% block content %}
+<style>
+  .wishlist-page {
+    animation: wishlistFadeUp 0.55s ease-out;
+  }
+
+  .wishlist-page .wishlist-grid {
+    gap: 0.2rem !important;
+    align-items: start;
+    justify-items: center;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .wishlist-page .wishlist-card {
+    position: relative;
+    width: 100%;
+    max-width: 224px !important;
+    border-radius: 20px;
+    border: 1px solid rgba(226, 232, 240, 0.95);
+    background: linear-gradient(180deg, #ffffff 0%, #fcfdff 100%);
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+    overflow: hidden;
+    transition: transform 0.28s ease, box-shadow 0.28s ease, border-color 0.28s ease;
+  }
+
+  .wishlist-page .wishlist-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(255,255,255,0.0), rgba(248,250,252,0.42));
+    pointer-events: none;
+  }
+
+  .wishlist-page .wishlist-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 22px 44px rgba(15, 23, 42, 0.15);
+    border-color: rgba(186, 230, 253, 0.95);
+  }
+
+  .wishlist-page .wishlist-media {
+    position: relative;
+    min-height: 190px;
+    height: 190px;
+    padding: 0.35rem !important;
+    border-bottom: 1px solid rgba(226, 232, 240, 0.85);
+    background:
+      radial-gradient(circle at top, rgba(255,255,255,0.88), rgba(248,250,252,0.96) 58%, rgba(226,232,240,0.95)),
+      linear-gradient(135deg, #f8fafc, #eef2ff);
+    isolation: isolate;
+    transition: transform 0.35s ease, box-shadow 0.35s ease;
+  }
+
+  .wishlist-page .wishlist-media::after {
+    content: "";
+    position: absolute;
+    inset: auto 18px 14px 18px;
+    height: 18px;
+    border-radius: 999px;
+    background: radial-gradient(circle, rgba(15,23,42,0.10), transparent 70%);
+    filter: blur(7px);
+    pointer-events: none;
+  }
+
+  .wishlist-page .wishlist-media::before {
+    content: "";
+    position: absolute;
+    inset: 14px;
+    border-radius: 18px;
+    background:
+      radial-gradient(circle at var(--mx, 50%) var(--my, 45%), rgba(255,255,255,0.78), transparent 32%),
+      linear-gradient(135deg, rgba(56, 189, 248, 0.08), rgba(99, 102, 241, 0.08));
+    opacity: 0;
+    transform: scale(0.96);
+    transition: opacity 0.28s ease, transform 0.28s ease;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wishlist-page .wishlist-media img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center;
+    position: relative;
+    z-index: 1;
+    will-change: transform, filter;
+    transition: transform 0.42s cubic-bezier(0.22, 1, 0.36, 1), filter 0.42s ease;
+    transform-origin: center;
+    filter: drop-shadow(0 12px 18px rgba(15, 23, 42, 0.10));
+  }
+
+  .wishlist-page .wishlist-card:hover .wishlist-media img {
+    transform: scale(1.08) rotate(-2deg) translateY(-3px);
+  }
+
+  .wishlist-page .wishlist-card:hover .wishlist-media::before {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  .wishlist-page .wishlist-card:hover .wishlist-media {
+    transform: perspective(900px) rotateX(3deg) rotateY(-4deg);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.55);
+  }
+
+  .wishlist-page .wishlist-media.is-pressed::before {
+    opacity: 1;
+    transform: scale(1.02);
+  }
+
+  .wishlist-page .wishlist-media.is-pressed img {
+    animation: wishlistImagePulse 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .wishlist-page .wishlist-media.is-pressed {
+    animation: wishlistCardTilt 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .wishlist-page .wishlist-remove-btn {
+    z-index: 2;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-color: rgba(254, 226, 226, 0.95);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(255, 241, 242, 0.96));
+    color: #be123c;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 10px 20px rgba(15, 23, 42, 0.09);
+    transition: transform 0.18s ease, background-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+  }
+
+  .wishlist-page .wishlist-remove-btn:hover {
+    transform: translateY(-2px) scale(1.07);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 1), rgba(255, 228, 230, 0.98));
+    color: #e11d48;
+    box-shadow: 0 14px 24px rgba(225, 29, 72, 0.2);
+    border-color: rgba(251, 146, 60, 0.45);
+  }
+
+  .wishlist-page .wishlist-remove-btn svg {
+    filter: drop-shadow(0 1px 0 rgba(255, 255, 255, 0.45));
+  }
+
+  .wishlist-page .wishlist-card-body {
+    position: relative;
+    z-index: 1;
+    padding: 0.95rem;
+  }
+
+  .wishlist-page .wishlist-title {
+    font-size: 0.98rem;
+    line-height: 1.4rem;
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    color: #0f172a;
+  }
+
+  .wishlist-page .wishlist-price-row {
+    margin-top: -0.1rem;
+    margin-bottom: 0.65rem;
+    min-height: 1.5rem;
+  }
+
+  .wishlist-page .wishlist-actions {
+    opacity: 0.18;
+    transform: translateY(10px);
+    transition: opacity 0.22s ease, transform 0.22s ease;
+  }
+
+  .wishlist-page .wishlist-card:hover .wishlist-actions {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .wishlist-page .wishlist-action-btn {
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+    transition: transform 0.14s ease, box-shadow 0.2s ease, background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  }
+
+  .wishlist-page .wishlist-action-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 18px rgba(15, 23, 42, 0.10);
+  }
+
+  .wishlist-page .wishlist-action-btn:active {
+    transform: scale(0.985);
+  }
+
+  @keyframes wishlistFadeUp {
+    from {
+      opacity: 0;
+      transform: translateY(18px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes wishlistImagePulse {
+    0% {
+      transform: scale(1) rotate(0deg);
+      filter: drop-shadow(0 12px 18px rgba(15, 23, 42, 0.10));
+    }
+    30% {
+      transform: scale(1.12) rotate(-4deg) translateY(-4px);
+      filter: drop-shadow(0 18px 24px rgba(59, 130, 246, 0.18));
+    }
+    65% {
+      transform: scale(1.05) rotate(2deg) translateY(-1px);
+      filter: drop-shadow(0 16px 22px rgba(99, 102, 241, 0.14));
+    }
+    100% {
+      transform: scale(1) rotate(0deg);
+      filter: drop-shadow(0 12px 18px rgba(15, 23, 42, 0.10));
+    }
+  }
+
+  @keyframes wishlistCardTilt {
+    0% {
+      transform: perspective(900px) rotateX(0deg) rotateY(0deg) scale(1);
+    }
+    35% {
+      transform: perspective(900px) rotateX(5deg) rotateY(-6deg) scale(1.01);
+    }
+    70% {
+      transform: perspective(900px) rotateX(-3deg) rotateY(4deg) scale(0.998);
+    }
+    100% {
+      transform: perspective(900px) rotateX(0deg) rotateY(0deg) scale(1);
+    }
+  }
+
+  @media (max-width: 640px) {
+    .wishlist-page .wishlist-grid {
+      gap: 0.3rem !important;
+      grid-template-columns: repeat(1, minmax(0, 1fr));
+    }
+
+    .wishlist-page .wishlist-card {
+      max-width: 100% !important;
+    }
+
+    .wishlist-page .wishlist-media {
+      min-height: 178px;
+    }
+
+    .wishlist-page .wishlist-actions {
+      opacity: 1;
+      transform: none;
+    }
+
+    .wishlist-page .wishlist-card-body {
+      padding: 0.85rem;
+    }
+  }
+
+  @media (min-width: 641px) and (max-width: 1023px) {
+    .wishlist-page .wishlist-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 1024px) and (max-width: 1279px) {
+    .wishlist-page .wishlist-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+</style>
+<div class="wishlist-page max-w-6xl mx-auto px-4 py-10">
+    <h1 class="text-4xl font-bold text-gray-800">My Wishlist</h1>
+    <div class="relative mt-4 mb-10 overflow-hidden rounded-3xl border border-slate-200 bg-[linear-gradient(135deg,_#ffffff,_#f8fafc_55%,_#eef2ff)] px-6 py-5 shadow-sm">
+        <div class="absolute -top-8 right-8 h-24 w-24 rounded-full bg-sky-100/60 blur-2xl"></div>
+        <div class="absolute -bottom-10 left-16 h-24 w-24 rounded-full bg-amber-100/70 blur-2xl"></div>
+        <div class="relative flex items-center gap-4">
+            <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-950 text-white shadow-lg">
+                <span class="text-2xl">&#10084;</span>
+            </div>
+            <div>
+                <p class="text-lg font-semibold text-slate-800">Come back anytime—your favorites are waiting.</p>
+                <p class="mt-1 text-sm text-slate-500">Saved picks stay ready for faster checkout whenever you return.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="wishlist-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        {% for item in wishlist_items %}
+        <div class="wishlist-card mx-auto w-full max-w-[220px] bg-white rounded-2xl shadow-md hover:shadow-xl transition duration-300 overflow-hidden" data-product-card>
+            <a href="{% url 'products:product_detail' item.product.id item.product.slug %}" class="block">
+                <div class="wishlist-media relative flex h-[175px] items-center justify-center overflow-hidden bg-slate-50 p-3">
+                    {% if item.product.image %}
+                        <img src="{{ item.product.image.url }}"
+                             alt="{{ item.product.name }}"
+                             data-product-image
+                             class="h-full w-full object-contain transition duration-500 hover:scale-105">
+                    {% else %}
+                        <div class="w-full h-full bg-gray-100 flex items-center justify-center text-gray-400 text-sm">
+                            No Image
+                        </div>
+                    {% endif %}
+
+                    <a href="{% url 'wishlist:remove_from_wishlist' item.product.id %}"
+                       class="wishlist-remove-btn absolute right-2 top-2 flex h-9 w-9 items-center justify-center rounded-full border border-red-100 bg-white/95 text-lg text-red-500 shadow-sm transition hover:bg-red-50 hover:text-red-600"
+                       aria-label="Remove from wishlist">
+                        <svg viewBox="0 0 24 24" aria-hidden="true" class="h-[18px] w-[18px] fill-none stroke-current stroke-[1.85]">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.35 9m-4.78 0L9.26 9m9.97-2.21c.34.05.68.1 1.02.17m-1.02-.17-.33 11.06A2.25 2.25 0 0 1 16.65 20H7.35a2.25 2.25 0 0 1-2.25-2.15L4.77 6.79m14.46 0a48.108 48.108 0 0 0-14.46 0m9.6-2.04-.36-.72A1.125 1.125 0 0 0 13 3.25h-2a1.125 1.125 0 0 0-1.01.62l-.36.72m4.74 0H9.63" />
+                        </svg>
+                    </a>
+                </div>
+            </a>
+
+            <div class="wishlist-card-body flex flex-col justify-between">
+                <a href="{% url 'products:product_detail' item.product.id item.product.slug %}" class="block mb-1.5">
+                    <h2 class="wishlist-title text-sm font-semibold text-gray-800 line-clamp-2 min-h-[38px]">
+                        {{ item.product.name }}
+                    </h2>
+                </a>
+
+                <!-- if item.product.has_discount 
+                <div class="wishlist-price-row mb-3 flex items-center gap-2">
+                    <span class="text-xs text-slate-400 line-through">Rs {{ item.product.price }}</span>
+                    <span class="text-sm font-bold text-indigo-600">Rs {{ item.product.discounted_price }}</span>
+                </div>
+                 else  -->
+                <p class="wishlist-price-row mb-3 text-sm font-bold text-indigo-600">Rs {{ item.product.price }}</p>
+                <!-- endif  -->
+
+                <div class="wishlist-actions mt-auto grid grid-cols-2 gap-2">
+                    <form action="{% url 'cart:cart_add' item.product.id %}" method="post" data-card-add-to-cart-form>
+                        {% csrf_token %}
+                        <button type="submit"
+                                class="wishlist-action-btn w-full rounded-lg border border-slate-300 bg-white py-2 px-3 text-sm font-semibold text-slate-700 transition duration-200 hover:bg-slate-50">
+                            Add to Cart
+                        </button>
+                    </form>
+                    <a href="{% url 'cart:buy_now' item.product.id %}"
+                        onclick="handleBuyNow(
+                           event,
+                           {{ item.product.has_variants|yesno:'true,false' }},
+                           '{% url 'products:product_detail' item.product.id item.product.slug %}',
+                           '{% url 'cart:buy_now' item.product.id %}'
+   )"
+                       class="wishlist-action-btn flex items-center justify-center bg-slate-950 hover:bg-slate-800 text-white py-2 px-3 rounded-lg text-sm transition duration-200">
+                        Buy Now
+                    </a>
+                </div>
+                <p class="cart-message mt-2 text-center text-sm font-medium text-green-600"></p>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-span-full text-center py-20">
+            <h2 class="text-2xl font-semibold text-gray-600 mb-4">
+                Your wishlist is empty
+            </h2>
+            <a href="{% url 'products:product_list' %}"
+               class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl shadow-md transition">
+                Continue Shopping
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+<script>
+  (function () {
+    const mediaCards = document.querySelectorAll(".wishlist-media");
+    if (!mediaCards.length) return;
+
+    const setPointerGlow = (card, event) => {
+      const rect = card.getBoundingClientRect();
+      const x = ((event.clientX - rect.left) / rect.width) * 100;
+      const y = ((event.clientY - rect.top) / rect.height) * 100;
+      card.style.setProperty("--mx", x + "%");
+      card.style.setProperty("--my", y + "%");
+    };
+
+    mediaCards.forEach((card) => {
+      card.addEventListener("pointermove", (event) => {
+        setPointerGlow(card, event);
+      });
+
+      const triggerPress = () => {
+        card.classList.remove("is-pressed");
+        void card.offsetWidth;
+        card.classList.add("is-pressed");
+        window.setTimeout(() => {
+          card.classList.remove("is-pressed");
+        }, 720);
+      };
+
+      card.addEventListener("pointerdown", (event) => {
+        setPointerGlow(card, event);
+        triggerPress();
+      });
+    });
+  })();
+  
+  function handleAddToCart(event, hasVariants) {
+    if (hasVariants) {
+        event.preventDefault();
+        event.stopPropagation();
+        showNotification("Please select a variant first");
+        return false;
+    }
+    return true;
+    }
+    
+    function handleBuyNow(event, hasVariants, detailsUrl, buyNowUrl) {
+        event.preventDefault();
+        event.stopPropagation();
+    
+        if (hasVariants) {
+            showNotification("Please select a variant first");
+            window.location.href = detailsUrl;
+        } else {
+            window.location.href = buyNowUrl;
+        }
+    }
+    
+    function showNotification(message) {
+        const notification = document.createElement("div");
+        notification.className = "fixed top-4 right-4 bg-amber-500 text-white px-6 py-3 rounded-lg shadow-lg z-50";
+        notification.innerText = message;
+    
+        document.body.appendChild(notification);
+    
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
+    }
+</script>
+{% endblock %}

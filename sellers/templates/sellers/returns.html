@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+
+{% block title %}Seller Returns{% endblock %}
+
+{% block content %}
+<style>
+  .seller-portal-shell {
+    background:
+      radial-gradient(circle at top left, rgba(244, 114, 182, 0.12), transparent 28%),
+      radial-gradient(circle at top right, rgba(59, 130, 246, 0.15), transparent 24%),
+      linear-gradient(180deg, #f8fafc 0%, #eef2ff 45%, #f8fafc 100%);
+  }
+
+  .seller-sidebar {
+    background: linear-gradient(180deg, #0f172a 0%, #1e1b4b 52%, #312e81 100%);
+    box-shadow: 0 24px 70px rgba(15, 23, 42, 0.24);
+    max-height: calc(100vh - 7rem);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(191, 219, 254, 0.8) rgba(255, 255, 255, 0.08);
+  }
+
+  .seller-sidebar::-webkit-scrollbar {
+    width: 10px;
+  }
+
+  .seller-sidebar::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 999px;
+  }
+
+  .seller-sidebar::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, rgba(125, 211, 252, 0.95), rgba(196, 181, 253, 0.95));
+    border-radius: 999px;
+  }
+
+  .seller-sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    width: 100%;
+    border: 1px solid transparent;
+    border-radius: 1rem;
+    padding: 0.95rem 1rem;
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+    font-size: 0.98rem;
+    font-weight: 700;
+    transition: transform 0.18s ease, border-color 0.18s ease, background-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
+  }
+
+  .seller-sidebar-link:hover {
+    transform: translateX(4px);
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.12);
+    color: #ffffff;
+  }
+
+  .seller-sidebar-link.is-active {
+    color: #0f172a;
+    background: linear-gradient(135deg, #fef3c7 0%, #ffffff 42%, #dbeafe 100%);
+    box-shadow: 0 16px 34px rgba(15, 23, 42, 0.24);
+  }
+
+  .seller-sidebar-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.4rem;
+    height: 2.4rem;
+    border-radius: 0.9rem;
+    background: rgba(255, 255, 255, 0.1);
+    color: #e0e7ff;
+    flex-shrink: 0;
+  }
+
+  .seller-sidebar-link.is-active .seller-sidebar-icon {
+    background: linear-gradient(135deg, #111827 0%, #2563eb 100%);
+    color: #fff;
+  }
+
+  @media (max-width: 1023px) {
+    .seller-sidebar {
+      max-height: none;
+    }
+  }
+</style>
+
+<section class="seller-portal-shell py-8 sm:py-10">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6">
+    <div class="grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
+      <aside class="seller-sidebar rounded-[2rem] p-5 lg:sticky lg:top-24 h-fit">
+        <div class="rounded-[1.6rem] border border-white/10 bg-white/5 px-4 py-5">
+          <p class="text-[11px] uppercase tracking-[0.32em] font-extrabold text-cyan-200/90">Seller Workspace</p>
+          <h1 class="mt-3 text-3xl font-black tracking-tight text-white">Business Portal</h1>
+          <p class="mt-2 text-sm font-medium text-indigo-100/80">{{ seller.business_name }}</p>
+        </div>
+        <nav class="mt-5 space-y-2.5">
+          <a href="{% url 'sellers:dashboard' %}" class="seller-sidebar-link" data-seller-nav-link><span class="seller-sidebar-icon"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12.75L12 4l9 8.75M5.25 10.5v8.25a1.5 1.5 0 001.5 1.5h10.5a1.5 1.5 0 001.5-1.5V10.5" /></svg></span><span>Dashboard</span></a>
+          <a href="{% url 'sellers:dashboard' %}" class="seller-sidebar-link" data-seller-nav-link><span class="seller-sidebar-icon"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 6.75h12m-12 5.25h12m-12 5.25h12M3.75 6.75h.008v.008H3.75V6.75zm0 5.25h.008v.008H3.75V12zm0 5.25h.008v.008H3.75v-.008z" /></svg></span><span>My Products</span></a>
+          <a href="{% url 'sellers:dashboard' %}" class="seller-sidebar-link" data-seller-nav-link><span class="seller-sidebar-icon"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0018 9.75V9a6 6 0 10-12 0v.75a8.967 8.967 0 00-2.311 6.022 23.848 23.848 0 005.454 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" /></svg></span><span>Order Notification</span></a>
+          <a href="{% url 'sellers:dashboard' %}" class="seller-sidebar-link" data-seller-nav-link><span class="seller-sidebar-icon"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m0 0l-3-3m3 3l3-3M6.75 8.25h-1.5A2.25 2.25 0 003 10.5v7.5a2.25 2.25 0 002.25 2.25h13.5A2.25 2.25 0 0021 18V10.5a2.25 2.25 0 00-2.25-2.25h-1.5" /></svg></span><span>Active Payouts</span></a>
+          <a href="{% url 'sellers:dashboard' %}" class="seller-sidebar-link" data-seller-nav-link><span class="seller-sidebar-icon"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75l2.25 2.25L15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></span><span>Completed Orders</span></a>
+          <a href="{% url 'sellers:returns' %}" class="seller-sidebar-link is-active" data-seller-nav-link><span class="seller-sidebar-icon"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 7.5h9M7.5 12h6m-7.5 7.5h8.25A2.25 2.25 0 0016.5 17.25V6.75A2.25 2.25 0 0014.25 4.5h-8.25A2.25 2.25 0 003.75 6.75v10.5A2.25 2.25 0 006 19.5zm12-9h2.25A1.5 1.5 0 0121.75 12v3A1.5 1.5 0 0120.25 16.5H18" /></svg></span><span>Returns</span></a>
+          <a href="{% url 'sellers:seller_reviews' %}" class="seller-sidebar-link" data-seller-nav-link><span class="seller-sidebar-icon"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.75.75 0 011.04 0l2.13 2.19a.75.75 0 00.53.222h3.02a.75.75 0 01.725.937l-.66 2.868a.75.75 0 00.192.698l2.019 2.117a.75.75 0 01-.402 1.254l-2.74.539a.75.75 0 00-.559.428l-1.327 2.69a.75.75 0 01-1.345 0l-1.327-2.69a.75.75 0 00-.56-.428l-2.739-.539a.75.75 0 01-.402-1.254l2.018-2.117a.75.75 0 00.193-.698l-.66-2.868a.75.75 0 01.725-.937h3.02a.75.75 0 00.53-.222l2.13-2.19z" /></svg></span><span>Reviews</span></a>
+          <a href="{% url 'sellers:ledger_history' %}" class="seller-sidebar-link" data-seller-nav-link><span class="seller-sidebar-icon"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path stroke-linecap="round" stroke-linejoin="round" d="M9 6.75H19.5M9 12h10.5M9 17.25H19.5M4.5 6.75h.008v.008H4.5V6.75zm0 5.25h.008v.008H4.5V12zm0 5.25h.008v.008H4.5v-.008z" /></svg></span><span>Ledger History</span></a>
+          <a href="{% url 'sellers:wallet_summary' %}" class="seller-sidebar-link" data-seller-nav-link><span class="seller-sidebar-icon"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12V8.25A2.25 2.25 0 0018.75 6H5.25A2.25 2.25 0 003 8.25v7.5A2.25 2.25 0 005.25 18h13.5A2.25 2.25 0 0021 15.75V12zm0 0h-4.5a1.5 1.5 0 100 3H21" /></svg></span><span>Wallet Summary</span></a>
+        </nav>
+      </aside>
+
+      <div class="space-y-6">
+        <div>
+          <p class="text-xs uppercase tracking-[0.24em] text-indigo-700 font-semibold">Seller Dashboard</p>
+          <h1 class="text-3xl font-semibold mt-2 text-slate-900">Returns from Buyers</h1>
+          <p class="text-slate-500 mt-2">Track return requests raised by buyers for your products without changing any existing order or payout actions.</p>
+        </div>
+
+        <!-- <div class="grid grid-cols-1 md:grid-cols-5 gap-4"> -->
+          <!-- <div class="rounded-2xl border border-amber-200 bg-amber-50 p-5"><p class="text-xs uppercase font-semibold text-amber-700">Pending</p><p class="mt-2 text-2xl font-bold text-slate-900">{{ pending_returns|length }}</p></div> -->
+          <!-- <div class="rounded-2xl border border-sky-200 bg-sky-50 p-5"><p class="text-xs uppercase font-semibold text-sky-700">Approved</p><p class="mt-2 text-2xl font-bold text-slate-900">{{ approved_returns|length }}</p></div> -->
+          <!-- <div class="rounded-2xl border border-violet-200 bg-violet-50 p-5"><p class="text-xs uppercase font-semibold text-violet-700">Picked Up</p><p class="mt-2 text-2xl font-bold text-slate-900">{{ picked_up_returns|length }}</p></div> -->
+          <!-- <div class="rounded-2xl border border-emerald-200 bg-emerald-50 p-5"><p class="text-xs uppercase font-semibold text-emerald-700">Refunded</p><p class="mt-2 text-2xl font-bold text-slate-900">{{ refunded_returns|length }}</p></div>
+          <div class="rounded-2xl border border-rose-200 bg-rose-50 p-5"><p class="text-xs uppercase font-semibold text-rose-700">Rejected</p><p class="mt-2 text-2xl font-bold text-slate-900">{{ rejected_returns|length }}</p></div>
+        </div> -->
+
+        <section class="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+          <div class="px-6 py-5 border-b border-slate-100 bg-slate-50">
+            <h2 class="text-lg font-bold text-slate-900">Returns from Buyers</h2>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="min-w-full text-sm">
+              <thead class="bg-white text-slate-600">
+                <tr>
+                  <th class="px-6 py-3 text-left font-semibold">Order</th>
+                  <th class="px-6 py-3 text-left font-semibold">Buyer</th>
+                  <th class="px-6 py-3 text-left font-semibold">Product</th>
+                  <th class="px-6 py-3 text-left font-semibold">Reason</th>
+                  <th class="px-6 py-3 text-left font-semibold">Refund</th>
+                  <th class="px-6 py-3 text-left font-semibold">Status</th>
+                  <th class="px-6 py-3 text-left font-semibold">Requested</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                {% for item in return_requests %}
+                <tr>
+                  <td class="px-6 py-4 font-semibold text-slate-900">#{{ item.order.id }}</td>
+                  <td class="px-6 py-4 text-slate-700">{{ item.user.username }}</td>
+                  <td class="px-6 py-4">
+                    <div class="font-semibold text-slate-900">{{ item.product.name }}</div>
+                    {% if item.photo %}
+                    <a href="{{ item.photo.url }}" target="_blank" class="text-xs font-semibold text-indigo-700 hover:text-indigo-800">View image</a>
+                    {% endif %}
+                  </td>
+                  <td class="px-6 py-4 text-slate-700">
+                    <div>{{ item.get_reason_display }}</div>
+                    {% if item.description %}
+                    <div class="text-xs text-slate-500 mt-1">{{ item.description }}</div>
+                    {% endif %}
+                  </td>
+                  <td class="px-6 py-4 text-slate-700">{{ item.refund_amount }}</td>
+                  <td class="px-6 py-4">
+                    <span class="inline-flex rounded-full px-3 py-1 text-xs font-semibold {% if item.status == 'pending' %}bg-amber-100 text-amber-800{% elif item.status == 'approved' %}bg-sky-100 text-sky-800{% elif item.status == 'picked_up' %}bg-violet-100 text-violet-800{% elif item.status == 'refunded' %}bg-emerald-100 text-emerald-800{% else %}bg-rose-100 text-rose-800{% endif %}">
+                      {{ item.get_status_display }}
+                    </span>
+                  </td>
+                  <td class="px-6 py-4 text-slate-500">{{ item.created_at|date:"M d, Y" }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7" class="px-6 py-10 text-center text-slate-500">No return requests from buyers yet.</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+</section>
+<script>
+  const sellerSidebar = document.querySelector(".seller-sidebar");
+  if (sellerSidebar) {
+    const savedScroll = window.sessionStorage.getItem("sellerSidebarScroll");
+    if (savedScroll !== null) {
+      sellerSidebar.scrollTop = Number(savedScroll);
+    }
+    const persistSellerSidebarScroll = () => {
+      window.sessionStorage.setItem("sellerSidebarScroll", String(sellerSidebar.scrollTop));
+    };
+    sellerSidebar.addEventListener("scroll", persistSellerSidebarScroll, { passive: true });
+    window.addEventListener("pagehide", persistSellerSidebarScroll);
+    document.querySelectorAll("[data-seller-nav-link]").forEach((link) => {
+      link.addEventListener("click", persistSellerSidebarScroll);
+    });
+  }
+</script>
+{% endblock %}

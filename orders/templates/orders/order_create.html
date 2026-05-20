@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+
+{% block title %}Checkout{% endblock %}
+
+
+
+{% block content %}
+
+<section class="bg-gradient-to-b from-white via-slate-50 to-indigo-50/40 py-10">
+
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+    <div class="lg:col-span-2 rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 shadow-sm">
+
+      <h2 class="text-2xl font-bold text-slate-900">Checkout Details</h2>
+
+      <p class="text-sm text-slate-500 mt-1">Confirm your shipping details and place your order.</p>
+
+      {% if saved_checkout_details %}
+
+      <div class="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+
+        We auto-filled your checkout details from your saved account and recent order information. You can edit anything before placing the order.
+
+      </div>
+
+      {% endif %}
+
+      <form method="post" class="mt-6 space-y-4">
+
+        {% csrf_token %}
+
+        {{ form.non_field_errors }}
+
+        <div>
+
+          <label class="block text-sm font-semibold text-slate-700 mb-1">Full Name</label>
+
+          {{ form.full_name }}
+
+        </div>
+
+        <div>
+
+          <label class="block text-sm font-semibold text-slate-700 mb-1">Email</label>
+
+          {{ form.email }}
+
+        </div>
+         <div>
+          <label class="block text-sm font-semibold text-slate-700 mb-1">Phone Number</label>
+          {{ form.phone_number }}
+
+        </div>
+
+        <div>
+
+          <label class="block text-sm font-semibold text-slate-700 mb-1">Address</label>
+
+          {{ form.address }}
+
+          </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+          <div>
+
+            <label class="block text-sm font-semibold text-slate-700 mb-1">City</label>
+
+            {{ form.city }}
+
+          </div>
+
+          <div>
+
+            <label class="block text-sm font-semibold text-slate-700 mb-1">State</label>
+
+            {{ form.state }}
+
+          </div>
+
+          <div>
+
+            <label class="block text-sm font-semibold text-slate-700 mb-1">Pincode</label>
+
+            {{ form.pincode }}
+
+          </div>
+
+          <div>
+
+            <label class="block text-sm font-semibold text-slate-700 mb-1">Country</label>
+
+            {{ form.country }}
+
+          </div>
+
+        </div>
+
+        <button type="submit" class="w-full sm:w-auto bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-indigo-700 transition">
+
+          Place Order
+
+        </button>
+
+      </form>
+
+    </div>
+
+
+
+    <aside class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm h-fit">
+
+      <h3 class="text-xl font-bold text-slate-900">Order Summary</h3>
+
+      <div class="mt-5 space-y-3 text-sm">
+
+        <div class="flex items-center justify-between">
+
+          <span class="text-slate-600">Payment</span>
+
+          <span class="font-semibold text-slate-900">
+
+            {% if payment_method == "cod" %}Cash on delivery{% elif payment_method == "wallet" %}Wallet{% else %}Online payment{% endif %}
+
+          </span>
+
+        </div>
+
+        <div class="flex items-center justify-between">
+
+          <span class="text-slate-600">Subtotal</span>
+
+          <span class="font-semibold text-slate-900">Rs.{{ subtotal }}</span>
+
+        </div>
+
+        <div class="flex items-center justify-between">
+
+          <span class="text-slate-600">Discount {% if coupon_code %}({{ coupon_code }}){% endif %}</span>
+
+          <span class="font-semibold text-emerald-700">- Rs.{{ discount_amount }}</span>
+
+        </div>
+
+        <div class="flex items-center justify-between">
+
+          <span class="text-slate-600">Wallet Applied</span>
+
+          <span class="font-semibold {% if wallet_applied > 0 %}text-emerald-700{% else %}text-slate-900{% endif %}">- Rs.{{ wallet_applied }}</span>
+
+        </div>
+
+        <div class="border-t border-slate-200 pt-3 flex items-center justify-between">
+
+          <span class="text-slate-800 font-semibold">Remaining Payable</span>
+
+          <span class="text-2xl font-extrabold text-indigo-600">Rs.{{ remaining_payable }}</span>
+
+        </div>
+
+        <p class="text-xs text-slate-500">Order total before wallet: Rs.{{ final_total }}</p>
+
+      </div>
+
+      <!-- <a href="url 'payment_checkout' " class="inline-flex mt-6 text-sm font-semibold text-indigo-700 hover:text-indigo-800">
+
+        Change payment and wallet options
+
+      </a>
+
+      <a href=" url 'orders:discount_step' " class="inline-flex mt-3 text-sm font-semibold text-indigo-700 hover:text-indigo-800">
+
+        Edit discount code
+
+      </a> -->
+
+    </aside>
+
+  </div>
+
+</section>
+
+{% endblock %}
+

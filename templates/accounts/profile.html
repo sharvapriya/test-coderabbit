@@ -1,0 +1,630 @@
+{% extends "base.html" %}
+{% block title %}My Profile{% endblock %}
+{% block content %}
+<section class="profile-shell py-10">
+  <div class="mx-auto max-w-6xl px-4 sm:px-6">
+    <div class="rounded-[30px] border border-slate-200 bg-white shadow-xl overflow-hidden">
+      <div class="profile-hero px-6 py-8 sm:px-8">
+        <div class="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+          <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
+            <div class="relative h-24 w-24 overflow-hidden rounded-[28px] border border-white/70 bg-white/90 shadow-lg">
+              <img id="profile-picture-preview" class="h-full w-full object-cover" src="" alt="Profile picture">
+              <div id="profile-picture-fallback" class="flex h-full w-full items-center justify-center text-3xl font-black text-slate-700">U</div>
+            </div>
+            <div>
+              <p class="eyebrow text-slate-500">Account Center</p>
+              <h1 id="profile-title" class="mt-2 text-3xl font-black text-slate-950">My Profile</h1>
+              <p id="profile-subtitle" class="mt-2 max-w-2xl text-sm text-slate-600">Manage your personal details separately from checkout so your orders can be filled faster.</p>
+            </div>
+          </div>
+          <div class="flex flex-wrap gap-3">
+            <button id="edit-profile-btn" type="button" class="btn btn-dark">Edit Profile</button>
+            <button id="save-profile-btn" type="button" class="btn btn-dark hidden" disabled>Save Changes</button>
+            <button id="cancel-profile-btn" type="button" class="btn btn-light hidden">Cancel</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="px-4 py-5 sm:px-6 lg:px-8">
+        <div id="profile-loading" class="flex items-center justify-center py-20">
+          <div class="spinner"></div>
+        </div>
+
+        <div id="profile-error" class="alert alert-error hidden"></div>
+
+        <div id="profile-content" class="hidden space-y-6">
+          <div class="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+            <section class="panel">
+              <div class="panel-header">
+                <div>
+                  <p class="eyebrow text-slate-500">Personal Information</p>
+                  <h2 class="mt-1 text-xl font-bold text-slate-950">Personal Information</h2>
+                </div>
+              </div>
+              <div class="mt-5 grid gap-4 md:grid-cols-2">
+                <div>
+                  <label class="field-label" for="profile-full-name">Full Name</label>
+                  <input id="profile-full-name" data-profile-field="fullName" type="text" class="field-input" disabled>
+                  <p class="field-error" data-error-for="fullName"></p>
+                </div>
+                <div>
+                  <label class="field-label" for="profile-email">Email</label>
+                  <input id="profile-email" data-profile-field="email" type="email" class="field-input" disabled>
+                  <p class="field-note">Email can be updated here. Verification flow can be added later if needed.</p>
+                  <p class="field-error" data-error-for="email"></p>
+                </div>
+                <div>
+                  <label class="field-label" for="profile-phone">Phone Number</label>
+                  <input id="profile-phone" data-profile-field="phone" type="text" class="field-input" disabled>
+                  <p class="field-error" data-error-for="phone_number"></p>
+                </div>
+                <div>
+                  <label class="field-label" for="profile-picture-input">Profile Picture</label>
+                  <input id="profile-picture-input" type="file" accept="image/png,image/jpeg,image/webp" class="field-input file-input" disabled>
+                  <p class="field-note">Upload PNG, JPG, or WEBP.</p>
+                </div>
+              </div>
+            </section>
+
+            <section class="panel panel-amber">
+              <p class="eyebrow text-amber-700">Account Details</p>
+              <h2 class="mt-1 text-xl font-bold text-slate-950">Account Details</h2>
+              <div class="mt-5 space-y-4">
+                <div class="stat-card">
+                  <span>Username</span>
+                  <strong id="account-username">-</strong>
+                </div>
+                <div class="stat-card">
+                  <span>Account Type</span>
+                  <strong id="account-role">-</strong>
+                </div>
+                <div class="stat-card">
+                  <span>Created Date</span>
+                  <strong id="account-created">-</strong>
+                </div>
+                <a href="{% url 'accounts:change_password' %}" class="btn btn-light w-full justify-center">Change Password</a>
+              </div>
+            </section>
+          </div>
+
+          <div class="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+            <section class="panel panel-blue">
+              <div class="panel-header">
+                <div>
+                  <p class="eyebrow text-sky-700">Address Information</p>
+                  <h2 class="mt-1 text-xl font-bold text-slate-950">Address Information</h2>
+                </div>
+              </div>
+              <div class="mt-5 grid gap-4 md:grid-cols-2">
+                <div class="md:col-span-2">
+                  <label class="field-label" for="profile-address-line">Address Line</label>
+                  <textarea id="profile-address-line" data-profile-field="address.line" class="field-input min-h-[110px]" disabled></textarea>
+                  <p class="field-error" data-error-for="address_line"></p>
+                </div>
+                <div>
+                  <label class="field-label" for="profile-city">City</label>
+                  <input id="profile-city" data-profile-field="address.city" type="text" class="field-input" disabled>
+                  <p class="field-error" data-error-for="city"></p>
+                </div>
+                <div>
+                  <label class="field-label" for="profile-state">State</label>
+                  <input id="profile-state" data-profile-field="address.state" type="text" class="field-input" disabled>
+                  <p class="field-error" data-error-for="state"></p>
+                </div>
+                <div>
+                  <label class="field-label" for="profile-country">Country</label>
+                  <input id="profile-country" data-profile-field="address.country" type="text" class="field-input" disabled>
+                  <p class="field-error" data-error-for="country"></p>
+                </div>
+                <div>
+                  <label class="field-label" for="profile-pincode">Pincode</label>
+                  <input id="profile-pincode" data-profile-field="address.pincode" type="text" class="field-input" disabled>
+                  <p class="field-error" data-error-for="pincode"></p>
+                </div>
+              </div>
+            </section>
+
+            <section class="panel panel-green">
+              <div class="panel-header">
+                <div>
+                  <p class="eyebrow text-emerald-700">Checkout Reuse</p>
+                  <h2 class="mt-1 text-xl font-bold text-slate-950">Saved Address Book</h2>
+                </div>
+                <button id="add-address-btn" type="button" class="btn btn-sm btn-dark hidden">+ Add Address</button>
+              </div>
+              <p class="mt-2 text-sm text-slate-600">Your addresses can be reused during checkout to save time.</p>
+              <div id="address-book-list" class="mt-5 space-y-3"></div>
+            </section>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Add Address Modal -->
+<div id="add-address-modal" class="modal hidden">
+  <div class="modal-overlay"></div>
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>Add New Address</h2>
+      <button id="close-modal-btn" type="button" class="btn-close">&times;</button>
+    </div>
+    <form id="add-address-form" class="modal-body space-y-4">
+      <div>
+        <label class="field-label" for="addr-label">Address Label</label>
+        <input id="addr-label" type="text" class="field-input" placeholder="e.g., Home, Office" required>
+        <p class="field-error" data-error-for="label"></p>
+      </div>
+      <div>
+        <label class="field-label" for="addr-line">Address Line</label>
+        <textarea id="addr-line" class="field-input min-h-[80px]" placeholder="Street address" required></textarea>
+        <p class="field-error" data-error-for="line"></p>
+      </div>
+      <div class="grid gap-4 md:grid-cols-2">
+        <div>
+          <label class="field-label" for="addr-city">City</label>
+          <input id="addr-city" type="text" class="field-input" placeholder="City" required>
+          <p class="field-error" data-error-for="city"></p>
+        </div>
+        <div>
+          <label class="field-label" for="addr-state">State</label>
+          <input id="addr-state" type="text" class="field-input" placeholder="State" required>
+          <p class="field-error" data-error-for="state"></p>
+        </div>
+        <div>
+          <label class="field-label" for="addr-country">Country</label>
+          <input id="addr-country" type="text" class="field-input" placeholder="Country" required>
+          <p class="field-error" data-error-for="country"></p>
+        </div>
+        <div>
+          <label class="field-label" for="addr-pincode">Pincode</label>
+          <input id="addr-pincode" type="text" class="field-input" placeholder="Pincode" required>
+          <p class="field-error" data-error-for="pincode"></p>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <input id="addr-default" type="checkbox" class="field-checkbox">
+        <label for="addr-default" class="text-sm text-slate-600">Set as default address</label>
+      </div>
+      <div class="modal-footer gap-3">
+        <button id="cancel-address-btn" type="button" class="btn btn-light">Cancel</button>
+        <button id="save-address-btn" type="submit" class="btn btn-dark">Save Address</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div id="profile-toast-stack" class="toast-stack"></div>
+
+<script>
+(() => {
+  const apiUrl = "/api/user/profile";
+  const loading = document.getElementById("profile-loading");
+  const content = document.getElementById("profile-content");
+  const errorBox = document.getElementById("profile-error");
+  const editBtn = document.getElementById("edit-profile-btn");
+  const saveBtn = document.getElementById("save-profile-btn");
+  const cancelBtn = document.getElementById("cancel-profile-btn");
+  const pictureInput = document.getElementById("profile-picture-input");
+  const picturePreview = document.getElementById("profile-picture-preview");
+  const pictureFallback = document.getElementById("profile-picture-fallback");
+  const title = document.getElementById("profile-title");
+  const subtitle = document.getElementById("profile-subtitle");
+  const usernameEl = document.getElementById("account-username");
+  const roleEl = document.getElementById("account-role");
+  const createdEl = document.getElementById("account-created");
+  const addressBookList = document.getElementById("address-book-list");
+  const fieldEls = [...document.querySelectorAll("[data-profile-field]")];
+  let initialState = null;
+  let currentState = null;
+  let editMode = false;
+  let pendingPictureDataUrl = "";
+
+  const getCsrfToken = () => {
+    const match = document.cookie.match(/csrftoken=([^;]+)/);
+    return match ? decodeURIComponent(match[1]) : "";
+  };
+
+  const deepClone = (value) => JSON.parse(JSON.stringify(value));
+
+  const setNested = (target, path, value) => {
+    const keys = path.split(".");
+    let ref = target;
+    keys.forEach((key, index) => {
+      if (index === keys.length - 1) {
+        ref[key] = value;
+        return;
+      }
+      ref[key] = ref[key] || {};
+      ref = ref[key];
+    });
+  };
+
+  const getNested = (target, path) => path.split(".").reduce((acc, key) => (acc ? acc[key] : ""), target) || "";
+
+  const formatDate = (value) => {
+    if (!value) return "-";
+    try {
+      return new Intl.DateTimeFormat("en-IN", { dateStyle: "medium" }).format(new Date(value));
+    } catch (error) {
+      return value;
+    }
+  };
+
+  const showToast = (message, type = "success") => {
+    const stack = document.getElementById("profile-toast-stack");
+    const toast = document.createElement("div");
+    toast.className = `toast toast-${type}`;
+    toast.textContent = message;
+    stack.appendChild(toast);
+    window.setTimeout(() => {
+      toast.classList.add("toast-hide");
+      window.setTimeout(() => toast.remove(), 250);
+    }, 2800);
+  };
+
+  const clearErrors = () => {
+    document.querySelectorAll("[data-error-for]").forEach((el) => { el.textContent = ""; });
+    errorBox.classList.add("hidden");
+    errorBox.textContent = "";
+  };
+
+  const applyErrors = (errors) => {
+    clearErrors();
+    if (!errors) return;
+    Object.entries(errors).forEach(([key, messages]) => {
+      const el = document.querySelector(`[data-error-for="${key}"]`);
+      if (el) el.textContent = Array.isArray(messages) ? messages[0] : messages;
+    });
+  };
+
+  const syncButtons = () => {
+    const changed = JSON.stringify(currentState) !== JSON.stringify(initialState) || Boolean(pendingPictureDataUrl);
+    saveBtn.disabled = !editMode || !changed;
+  };
+
+  const syncMode = () => {
+    fieldEls.forEach((field) => { field.disabled = !editMode; });
+    pictureInput.disabled = !editMode;
+    editBtn.classList.toggle("hidden", editMode);
+    saveBtn.classList.toggle("hidden", !editMode);
+    cancelBtn.classList.toggle("hidden", !editMode);
+    syncButtons();
+  };
+
+  const renderAvatar = (profile) => {
+    const src = pendingPictureDataUrl || profile.profilePictureUrl || "";
+    if (src) {
+      picturePreview.src = src;
+      picturePreview.classList.remove("hidden");
+      pictureFallback.classList.add("hidden");
+      return;
+    }
+    picturePreview.removeAttribute("src");
+    picturePreview.classList.add("hidden");
+    pictureFallback.classList.remove("hidden");
+    pictureFallback.textContent = (profile.fullName || profile.username || "U").slice(0, 1).toUpperCase();
+  };
+
+  const renderAddressBook = (profile) => {
+    const addresses = profile.addressBook || [];
+    if (!addresses.length) {
+      addressBookList.innerHTML = '<div class="empty-state">No saved addresses. Click "Add Address" to save your first address.</div>';
+      return;
+    }
+    addressBookList.innerHTML = addresses.map((address) => `
+      <article class="address-card">
+        <div class="flex items-center justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <strong class="text-slate-900">${address.label}</strong>
+            ${address.isDefault ? '<span class="address-badge">Default</span>' : ''}
+          </div>
+          <div class="flex gap-2">
+            ${!address.isDefault ? `<button type="button" class="btn-icon btn-set-default" data-address-id="${address.id}" title="Set as default">★</button>` : ''}
+            <button type="button" class="btn-icon btn-delete-address" data-address-id="${address.id}" title="Delete">✕</button>
+          </div>
+        </div>
+        <p class="mt-3 text-sm text-slate-600">${[address.line, address.city, address.state, address.country, address.pincode].filter(Boolean).join(", ")}</p>
+      </article>
+    `).join("");
+    
+    // Attach event listeners
+    document.querySelectorAll(".btn-delete-address").forEach((btn) => {
+      btn.addEventListener("click", () => deleteAddress(btn.dataset.addressId));
+    });
+    document.querySelectorAll(".btn-set-default").forEach((btn) => {
+      btn.addEventListener("click", () => setDefaultAddress(btn.dataset.addressId));
+    });
+  };
+
+  const renderProfile = (profile) => {
+    currentState = deepClone(profile);
+    fieldEls.forEach((field) => {
+      field.value = getNested(profile, field.dataset.profileField);
+    });
+    title.textContent = profile.fullName || "My Profile";
+    subtitle.textContent = `Signed in as ${profile.username}. Your saved profile details can now prefill checkout automatically.`;
+    usernameEl.textContent = profile.username || "-";
+    roleEl.textContent = profile.role || "-";
+    createdEl.textContent = formatDate(profile.createdAt);
+    renderAvatar(profile);
+    renderAddressBook(profile);
+    syncButtons();
+  };
+
+  const readPicture = (file) => new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(new Error("Unable to read the selected image."));
+    reader.readAsDataURL(file);
+  });
+
+  const loadProfile = async () => {
+    clearErrors();
+    loading.classList.remove("hidden");
+    content.classList.add("hidden");
+    try {
+      const response = await fetch(apiUrl, { headers: { Accept: "application/json" } });
+      if (!response.ok) throw new Error("Unable to load profile right now.");
+      const data = await response.json();
+      initialState = deepClone(data);
+      pendingPictureDataUrl = "";
+      editMode = false;
+      renderProfile(data);
+      syncMode();
+      content.classList.remove("hidden");
+    } catch (error) {
+      errorBox.textContent = error.message;
+      errorBox.classList.remove("hidden");
+    } finally {
+      loading.classList.add("hidden");
+    }
+  };
+
+  const saveProfile = async () => {
+    clearErrors();
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = '<span class="spinner spinner-sm"></span><span>Saving...</span>';
+    try {
+      const payload = deepClone(currentState);
+      if (pendingPictureDataUrl) payload.profilePictureDataUrl = pendingPictureDataUrl;
+      const response = await fetch(apiUrl, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+          "X-CSRFToken": getCsrfToken(),
+        },
+        body: JSON.stringify(payload),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        applyErrors(data.errors);
+        throw new Error(data.message || "Unable to save profile.");
+      }
+      initialState = deepClone(data.profile);
+      pendingPictureDataUrl = "";
+      editMode = false;
+      renderProfile(data.profile);
+      syncMode();
+      showToast(data.message || "Profile updated successfully.");
+    } catch (error) {
+      errorBox.textContent = error.message;
+      errorBox.classList.remove("hidden");
+      showToast(error.message, "error");
+    } finally {
+      saveBtn.innerHTML = "Save Changes";
+      syncButtons();
+    }
+  };
+
+  fieldEls.forEach((field) => {
+    field.addEventListener("input", () => {
+      if (!currentState) return;
+      setNested(currentState, field.dataset.profileField, field.value);
+      if (field.dataset.profileField === "fullName") {
+        title.textContent = field.value || "My Profile";
+      }
+      syncButtons();
+    });
+  });
+
+  const deleteAddress = async (addressId) => {
+    if (!confirm("Are you sure you want to delete this address?")) return;
+    try {
+      const response = await fetch(`/accounts/api/addresses/${addressId}/delete/`, {
+        method: "DELETE",
+        headers: { "X-CSRFToken": getCsrfToken(), "Accept": "application/json" },
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || "Unable to delete address.");
+      loadProfile();
+      showToast(data.message || "Address deleted successfully.");
+    } catch (error) {
+      showToast(error.message, "error");
+    }
+  };
+
+  const setDefaultAddress = async (addressId) => {
+    try {
+      const response = await fetch(`/accounts/api/addresses/${addressId}/set-default/`, {
+        method: "POST",
+        headers: { "X-CSRFToken": getCsrfToken(), "Accept": "application/json" },
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || "Unable to set default address.");
+      loadProfile();
+      showToast(data.message || "Default address updated.");
+    } catch (error) {
+      showToast(error.message, "error");
+    }
+  };
+
+  const saveAddress = async (event) => {
+    event.preventDefault();
+    const modal = document.getElementById("add-address-modal");
+    const saveBtn = document.getElementById("save-address-btn");
+    const formFields = document.querySelectorAll("#add-address-form [data-error-for]");
+    
+    formFields.forEach((el) => { el.textContent = ""; });
+    
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = '<span class="spinner spinner-sm"></span><span>Saving...</span>';
+
+    try {
+      const payload = {
+        label: document.getElementById("addr-label").value,
+        line: document.getElementById("addr-line").value,
+        city: document.getElementById("addr-city").value,
+        state: document.getElementById("addr-state").value,
+        country: document.getElementById("addr-country").value,
+        pincode: document.getElementById("addr-pincode").value,
+        isDefault: document.getElementById("addr-default").checked,
+      };
+
+      const response = await fetch("/accounts/api/addresses/add/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCsrfToken(),
+          "Accept": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        if (data.errors) {
+          Object.entries(data.errors).forEach(([key, message]) => {
+            const el = document.querySelector(`#add-address-form [data-error-for="${key}"]`);
+            if (el) el.textContent = message;
+          });
+        }
+        throw new Error(data.message || "Unable to save address.");
+      }
+
+      loadProfile();
+      modal.classList.add("hidden");
+      document.getElementById("add-address-form").reset();
+      showToast(data.message || "Address added successfully.");
+    } catch (error) {
+      showToast(error.message, "error");
+    } finally {
+      saveBtn.disabled = false;
+      saveBtn.innerHTML = "Save Address";
+    }
+  };
+
+  const openAddressModal = () => {
+    document.getElementById("add-address-modal").classList.remove("hidden");
+    document.getElementById("addr-label").focus();
+  };
+
+  const closeAddressModal = () => {
+    document.getElementById("add-address-modal").classList.add("hidden");
+    document.getElementById("add-address-form").reset();
+    document.querySelectorAll("#add-address-form [data-error-for]").forEach((el) => { el.textContent = ""; });
+  };
+
+  document.getElementById("add-address-btn").addEventListener("click", openAddressModal);
+  document.getElementById("close-modal-btn").addEventListener("click", closeAddressModal);
+  document.getElementById("cancel-address-btn").addEventListener("click", closeAddressModal);
+  document.getElementById("add-address-form").addEventListener("submit", saveAddress);
+  document.getElementById("add-address-modal").addEventListener("click", (e) => {
+    if (e.target.id === "add-address-modal") closeAddressModal();
+  });
+
+  editBtn.addEventListener("click", () => {
+    editMode = true;
+    syncMode();
+    document.getElementById("add-address-btn").classList.remove("hidden");
+  });
+
+  cancelBtn.addEventListener("click", () => {
+    currentState = deepClone(initialState);
+    pendingPictureDataUrl = "";
+    editMode = false;
+    renderProfile(initialState);
+    syncMode();
+    clearErrors();
+  });
+
+  saveBtn.addEventListener("click", saveProfile);
+
+  pictureInput.addEventListener("change", async () => {
+    const [file] = pictureInput.files || [];
+    if (!file) return;
+    try {
+      pendingPictureDataUrl = await readPicture(file);
+      renderAvatar(currentState || initialState || {});
+      syncButtons();
+    } catch (error) {
+      showToast(error.message, "error");
+    }
+  });
+
+  loadProfile();
+})();
+</script>
+
+<style>
+.profile-shell{background:radial-gradient(1100px 420px at 0% 0%,rgba(251,191,36,.18),transparent 55%),radial-gradient(900px 420px at 100% 10%,rgba(14,165,233,.16),transparent 55%),linear-gradient(180deg,#fffdf8 0%,#f8fafc 55%,#eef2ff 100%)}
+.profile-hero{background:linear-gradient(135deg,rgba(255,251,235,.98),rgba(255,255,255,.95));border-bottom:1px solid #e2e8f0}
+.eyebrow{font-size:.68rem;font-weight:800;letter-spacing:.18em;text-transform:uppercase}
+.panel{border-radius:1.5rem;border:1px solid #e2e8f0;background:rgba(255,255,255,.94);padding:1.25rem}
+.panel-amber{background:linear-gradient(180deg,#fffbeb 0%,#fff8e7 100%);border-color:#fde68a}
+.panel-blue{background:linear-gradient(180deg,#eff6ff 0%,#fff 100%);border-color:#bfdbfe}
+.panel-green{background:linear-gradient(180deg,#ecfdf5 0%,#f8fffb 100%);border-color:#bbf7d0}
+.panel-header{display:flex;align-items:center;justify-content:space-between;gap:1rem}
+.address-card{border:1px solid #e5e7eb;border-radius:.75rem;padding:1rem;background:#fafafa;transition:all .2s}
+.address-card:hover{border-color:#bfdbfe;background:#eff6ff}
+.address-badge{display:inline-block;padding:.25rem .75rem;border-radius:999px;background:#dbeafe;color:#1e40af;font-size:.75rem;font-weight:600}
+.empty-state{text-align:center;padding:2rem;color:#6b7280}
+.btn-sm{padding:.5rem .75rem;font-size:.875rem}
+.btn-icon{background:none;border:1px solid #e5e7eb;padding:.5rem;border-radius:.5rem;cursor:pointer;transition:all .2s;font-size:1rem;display:inline-flex;align-items:center;justify-content:center}
+.btn-icon:hover{border-color:#fbbf24;background:#fffbeb}
+.btn-close{background:none;border:none;font-size:1.5rem;cursor:pointer;color:#6b7280;padding:0}
+.btn-close:hover{color:#111827}
+.modal{display:flex;align-items:center;justify-content:center;position:fixed;top:0;left:0;right:0;bottom:0;z-index:1000}
+.modal.hidden{display:none}
+.modal-overlay{position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5)}
+.modal-content{background:white;border-radius:1rem;box-shadow:0 25px 50px -12px rgba(0,0,0,.25);max-width:600px;width:90%;max-height:90vh;overflow-y:auto;position:relative;z-index:1001}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:1.5rem;border-bottom:1px solid #e5e7eb}
+.modal-header h2{margin:0;font-size:1.25rem;font-weight:700}
+.modal-body{padding:1.5rem}
+.modal-footer{display:flex;gap:.75rem;padding:1.5rem;border-top:1px solid #e5e7eb;background:#fafafa}
+.field-checkbox{width:1.25rem;height:1.25rem;cursor:pointer}
+.spinner-sm{display:inline-block;width:.875rem;height:.875rem;border:2px solid rgba(31,41,55,.1);border-top-color:currentcolor;border-radius:999px;animation:spin .6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.panel-header{display:flex;align-items:center;justify-content:space-between;gap:1rem}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.55rem;border-radius:999px;padding:.8rem 1.1rem;font-size:.92rem;font-weight:700;transition:.2s}
+.btn-dark{background:#0f172a;color:#fff}
+.btn-dark:disabled{cursor:not-allowed;opacity:.55}
+.btn-light{border:1px solid #cbd5e1;background:#fff;color:#334155}
+.field-label{display:block;margin-bottom:.35rem;font-size:.72rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#475569}
+.field-input{width:100%;border-radius:1rem;border:1px solid #cbd5e1;background:#fff;padding:.8rem .95rem;font-size:.95rem;color:#0f172a;box-shadow:0 1px 2px rgba(15,23,42,.04);transition:border-color .2s, box-shadow .2s}
+.field-input:focus{border-color:#4f46e5;outline:none;box-shadow:0 0 0 4px rgba(99,102,241,.14)}
+.field-input:disabled{background:#f8fafc;color:#475569}
+.file-input{padding:.65rem .8rem}
+.field-note{margin-top:.35rem;font-size:.78rem;color:#64748b}
+.field-error{margin-top:.35rem;min-height:1rem;font-size:.78rem;color:#e11d48}
+.stat-card{display:grid;gap:.35rem;border:1px solid rgba(148,163,184,.25);border-radius:1rem;background:rgba(255,255,255,.8);padding:1rem}
+.stat-card span{font-size:.72rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#78716c}
+.stat-card strong{font-size:1rem;color:#0f172a}
+.address-card,.empty-state{border:1px solid rgba(148,163,184,.22);border-radius:1rem;background:rgba(255,255,255,.86);padding:1rem}
+.address-badge{display:inline-flex;align-items:center;justify-content:center;border-radius:999px;background:#dcfce7;padding:.25rem .65rem;font-size:.7rem;font-weight:800;color:#166534}
+.alert{border-radius:1rem;padding:1rem;font-size:.92rem}
+.alert-error{border:1px solid #fecaca;background:#fef2f2;color:#b91c1c}
+.toast-stack{position:fixed;right:1rem;bottom:1rem;z-index:1200;display:grid;gap:.75rem}
+.toast{min-width:240px;max-width:320px;border-radius:1rem;padding:.85rem 1rem;font-size:.9rem;font-weight:600;box-shadow:0 20px 50px rgba(15,23,42,.18);transition:opacity .25s,transform .25s}
+.toast-success{background:#052e16;color:#dcfce7}
+.toast-error{background:#7f1d1d;color:#fee2e2}
+.toast-hide{opacity:0;transform:translateY(8px)}
+.spinner{width:2.5rem;height:2.5rem;border-radius:999px;border:4px solid rgba(99,102,241,.18);border-top-color:#4f46e5;animation:spin .8s linear infinite}
+.spinner-sm{width:1rem;height:1rem;border-width:2px}
+.hidden{display:none!important}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+{% endblock %}

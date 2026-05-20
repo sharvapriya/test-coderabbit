@@ -1,0 +1,87 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background-color: #e7f3ff; padding: 20px; border-radius: 4px; margin-bottom: 20px; border-left: 4px solid #007bff; }
+        .content { padding: 20px; background-color: #ffffff; border: 1px solid #ddd; border-radius: 4px; }
+        .footer { text-align: center; margin-top: 20px; font-size: 12px; color: #666; }
+        .info { color: #007bff; font-weight: bold; }
+        .total { font-size: 20px; font-weight: bold; color: #28a745; }
+        .info-row { margin: 10px 0; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        .label { color: #666; font-weight: bold; }
+        .table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+        .table th { background-color: #f8f9fa; padding: 10px; text-align: left; border-bottom: 2px solid #ddd; }
+        .table td { padding: 8px 10px; border-bottom: 1px solid #eee; }
+        .button { display: inline-block; padding: 10px 20px; background-color: #007bff; color: white; text-decoration: none; border-radius: 4px; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2 class="info">📊 Payout Summary</h2>
+        </div>
+        
+        <div class="content">
+            <p>Hello {{ seller_name }},</p>
+            
+            <p>Here's your payout summary for the last {{ period_days }} days:</p>
+            
+            <div class="info-row">
+                <span class="label">Total Payouts:</span>
+                {{ total_payouts }}
+            </div>
+            
+            <div class="info-row">
+                <span class="label">Total Amount:</span>
+                <div class="total">₹{{ total_amount }}</div>
+            </div>
+            
+            {% if payouts %}
+            <h3>Recent Payouts</h3>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Amount</th>
+                        <th>Reference</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for payout in payouts %}
+                    <tr>
+                        <td>{{ payout.created_at|date:"M d, Y" }}</td>
+                        <td>₹{{ payout.amount }}</td>
+                        <td>{{ payout.reference }}</td>
+                        <td>
+                            <span style="padding: 4px 8px; border-radius: 3px; font-size: 12px;
+                                {% if payout.status == 'completed' %}background-color: #d4edda; color: #28a745;
+                                {% elif payout.status == 'processing' %}background-color: #fff3cd; color: #856404;
+                                {% elif payout.status == 'failed' %}background-color: #f8d7da; color: #dc3545;
+                                {% endif %}">
+                                {{ payout.get_status_display }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% endif %}
+            
+            <p>
+                <a href="{{ dashboard_url }}" class="button">View Full History</a>
+            </p>
+            
+            <p>Thank you for selling on MyKartStore!</p>
+        </div>
+        
+        <div class="footer">
+            <p>This is an automated message. Please don't reply to this email.</p>
+            <p>&copy; 2026 MyKartStore. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

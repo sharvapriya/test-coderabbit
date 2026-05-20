@@ -1,0 +1,623 @@
+{% extends "base.html" %}
+{% block title %}Edit Seller Product{% endblock %}
+{% block content %}
+<section class="publish-page py-8">
+  <div class="mx-auto max-w-6xl px-4">
+    <form method="post" enctype="multipart/form-data" class="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-xl">
+      {% csrf_token %}
+      <div class="hero px-6 py-7">
+        <div class="flex flex-col gap-4 lg:flex-row lg:items-end">
+          <div>
+            <p class="eyebrow">Seller Workspace</p>
+            <h1 class="mt-2 text-3xl font-black text-slate-950">Edit Product</h1>
+            <p class="mt-2 max-w-2xl text-sm text-slate-700">Update pricing, discounts, media, and delivery details for {{ seller_product.product.name }}.</p>
+          </div>
+          <div class="stats ml-auto">
+            <div><span>Seller</span><strong>{{ seller.business_name }}</strong></div>
+            <div><span>Stock</span><strong id="product-stock-pill">{{ form.stock.value|default_if_none:"0" }}</strong></div>
+            <div><span>Status</span><strong>{{ seller_product.product.get_status_display }}</strong></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="space-y-6 px-4 py-5 sm:px-6">
+        <div class="alert alert-warn">Saving seller-side changes will move this product back to pending review until an admin approves it again.</div>
+        {% if form.non_field_errors %}
+          <div class="alert alert-error">{{ form.non_field_errors }}</div>
+        {% endif %}
+        {% if form.errors %}
+          <div class="alert alert-warn">Some fields need attention before we can save this product.</div>
+        {% endif %}
+        {% if seller_product.product.status == "rejected" and seller_product.product.rejection_reason %}
+          <div class="alert alert-error">Admin feedback: {{ seller_product.product.rejection_reason }}</div>
+        {% endif %}
+
+        <section class="panel">
+          <div class="flex flex-col gap-3 border-b border-slate-200 pb-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p class="eyebrow text-slate-500">Product Block</p>
+              <h2 class="mt-1 text-xl font-bold text-slate-950">Basic Info, Media, Pricing &amp; Inventory</h2>
+            </div>
+            <div class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
+              Current product: <span class="font-semibold text-slate-900">{{ seller_product.product.name }}</span>
+            </div>
+          </div>
+
+          <div class="mt-5 grid gap-4 lg:grid-cols-2">
+            <section class="section-card">
+              <h3 class="section-title">Basic Info</h3>
+	              <div class="grid gap-3 sm:grid-cols-2">
+	                <div><label class="field-label">Category</label>{{ form.category }}<div class="field-error">{{ form.category.errors }}</div></div>
+	                <div><label class="field-label">New Category</label>{{ form.new_category_name }}<div class="field-error">{{ form.new_category_name.errors }}</div></div>
+	              </div>
+	              <p class="mt-2 text-xs text-slate-500">If you enter a new category, it will be created and assigned to this product.</p>
+              <div class="mt-3 grid gap-3 sm:grid-cols-2">
+                <div><label class="field-label">Product Name</label>{{ form.name }}<div class="field-error">{{ form.name.errors }}</div></div>
+                <div><label class="field-label">Slug</label>{{ form.slug }}<div class="field-error">{{ form.slug.errors }}</div></div>
+              </div>
+            </section>
+
+            <section class="section-card section-card-blue">
+              <h3 class="section-title">Media</h3>
+              <div class="upload-box">
+                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p class="font-semibold text-slate-800">Product Images</p>
+                    <p class="text-xs text-slate-500">Upload up to 6 JPG, PNG, or WEBP images. Use replace or delete on any image you do not want to keep.</p>
+                  </div>
+                  <label class="btn btn-dark" for="{{ form.images.id_for_label }}">
+                    <span>Add Images</span>
+                  </label>
+                </div>
+                <div class="mt-3 hidden">
+                  {{ form.image }}
+                  {{ form.images }}
+                  {{ form.clear_image }}
+                  {{ form.delete_image_ids }}
+                </div>
+                <div class="field-error mt-2">{{ form.image.errors }}</div>
+                <div class="field-error mt-2">{{ form.images.errors }}</div>
+                <div class="field-error mt-2">{{ form.delete_image_ids.errors }}</div>
+                <div class="image-grid mt-4" id="image-preview-grid">
+                  {% if seller_product.product.image and not seller_product.product.images.all %}
+                    <div class="preview-card" data-cover-image-card>
+                      <img id="cover-image-preview" class="preview-image" src="{{ seller_product.product.image.url }}" alt="{{ seller_product.product.name }}">
+                      <div class="preview-meta">
+                        <span class="preview-badge">1</span>
+                        <span id="cover-image-name" class="preview-name">Current image 1</span>
+                      </div>
+                      <div class="preview-actions">
+                        <label class="preview-action preview-action-primary" for="{{ form.image.id_for_label }}">Replace</label>
+                        <button type="button" class="preview-action preview-action-remove" id="delete-cover-image-btn">Delete</button>
+                      </div>
+                    </div>
+                  {% endif %}
+                  {% for gallery_image in seller_product.product.images.all %}
+                    <div class="preview-card" data-existing-image-card data-image-id="{{ gallery_image.id }}">
+                      <img class="preview-image" src="{{ gallery_image.image.url }}" alt="{{ seller_product.product.name }}">
+                      <div class="preview-meta">
+                        <span class="preview-badge">{{ forloop.counter }}</span>
+                        <span class="preview-name">Current image {{ forloop.counter }}</span>
+                      </div>
+                      <div class="preview-actions">
+                        <label class="preview-action preview-action-primary" for="id_replace_image_{{ gallery_image.id }}">Replace</label>
+                        <button type="button" class="preview-action preview-action-remove" data-delete-image="{{ gallery_image.id }}">Delete</button>
+                      </div>
+                      <input type="file" name="replace_image_{{ gallery_image.id }}" id="id_replace_image_{{ gallery_image.id }}" accept=".jpg,.jpeg,.png,.webp" class="hidden" data-replace-image="{{ gallery_image.id }}">
+                    </div>
+                  {% endfor %}
+                </div>
+                <p id="image-empty-note" class="text-xs text-slate-400{% if seller_product.product.images.all or seller_product.product.image %} hidden{% endif %}">No images selected yet.</p>
+              </div>
+              <label class="field-label mt-4">Description</label>{{ form.description }}<div class="field-error">{{ form.description.errors }}</div>
+            </section>
+          </div>
+
+          <section class="section-card section-card-amber mt-4">
+            <h3 class="section-title">Pricing &amp; Inventory</h3>
+            <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              <div><label class="field-label">Price</label>{{ form.price }}<div class="field-error">{{ form.price.errors }}</div></div>
+              <div><label class="field-label">GST Rate</label>{{ form.gst_rate }}<div class="field-error">{{ form.gst_rate.errors }}</div></div>
+              <div><label class="field-label">HSN Code</label>{{ form.hsn_code }}<div class="field-error">{{ form.hsn_code.errors }}</div></div>
+              <div data-stock-row><label class="field-label">Stock Quantity</label>{{ form.stock }}<div class="field-error">{{ form.stock.errors }}</div></div>
+              <div>
+                <label class="field-label">Variant product?</label>
+                <label class="inline-flex items-center gap-2">
+                  <input type="checkbox" name="{{ form.has_variants.html_name }}" id="{{ form.has_variants.id_for_label }}" class="h-4 w-4 rounded border-slate-300"{% if form.has_variants.value %} checked{% endif %}>
+                  Has variants
+                </label>
+                <div class="field-error">{{ form.has_variants.errors }}</div>
+              </div>
+            </div>
+            <div class="mt-4 grid gap-3 lg:grid-cols-2">
+              <div>
+                <label class="field-label">Select Discount %</label>
+                <div class="discount-row" data-discount-buttons>
+                  <button type="button" class="discount-choice-btn" data-discount-value="5">5%</button>
+                  <button type="button" class="discount-choice-btn" data-discount-value="10">10%</button>
+                  <button type="button" class="discount-choice-btn" data-discount-value="20">20%</button>
+                  <button type="button" class="discount-choice-btn" data-discount-value="30">30%</button>
+                  <button type="button" class="discount-choice-btn" data-discount-value="50">50%</button>
+                  <button type="button" class="discount-choice-btn" data-discount-value="75">75%</button>
+                  <button type="button" class="discount-choice-btn" data-discount-value="100">100%</button>
+                </div>
+                <div class="field-error">{{ form.discount_percent.errors }}</div>
+              </div>
+              <div>
+                <label class="field-label">Discounted Amount (Auto-calculated)</label>
+                <input type="text" id="discounted-amount-preview" class="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 shadow-sm" readonly tabindex="-1">
+                <div class="field-error">{{ form.discount_amount.errors }}</div>
+              </div>
+            </div>
+            <div class="sr-only">
+              {{ form.discount_percent }}
+              {{ form.discount_amount }}
+            </div>
+            <div class="variant-builder hidden mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4" data-variant-panel>
+              <div class="grid gap-3 sm:grid-cols-2">
+                <div><label class="field-label">Sizes</label>{{ form.variant_sizes }}<div class="field-error">{{ form.variant_sizes.errors }}</div></div>
+                <div><label class="field-label">Colors</label>{{ form.variant_colors }}<div class="field-error">{{ form.variant_colors.errors }}</div></div>
+              </div>
+              <div class="mt-4 text-sm text-slate-600">Add sizes and colors to build variants. Leave either sizes or colors blank for single-axis variants.</div>
+              <div class="mt-4 overflow-x-auto">
+                <table class="w-full text-sm border-collapse">
+                  <thead>
+                    <tr class="bg-slate-100 text-left text-xs uppercase tracking-[0.14em] text-slate-500">
+                      <th class="px-3 py-2 border border-slate-200">Size</th>
+                      <th class="px-3 py-2 border border-slate-200">Color</th>
+                      <th class="px-3 py-2 border border-slate-200">Stock</th>
+                      <th class="px-3 py-2 border border-slate-200">SKU</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-200" data-variant-rows>
+                    <tr><td colspan="4" class="px-3 py-4 text-slate-500">Enter sizes and colors to build variants.</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="field-error text-rose-600 text-sm mt-2">{{ form.variant_payload.errors }}</div>
+              {{ form.variant_payload }}
+            </div>
+            <p class="mt-3 text-sm text-slate-600">Use either a percentage or an amount discount for the product itself.</p>
+          </section>
+        </section>
+
+        <div class="hidden">
+          {{ form.coupon_code }}
+          {{ form.coupon_discount_percent }}
+          {{ form.coupon_active }}
+          {{ form.coupon_valid_from }}
+          {{ form.coupon_valid_to }}
+          {{ form.delivery_type }}
+          {{ form.handover_instructions }}
+          {{ form.payout_rate_own_delivery }}
+          {{ form.payout_rate_hub_delivery }}
+        </div>
+
+        <section class="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
+          <div class="panel panel-green">
+            <h2 class="text-xl font-bold text-slate-950">Delivery &amp; Logistics</h2>
+            <p class="mt-1 text-sm text-slate-600">These settings control how this product is fulfilled.</p>
+            <div class="mt-5 grid gap-4 md:grid-cols-2">
+              <div><label class="field-label">Delivery Mode</label>{{ form.delivery_mode }}<div class="field-error">{{ form.delivery_mode.errors }}</div></div>
+              <div><label class="field-label">Estimated Delivery Charge</label>{{ form.estimated_delivery_charge }}<div class="field-error">{{ form.estimated_delivery_charge.errors }}</div></div>
+            </div>
+            <div id="own-delivery-fields" class="mt-4">
+              <label class="field-label">Shipping Details</label>
+              {{ form.shipping_details }}
+              <div class="field-error">{{ form.shipping_details.errors }}</div>
+            </div>
+            <div id="hub-delivery-fields" class="mt-4 grid gap-4 md:grid-cols-2">
+              <div><label class="field-label">Hub Name</label>{{ form.hub_name }}<div class="field-error">{{ form.hub_name.errors }}</div></div>
+              <div><label class="field-label">Hub Address</label>{{ form.hub_address }}<div class="field-error">{{ form.hub_address.errors }}</div></div>
+            </div>
+          </div>
+
+          <div class="panel panel-amber">
+            <h2 class="text-xl font-bold text-slate-950">Payout Snapshot</h2>
+            <div class="upload-box mt-5">
+              <p class="eyebrow text-amber-700">Approximate Payout</p>
+              <p id="approx-payout-text" class="mt-2 text-2xl font-black text-slate-950" data-platform-commission="{{ payout_preview_config.platform_commission_rate }}" data-gateway-fee="{{ payout_preview_config.payment_gateway_fee_rate }}" data-gst-rate="{{ payout_preview_config.gst_rate }}" data-tds-rate="{{ payout_preview_config.tds_rate }}">You will earn approximately Rs.0.00 after deductions</p>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div class="border-t border-slate-100 bg-white px-4 py-4 sm:px-6">
+        <div class="flex flex-col gap-3 sm:flex-row sm:justify-end">
+          <a href="{% url 'sellers:dashboard' %}" class="btn btn-light">Cancel</a>
+          <button type="submit" class="btn btn-dark">Update Product</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</section>
+
+{{ category_tax_data|json_script:"edit-category-tax-data" }}
+<script>
+(() => {
+  const nameInput = document.getElementById("id_name");
+  const slugInput = document.getElementById("id_slug");
+  const priceInput = document.getElementById("id_price");
+  const stockInput = document.getElementById("id_stock");
+  const stockPill = document.getElementById("product-stock-pill");
+  const deliveryMode = document.getElementById("id_delivery_mode");
+  const deliveryType = document.getElementById("id_delivery_type");
+  const estimatedCharge = document.getElementById("id_estimated_delivery_charge");
+  const ownFields = document.getElementById("own-delivery-fields");
+  const hubFields = document.getElementById("hub-delivery-fields");
+  const approx = document.getElementById("approx-payout-text");
+  const hasVariantsInput = document.getElementById("id_has_variants");
+  const variantPanel = document.querySelector("[data-variant-panel]");
+  const variantRows = document.querySelector("[data-variant-rows]");
+  const variantSizes = document.getElementById("id_variant_sizes");
+  const variantColors = document.getElementById("id_variant_colors");
+  const variantPayload = document.getElementById("id_variant_payload");
+  const stockRow = document.querySelector("[data-stock-row]");
+  const imageInput = document.getElementById("id_image");
+  const galleryInput = document.getElementById("id_images");
+  const clearImageInput = document.getElementById("id_clear_image");
+  const deleteImageIdsInput = document.getElementById("id_delete_image_ids");
+  const imageGrid = document.getElementById("image-preview-grid");
+  const imageEmptyNote = document.getElementById("image-empty-note");
+  const coverImagePreview = document.getElementById("cover-image-preview");
+  const coverImageName = document.getElementById("cover-image-name");
+  const deleteCoverButton = document.getElementById("delete-cover-image-btn");
+  const discountPercent = document.getElementById("id_discount_percent");
+  const discountAmount = document.getElementById("id_discount_amount");
+  const discountedAmountPreview = document.getElementById("discounted-amount-preview");
+  const discountButtons = [...document.querySelectorAll("[data-discount-buttons] .discount-choice-btn")];
+  if (!priceInput || !deliveryMode || !estimatedCharge || !approx) return;
+
+  const slugifyValue = (value) => (value || "").toLowerCase().trim().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "");
+  const money = (value) => (Number.isFinite(value) ? value : 0).toFixed(2);
+  const parseVariantList = (value) => (value || "").split(/[\n,;]+/).map((item) => item.trim()).filter(Boolean);
+  const getDeletedImageIds = () => new Set((deleteImageIdsInput?.value || "").split(",").map((item) => item.trim()).filter(Boolean));
+
+  function syncSlug() {
+    if (!nameInput || !slugInput) return;
+    if (slugInput.dataset.manual !== "true") slugInput.value = slugifyValue(nameInput.value);
+  }
+
+  function syncDelivery() {
+    const own = deliveryMode.value === "own_delivery";
+    ownFields.style.display = own ? "" : "none";
+    hubFields.style.display = own ? "none" : "";
+    ownFields.querySelectorAll("input,textarea,select").forEach((el) => { el.disabled = !own; });
+    hubFields.querySelectorAll("input,textarea,select").forEach((el) => { el.disabled = own; });
+    if (deliveryType && own) {
+      deliveryType.value = "own_delivery";
+      estimatedCharge.value = "0.00";
+    } else if (deliveryType && !deliveryType.value) {
+      deliveryType.value = "platform";
+    }
+    updatePayout();
+  }
+
+  function updateVariantPayload() {
+    if (!variantPayload || !variantRows) return;
+    const rows = [...variantRows.querySelectorAll("[data-variant-row]")];
+    variantPayload.value = JSON.stringify(rows.map((row) => ({
+      size: row.dataset.size || null,
+      color: row.dataset.color || null,
+      stock_quantity: Number(row.querySelector('input[name="variant_stock_quantity"]')?.value || 0),
+      sku: row.querySelector('input[name="variant_sku"]')?.value || "",
+    })));
+  }
+
+  function buildVariantRows() {
+    if (!hasVariantsInput || !variantPanel || !stockRow || !variantRows || !variantPayload) return;
+    const enabled = hasVariantsInput.checked;
+    variantPanel.classList.toggle("hidden", !enabled);
+    stockRow.style.display = enabled ? "none" : "";
+    if (!enabled) {
+      variantPayload.value = "[]";
+      return;
+    }
+
+    const sizes = parseVariantList(variantSizes?.value);
+    const colors = parseVariantList(variantColors?.value);
+    const rows = [];
+    const existing = new Map();
+    try {
+      JSON.parse(variantPayload.value || "[]").forEach((item) => existing.set(`${item.size || ""}:::${item.color || ""}`, item));
+    } catch (error) {
+      variantPayload.value = "[]";
+    }
+
+    if (sizes.length && colors.length) {
+      sizes.forEach((size) => colors.forEach((color) => rows.push({ size, color })));
+    } else if (sizes.length) {
+      sizes.forEach((size) => rows.push({ size, color: null }));
+    } else if (colors.length) {
+      colors.forEach((color) => rows.push({ size: null, color }));
+    }
+
+    variantRows.innerHTML = "";
+    if (!rows.length) {
+      variantRows.innerHTML = '<tr><td colspan="4" class="px-3 py-4 text-slate-500">Enter sizes and colors to build variants.</td></tr>';
+      variantPayload.value = "[]";
+      return;
+    }
+
+    rows.forEach((variant) => {
+      const key = `${variant.size || ""}:::${variant.color || ""}`;
+      const current = existing.get(key) || {};
+      const row = document.createElement("tr");
+      row.className = "border-t border-slate-200";
+      row.dataset.variantRow = "true";
+      row.dataset.size = variant.size || "";
+      row.dataset.color = variant.color || "";
+      row.innerHTML = `
+        <td class="px-3 py-2">${variant.size || "-"}</td>
+        <td class="px-3 py-2">${variant.color || "-"}</td>
+        <td class="px-3 py-2"><input type="number" min="0" name="variant_stock_quantity" value="${current.stock_quantity ?? 0}" class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900"></td>
+        <td class="px-3 py-2"><input type="text" name="variant_sku" value="${current.sku || ""}" class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900" placeholder="Auto generate or type SKU"></td>
+      `;
+      row.querySelectorAll("input").forEach((input) => input.addEventListener("input", updateVariantPayload));
+      variantRows.appendChild(row);
+    });
+
+    updateVariantPayload();
+  }
+
+  function syncImageEmptyState() {
+    if (!imageGrid || !imageEmptyNote) return;
+    const visibleCards = [...imageGrid.children].filter((card) => card.style.display !== "none");
+    imageEmptyNote.classList.toggle("hidden", visibleCards.length > 0);
+  }
+
+  function renderNewImagePreview(file, index) {
+    if (!imageGrid) return;
+    const card = document.createElement("div");
+    card.className = "preview-card";
+    card.dataset.newImageCard = "true";
+    card.innerHTML = `
+      <img class="preview-image" src="${URL.createObjectURL(file)}" alt="${file.name}">
+      <div class="preview-meta">
+        <span class="preview-badge">+</span>
+        <span class="preview-name">${file.name}</span>
+      </div>
+      <div class="preview-actions">
+        <button type="button" class="preview-action preview-action-remove" data-remove-new-image="${index}">Delete</button>
+      </div>
+    `;
+    imageGrid.appendChild(card);
+  }
+
+  function renderGalleryUploads(files) {
+    imageGrid?.querySelectorAll("[data-new-image-card]").forEach((card) => card.remove());
+    files.forEach((file, index) => renderNewImagePreview(file, index));
+    imageGrid?.querySelectorAll("[data-remove-new-image]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const nextFiles = [...(galleryInput.files || [])].filter((_, fileIndex) => fileIndex !== Number(button.dataset.removeNewImage));
+        const dataTransfer = new DataTransfer();
+        nextFiles.forEach((file) => dataTransfer.items.add(file));
+        galleryInput.files = dataTransfer.files;
+        renderGalleryUploads(nextFiles);
+      });
+    });
+    syncImageEmptyState();
+  }
+
+  function syncCoverPreview() {
+    if (!imageInput || !coverImagePreview || !coverImageName || !imageInput.files || !imageInput.files[0]) return;
+    const file = imageInput.files[0];
+    coverImagePreview.src = URL.createObjectURL(file);
+    coverImageName.textContent = file.name;
+    const coverCard = coverImagePreview.closest(".preview-card");
+    if (coverCard) coverCard.style.display = "";
+    if (clearImageInput) clearImageInput.checked = false;
+    syncImageEmptyState();
+  }
+
+  function updateDeleteImageIds(imageId, shouldDelete) {
+    if (!deleteImageIdsInput) return;
+    const ids = getDeletedImageIds();
+    if (shouldDelete) ids.add(String(imageId));
+    else ids.delete(String(imageId));
+    deleteImageIdsInput.value = [...ids].join(",");
+  }
+
+  function syncDiscountButtons() {
+    const selectedValue = (discountPercent?.value || "").trim();
+    discountButtons.forEach((button) => {
+      button.classList.toggle("active", button.dataset.discountValue === selectedValue);
+    });
+  }
+
+  function updatePayout() {
+    const price = Number(priceInput.value || 0);
+    const percent = Number((discountPercent || {}).value || 0);
+    if (percent > 0 && discountAmount) {
+      discountAmount.value = price > 0 ? money((price * percent) / 100) : "";
+    }
+    const amountDiscount = Number((discountAmount || {}).value || 0);
+    let effective = price;
+    if (percent > 0) effective = Math.max(price - (price * percent / 100), 0);
+    if (amountDiscount > 0) effective = Math.max(price - amountDiscount, 0);
+    if (discountedAmountPreview) discountedAmountPreview.value = effective ? money(effective) : "";
+    const charge = deliveryMode.value === "own_delivery" ? 0 : Number(estimatedCharge.value || 0);
+    const pc = Number(approx.dataset.platformCommission || 0);
+    const gf = Number(approx.dataset.gatewayFee || 0);
+    const gstField = document.querySelector('[data-field="gst-rate"]');
+    const gst = Number((gstField && gstField.value) || approx.dataset.gstRate || 0);
+    const tds = Number(approx.dataset.tdsRate || 0);
+    const payout = Math.max(effective - (effective * pc / 100) - (effective * gf / 100) - (effective * gst / 100) - (effective * tds / 100) - charge, 0);
+    approx.textContent = `You will earn approximately Rs.${money(payout)} after deductions`;
+    syncDiscountButtons();
+  }
+
+  if (nameInput && slugInput) {
+    slugInput.dataset.manual = slugInput.value ? "true" : "false";
+    nameInput.addEventListener("input", syncSlug);
+    slugInput.addEventListener("input", () => {
+      slugInput.dataset.manual = slugInput.value && slugInput.value !== slugifyValue(nameInput.value) ? "true" : "false";
+    });
+  }
+  if (stockInput && stockPill) {
+    stockInput.addEventListener("input", () => {
+      stockPill.textContent = stockInput.value || "0";
+    });
+  }
+  if (imageInput) imageInput.addEventListener("change", syncCoverPreview);
+  if (galleryInput) {
+    galleryInput.addEventListener("change", () => {
+      const keptExistingCount = [...document.querySelectorAll("[data-existing-image-card]")].filter((card) => card.style.display !== "none").length;
+      const coverVisible = document.querySelector("[data-cover-image-card]")?.style.display !== "none";
+      const nextFiles = [...galleryInput.files];
+      if (keptExistingCount + (coverVisible ? 1 : 0) + nextFiles.length > 6) {
+        window.alert("You can upload up to 6 images only.");
+        galleryInput.value = "";
+        renderGalleryUploads([]);
+        return;
+      }
+      renderGalleryUploads(nextFiles);
+    });
+  }
+  if (deleteCoverButton) {
+    deleteCoverButton.addEventListener("click", () => {
+      const coverCard = document.querySelector("[data-cover-image-card]");
+      if (coverCard) coverCard.style.display = "none";
+      if (clearImageInput) clearImageInput.checked = true;
+      if (imageInput) imageInput.value = "";
+      syncImageEmptyState();
+    });
+  }
+  document.querySelectorAll("[data-delete-image]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const imageId = button.dataset.deleteImage;
+      const card = document.querySelector(`[data-image-id="${imageId}"]`);
+      if (card) card.style.display = "none";
+      updateDeleteImageIds(imageId, true);
+      syncImageEmptyState();
+    });
+  });
+  document.querySelectorAll("[data-replace-image]").forEach((input) => {
+    input.addEventListener("change", () => {
+      const imageId = input.dataset.replaceImage;
+      const card = document.querySelector(`[data-image-id="${imageId}"]`);
+      const file = input.files?.[0];
+      if (!card || !file) return;
+      const preview = card.querySelector(".preview-image");
+      const name = card.querySelector(".preview-name");
+      if (preview) preview.src = URL.createObjectURL(file);
+      if (name) name.textContent = file.name;
+      card.style.display = "";
+      updateDeleteImageIds(imageId, false);
+      syncImageEmptyState();
+    });
+  });
+  [priceInput, estimatedCharge, discountPercent, discountAmount].forEach((field) => {
+    if (field) field.addEventListener("input", updatePayout);
+    if (field && field.tagName === "SELECT") field.addEventListener("change", updatePayout);
+  });
+  discountButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      if (!discountPercent || !discountAmount) return;
+      const percent = Number(button.dataset.discountValue || 0);
+      const price = Number(priceInput.value || 0);
+      discountPercent.value = button.dataset.discountValue;
+      discountAmount.value = price > 0 ? money((price * percent) / 100) : "";
+      updatePayout();
+    });
+  });
+  if (discountPercent) {
+    discountPercent.addEventListener("input", () => {
+      const price = Number(priceInput.value || 0);
+      const percent = Number(discountPercent.value || 0);
+      if (discountAmount) discountAmount.value = percent > 0 && price > 0 ? money((price * percent) / 100) : "";
+      updatePayout();
+    });
+  }
+  deliveryMode.addEventListener("change", syncDelivery);
+  hasVariantsInput?.addEventListener("change", buildVariantRows);
+  variantSizes?.addEventListener("input", buildVariantRows);
+  variantColors?.addEventListener("input", buildVariantRows);
+
+  syncDelivery();
+  buildVariantRows();
+  syncImageEmptyState();
+  updatePayout();
+})();
+</script>
+<script>
+(() => {
+  const raw = document.getElementById("edit-category-tax-data");
+  if (!raw) return;
+  const categoryTaxData = JSON.parse(raw.textContent).reduce((acc, row) => {
+    acc[String(row.id)] = row;
+    return acc;
+  }, {});
+  const categoryField = document.querySelector("[data-field='category']");
+  const newCategoryField = document.querySelector("[data-field='new-category']");
+  const gstField = document.querySelector("[data-field='gst-rate']");
+  const hsnField = document.querySelector("[data-field='hsn-code']");
+  if (!categoryField || !gstField || !hsnField) return;
+
+  const syncTaxFields = () => {
+    const taxRow = categoryTaxData[categoryField.value] || null;
+    if (taxRow && !(newCategoryField?.value || "").trim()) {
+      gstField.value = taxRow.gst_rate;
+      if (!hsnField.value || hsnField.dataset.synced === "true") {
+        hsnField.value = taxRow.hsn_code;
+      }
+      hsnField.dataset.synced = "true";
+    } else if ((newCategoryField?.value || "").trim()) {
+      if (!gstField.value) gstField.value = "18.00";
+    } else {
+      gstField.value = "18.00";
+      if (hsnField.dataset.synced === "true") {
+        hsnField.value = "";
+      }
+    }
+  };
+
+  categoryField.addEventListener("change", syncTaxFields);
+  newCategoryField?.addEventListener("input", syncTaxFields);
+  hsnField?.addEventListener("input", () => {
+    hsnField.dataset.synced = hsnField.value ? "false" : "true";
+  });
+  syncTaxFields();
+})();
+</script>
+
+<style>
+.publish-page{background:radial-gradient(1000px 340px at 0% 0%,rgba(251,191,36,.16),transparent 55%),radial-gradient(780px 420px at 100% 10%,rgba(14,165,233,.14),transparent 55%),linear-gradient(180deg,#fffdf7 0%,#f8fafc 50%,#eef2ff 100%)}
+.hero{background:linear-gradient(135deg,rgba(255,251,235,.96),rgba(255,255,255,.94));border-bottom:1px solid #e2e8f0}
+.eyebrow{font-size:.68rem;font-weight:800;letter-spacing:.18em;text-transform:uppercase}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.75rem;width:100%;max-width:28rem}
+.stats div{border:1px solid rgba(148,163,184,.25);border-radius:1rem;background:rgba(255,255,255,.82);padding:.85rem 1rem;display:grid}
+.stats span{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.16em;color:#78716c}
+.stats strong{font-size:1rem;font-weight:800;color:#0f172a;word-break:break-word}
+.panel,.section-card{border-radius:1.35rem;border:1px solid #e2e8f0;background:#fff;padding:1rem}
+.panel{background:rgba(248,250,252,.85)}
+.panel-green{background:linear-gradient(180deg,#ecfdf5 0%,#f8fffb 100%);border-color:#bbf7d0}
+.panel-amber,.section-card-amber{background:linear-gradient(180deg,#fffbeb 0%,#fff8e7 100%);border-color:#fde68a}
+.section-card-blue{background:linear-gradient(180deg,#eff6ff 0%,#fff 100%);border-color:#bfdbfe}
+.section-title{font-size:1rem;font-weight:800;color:#020617}
+.field-label{display:block;margin:.1rem 0 .35rem;font-size:.72rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#475569}
+.field-error{margin-top:.25rem;font-size:.74rem;color:#e11d48}
+.btn{display:inline-flex;align-items:center;justify-content:center;border-radius:999px;padding:.8rem 1.1rem;font-size:.9rem;font-weight:700;transition:.2s}
+.btn-dark{background:#0f172a;color:#fff}
+.btn-light{border:1px solid #cbd5e1;background:#fff;color:#334155}
+.alert{border-radius:1rem;padding:.9rem 1rem;font-size:.9rem}
+.alert-error{border:1px solid #fecaca;background:#fef2f2;color:#b91c1c}
+.alert-warn{border:1px solid #fde68a;background:#fffbeb;color:#92400e}
+.upload-box{border:1px dashed #cbd5e1;border-radius:1rem;background:rgba(255,255,255,.82);padding:1rem}
+.image-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:.75rem}
+.preview-card{display:grid;gap:.45rem;border:1px solid #dbeafe;border-radius:1rem;background:#fff;padding:.5rem;box-shadow:0 8px 20px rgba(37,99,235,.08)}
+.preview-image{width:100%;aspect-ratio:1;object-fit:cover;border-radius:.8rem;background:#eff6ff}
+.preview-meta{display:flex;align-items:center;gap:.4rem;min-width:0}
+.preview-badge{display:inline-flex;align-items:center;justify-content:center;width:1.3rem;height:1.3rem;border-radius:999px;background:#0f172a;color:#fff;font-size:.7rem;font-weight:800}
+.preview-name{font-size:.72rem;color:#475569;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.preview-actions{display:flex;gap:.5rem;flex-wrap:wrap}
+.preview-action{display:inline-flex;align-items:center;justify-content:center;border:1px solid #cbd5e1;border-radius:999px;padding:.45rem .8rem;font-size:.76rem;font-weight:700;color:#334155;background:#fff;cursor:pointer}
+.preview-action-primary{background:#0f172a;border-color:#0f172a;color:#fff}
+.preview-action-remove{border-color:#fecaca;color:#b91c1c;background:#fff1f2}
+.discount-row{display:flex;gap:.75rem;flex-wrap:wrap}
+.discount-choice-btn{display:inline-flex;align-items:center;justify-content:center;min-width:4.2rem;border:1px solid #cbd5e1;border-radius:999px;background:#fff;padding:.8rem 1rem;font-size:1rem;font-weight:800;color:#1e3a5f;transition:.2s}
+.discount-choice-btn.active{background:#f59e0b;border-color:#f59e0b;color:#111827}
+#coupon-panel.hidden{display:none}
+@media (max-width:640px){.stats{grid-template-columns:1fr;max-width:none}}
+</style>
+{% endblock %}

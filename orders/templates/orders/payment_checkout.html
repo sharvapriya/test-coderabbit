@@ -1,0 +1,366 @@
+{% extends "base.html" %}
+
+{% block title %}Online Payment{% endblock %}
+
+{% block content %}
+<section class="min-h-[70vh] bg-gradient-to-br from-slate-100 via-white to-amber-100 py-12">
+  <div class="mx-auto max-w-5xl px-4">
+    <div class="grid gap-8 lg:grid-cols-[1.15fr_0.85fr]">
+
+      <!-- LEFT CARD -->
+      <div class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl">
+
+        <!-- HEADER -->
+        <div class="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 px-6 py-8 text-white sm:px-8">
+          <p class="text-sm font-semibold uppercase tracking-[0.3em] text-amber-400">
+            Secure Checkout
+          </p>
+          <h1 class="mt-3 text-3xl font-black tracking-tight">
+            Complete your online payment
+          </h1>
+          <p class="mt-2 max-w-2xl text-sm text-slate-300">
+            The amount below is calculated from your cart, discounts, and wallet usage.
+          </p>
+        </div>
+
+        <!-- BODY -->
+        <div class="px-6 py-8 sm:px-8">
+
+          <!-- AMOUNT BOX -->
+          <div class="mt-2 rounded-2xl border border-amber-200 bg-gradient-to-br from-amber-50 to-amber-100 p-6 shadow-inner">
+            <p class="text-sm font-semibold uppercase tracking-[0.2em] text-amber-700">
+              Amount to pay now
+            </p>
+            <p class="mt-2 text-4xl font-black text-amber-900">
+              Rs.{{ remaining_payable }}
+            </p>
+
+            {% if wallet_applied > 0 %}
+            <p class="mt-2 text-sm text-amber-800">
+              Wallet covers the full payable amount for this order.
+            </p>
+            {% else %}
+            <p class="mt-2 text-sm text-amber-800">
+              This is the final payable amount.
+            </p>
+            {% endif %}
+          </div>
+
+          <!-- STATUS -->
+          <div id="payment-status"
+               class="mt-5 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 shadow-sm">
+            {% if online_payment_confirmed %}
+              Payment already verified. Continue to checkout.
+            {% else %}
+              Ready to open Razorpay Checkout.
+            {% endif %}
+          </div>
+          <!-- BUTTONS -->
+          <div class="mt-6 flex flex-col gap-3 sm:flex-row">
+
+            {% if online_payment_confirmed %}
+            <a href="{% url 'orders:order_create' %}"
+               class="inline-flex w-full items-center justify-center rounded-2xl 
+                      bg-emerald-600 px-5 py-3 text-base font-bold text-white 
+                      shadow-lg transition hover:bg-emerald-500 sm:w-auto">
+              Continue to checkout
+            </a>
+            {% else %}
+          
+
+            <!-- PAY BUTTON -->
+            <button
+            id="pay-now-button"
+            type="button"
+            style="
+                background: #ea580c;
+                color: #ffffff;
+                width: 100%;
+                padding: 12px;
+                border-radius: 12px;
+                font-weight: bold;
+                border: none;
+                display: block;
+              "
+            >
+            Pay Rs.{{ remaining_payable }}
+          </button>
+            {% endif %}
+
+            <!-- CHANGE OPTION -->
+          <a
+            href="{% url 'orders:payment_step' %}"
+           class="inline-flex w-full items-center justify-center rounded-2xl
+              bg-blue-100 text-blue-800
+              px-5 py-3 text-base font-semibold
+              border border-blue-300
+              transition hover:bg-blue-200
+              sm:w-auto">
+            Change payment option
+          </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT SIDE SUMMARY -->
+     <!-- Replace the existing <aside> tag with this -->
+<aside class="rounded-3xl border border-slate-200 
+              bg-slate-50 p-6 shadow-xl">
+  <!-- Note: You'll need to change internal text colors to white/slate-300 if you use this -->
+
+  <!-- TITLE -->
+  <h2 class="text-lg font-bold text-slate-900">Order summary</h2>
+
+  <!-- PRICE BREAKDOWN -->
+  <div class="mt-4 space-y-3 text-sm text-slate-700">
+
+    <div class="flex justify-between">
+      <span>Subtotal</span>
+      <span class="font-semibold text-slate-900">Rs.{{ subtotal }}</span>
+    </div>
+
+    <div class="flex justify-between">
+      <span>
+        Discount{% if coupon_code %} ({{ coupon_code }}{% if discount_percent > 0 %} - {{ discount_percent }}%{% endif %}){% elif discount_percent > 0 %} ({{ discount_percent }}%){% endif %}
+      </span>
+      <span class="font-semibold text-emerald-600">- Rs.{{ discount_amount }}</span>
+    </div>
+
+    <div class="flex justify-between">
+      <span>Wallet applied</span>
+      <span class="font-semibold text-emerald-600">- Rs.{{ wallet_applied }}</span>
+    </div>
+
+    <div class="flex justify-between">
+      <span>Amount after discount</span>
+      <span class="font-semibold text-slate-900">Rs.{{ final_total }}</span>
+    </div>
+
+    <!-- TOTAL -->
+    <div class="border-t border-amber-200 pt-3 flex justify-between items-center">
+      <span class="font-semibold text-slate-900">Total online payment</span>
+      <span class="text-xl font-black text-orange-600">
+        Rs.{{ remaining_payable }}
+      </span>
+    </div>
+  </div>
+
+    <div class="mt-6 rounded-2xl border border-slate-200 bg-white p-4">
+    <div class="flex items-start justify-between gap-3">
+      <div>
+        <p class="text-sm font-bold text-slate-900">Coupons</p>
+        <p class="mt-1 text-xs text-slate-500">Review or change seller and store offers.</p>
+      </div>
+      <a href="{% url 'orders:discount_step' %}" class="text-sm font-semibold text-indigo-700 hover:text-indigo-800">
+        View all
+      </a>
+    </div>
+
+    {% if coupon_code %}
+    <div class="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
+      <p class="text-sm font-bold text-emerald-800">{{ coupon_code }} applied</p>
+      <p class="mt-1 text-xs text-emerald-700">
+        You save Rs.{{ discount_amount }}{% if discount_percent > 0 %} with {{ discount_percent }}% off{% endif %}.
+      </p>
+    </div>
+    {% endif %}
+
+    <div class="mt-4 space-y-3">
+      {% for offer in available_offers|slice:":2" %}
+      <div class="rounded-2xl border {% if offer.is_relevant %}border-slate-200 bg-slate-50{% else %}border-slate-100 bg-slate-100/80{% endif %} p-3">
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <p class="text-sm font-bold text-slate-900">{{ offer.code }} - {{ offer.discount_percent }}% OFF</p>
+            <div class="mt-2 flex flex-wrap gap-2 text-[11px] font-semibold">
+              <span class="rounded-full bg-slate-100 px-2.5 py-1 text-slate-700">{{ offer.source_label }}</span>
+              <span class="rounded-full bg-indigo-50 px-2.5 py-1 text-indigo-700">{{ offer.source_name }}</span>
+            </div>
+            <p class="mt-2 text-xs text-slate-500">On {{ offer.applies_to }}</p>
+            {% if not offer.is_relevant and offer.shortfall_amount > 0 %}
+            <p class="mt-2 text-xs font-medium text-amber-700">Add products worth Rs.{{ offer.shortfall_amount }} more to unlock.</p>
+            {% endif %}
+          </div>
+          <div class="space-y-2 text-right">
+            <a href="{% url 'orders:discount_step' %}?code={{ offer.code }}" class="block text-xs font-semibold text-indigo-700 hover:text-indigo-800">
+              {% if coupon_code == offer.code %}Applied{% else %}Apply{% endif %}
+            </a>
+            {% if not offer.is_relevant and offer.shortfall_amount > 0 %}
+            <a href="{{ offer.unlock_url }}" class="block text-xs font-semibold text-amber-700 hover:text-amber-800">
+              Add Products
+            </a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% empty %}
+      <div class="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-3 text-xs text-slate-500">
+        No coupons available right now.
+      </div>
+      {% endfor %}
+    </div>
+
+    <p class="mt-4 text-[11px] text-slate-500">Terms and conditions apply.</p>
+  </div>
+
+  <!-- ITEMS -->
+  <div class="mt-6">
+    <h3 class="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
+      Items
+    </h3>
+
+    <div class="mt-3 space-y-3">
+
+      {% for item in cart_items %}
+      <div class="flex items-center gap-4 rounded-2xl 
+                  border border-slate-200 
+                  bg-gradient-to-r from-white to-slate-50 
+                  p-3 shadow-sm hover:shadow-md transition">
+
+        <!-- PRODUCT IMAGE / ICON -->
+        <div class="h-12 w-12 shrink-0 rounded-lg bg-slate-100 
+                    flex items-center justify-center text-slate-400">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+          </svg>
+        </div>
+
+        <!-- PRODUCT INFO -->
+        <div class="flex-1 min-w-0">
+          <p class="font-semibold text-slate-900 truncate">
+            {{ item.product.name }}
+          </p>
+
+          {% if item.variant_summary %}
+          <p class="text-xs text-slate-500 mt-1">
+            {{ item.variant_summary }}
+          </p>
+          {% endif %}
+
+          <p class="text-sm text-slate-600 mt-1">
+            Qty {{ item.quantity }} × Rs.{{ item.unit_price }}
+          </p>
+        </div>
+
+        <!-- ITEM TOTAL -->
+        <div class="text-right">
+          <p class="font-bold text-slate-900 text-sm">
+            Rs.{{ item.get_total_price }}
+          </p>
+        </div>
+
+      </div>
+      {% endfor %}
+
+    </div>
+  </div>
+
+</aside>
+
+    </div>
+  </div>
+
+  {% csrf_token %}
+
+  {% if not online_payment_confirmed %}
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+  <script>
+    (() => {
+      const payButton = document.getElementById("pay-now-button");
+      const statusBox = document.getElementById("payment-status");
+      const csrfToken = document.querySelector("input[name='csrfmiddlewaretoken']").value;
+
+      const setStatus = (message, tone = "neutral") => {
+        const toneClasses = {
+          neutral: "border-slate-200 bg-slate-50 text-slate-700",
+          success: "border-emerald-300 bg-emerald-100 text-emerald-800",
+          error: "border-red-300 bg-red-100 text-red-800"
+        };
+
+        statusBox.className = "mt-5 rounded-2xl border px-4 py-3 text-sm";
+        statusBox.classList.add(...toneClasses[tone].split(" "));
+        statusBox.textContent = message;
+      };
+
+      const toggleBusy = (isBusy) => {
+        payButton.disabled = isBusy;
+        payButton.textContent = isBusy ? "Processing..." : "Pay Rs.{{ remaining_payable }}";
+      };
+
+      const verifyPayment = async (paymentResponse) => {
+        const response = await fetch("/verify-payment", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": csrfToken
+          },
+          body: JSON.stringify(paymentResponse)
+        });
+
+        const data = await response.json();
+        if (!response.ok || !data.success) {
+          throw new Error(data.message || "Verification failed");
+        }
+        return data;
+      };
+
+      payButton.addEventListener("click", async () => {
+        toggleBusy(true);
+        setStatus("Creating Razorpay order...");
+
+        try {
+          const res = await fetch("/create-order", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-CSRFToken": csrfToken
+            },
+            body: JSON.stringify({ source: "checkout" })
+          });
+
+          const data = await res.json();
+          if (!res.ok || !data.success) throw new Error(data.message);
+
+          const rzp = new Razorpay({
+            key: data.key,
+            amount: data.amount,
+            currency: data.currency,
+            order_id: data.order_id,
+            name: "MyKart Store",
+            description: "Order Payment",
+
+            handler: async function (response) {
+              try {
+                setStatus("Verifying payment...");
+                const verifyData = await verifyPayment(response);
+                setStatus(verifyData.message, "success");
+                window.location.href = verifyData.redirect_url;
+              } catch (err) {
+                setStatus(err.message, "error");
+                toggleBusy(false);
+              }
+            },
+
+            modal: {
+              ondismiss: function () {
+                setStatus("Payment cancelled.", "error");
+                toggleBusy(false);
+              }
+            },
+
+            theme: { color: "#f59e0b" }
+          });
+
+          rzp.open();
+
+        } catch (err) {
+          setStatus(err.message, "error");
+          toggleBusy(false);
+        }
+      });
+    })();
+  </script>
+  {% endif %}
+</section>
+{% endblock %}

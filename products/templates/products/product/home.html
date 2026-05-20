@@ -1,0 +1,1747 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+
+
+{% block title %}MyKartStore{% endblock %}
+
+
+
+{% block content %}
+
+
+
+<style>
+
+    .home-shell {
+
+        position: relative;
+
+        overflow: hidden;
+
+        --pointer-x: 50%;
+
+        --pointer-y: 18%;
+
+        background: radial-gradient(circle at var(--pointer-x) var(--pointer-y), rgba(255, 255, 255, 0.78), rgba(255, 255, 255, 0) 24%), radial-gradient(circle at 0% 8%, rgba(244, 114, 182, 0.15), transparent 28%), radial-gradient(circle at 92% 12%, rgba(59, 130, 246, 0.16), transparent 26%), radial-gradient(circle at 85% 82%, rgba(245, 158, 11, 0.14), transparent 22%), linear-gradient(180deg, #fffaf7 0%, #f7fbff 38%, #eef4ff 100%);
+
+    }
+
+
+
+    .home-shell::before,
+
+    .home-shell::after {
+
+        content: "";
+
+        position: absolute;
+
+        border-radius: 999px;
+
+        filter: blur(12px);
+
+        opacity: 0.55;
+
+        pointer-events: none;
+
+        animation: homeGlowFloat 16s ease-in-out infinite;
+
+    }
+
+
+
+    .home-shell[data-home-interactive="true"]::before,
+
+    .home-shell[data-home-interactive="true"]::after {
+
+        transition: transform 0.25s ease;
+
+    }
+
+
+
+    .home-shell::before {
+
+        width: 320px;
+
+        height: 320px;
+
+        top: 80px;
+
+        left: -80px;
+
+        background: radial-gradient(circle, rgba(251, 191, 36, 0.24), rgba(251, 191, 36, 0));
+
+    }
+
+
+
+    .home-shell::after {
+
+        width: 420px;
+
+        height: 420px;
+
+        right: -120px;
+
+        top: 260px;
+
+        background: radial-gradient(circle, rgba(96, 165, 250, 0.2), rgba(96, 165, 250, 0));
+
+        animation-delay: -8s;
+
+    }
+
+
+
+    .hero-spotlight {
+
+        position: relative;
+
+        z-index: 1;
+
+    }
+
+
+
+    .hero-spotlight::before {
+
+        content: "";
+
+        position: absolute;
+
+        inset: -18% 8% auto;
+
+        height: 220px;
+
+        border-radius: 999px;
+
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0));
+
+        filter: blur(20px);
+
+        pointer-events: none;
+
+        z-index: 0;
+
+    }
+
+
+
+    .hero-slider {
+
+        position: relative;
+
+        min-height: calc(100vh - 156px);
+
+        isolation: isolate;
+
+        background: linear-gradient(135deg, #151823 0%, #202a3d 45%, #1a2231 100%);
+
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+
+    }
+
+
+
+    .hero-slide {
+
+        position: absolute;
+
+        inset: 0;
+
+        opacity: 0;
+
+        visibility: hidden;
+
+        transition: opacity 0.8s ease, visibility 0.8s ease, transform 0.8s ease;
+
+        transform: scale(1.02);
+
+    }
+
+
+
+    .hero-slide.is-active {
+
+        opacity: 1;
+
+        visibility: visible;
+
+        transform: scale(1);
+
+        z-index: 2;
+
+    }
+
+
+
+    .hero-slide-media {
+
+        position: absolute;
+
+        inset: 0;
+
+        width: 100%;
+
+        height: 100%;
+
+        object-fit: cover;
+
+        transform: scale(1.01);
+
+        animation: heroImageDrift 16s ease-in-out infinite;
+
+    }
+
+
+
+    .hero-slide-overlay {
+
+        position: absolute;
+
+        inset: 0;
+
+        background: linear-gradient(90deg, rgba(8, 12, 22, 0.88) 0%, rgba(8, 12, 22, 0.62) 34%, rgba(8, 12, 22, 0.18) 68%, rgba(8, 12, 22, 0.04) 100%), linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0));
+
+    }
+
+
+
+    .hero-slide-content {
+
+        position: relative;
+
+        z-index: 2;
+
+        max-width: 42rem;
+
+        padding: 2rem 1.5rem 5.5rem;
+
+    }
+
+
+
+    .hero-slide-kicker,
+
+    .hero-slide-title,
+
+    .hero-slide-copy,
+
+    .hero-slide-cta {
+
+        opacity: 0;
+
+        transform: translateY(20px);
+
+        transition: opacity 0.7s ease, transform 0.7s ease;
+
+    }
+
+
+
+    .hero-slide.is-active .hero-slide-kicker {
+
+        opacity: 1;
+
+        transform: translateY(0);
+
+        transition-delay: 0.08s;
+
+    }
+
+
+
+    .hero-slide.is-active .hero-slide-title {
+
+        opacity: 1;
+
+        transform: translateY(0);
+
+        transition-delay: 0.18s;
+
+    }
+
+
+
+    .hero-slide.is-active .hero-slide-copy {
+
+        opacity: 1;
+
+        transform: translateY(0);
+
+        transition-delay: 0.3s;
+
+    }
+
+
+
+    .hero-slide.is-active .hero-slide-cta {
+
+        opacity: 1;
+
+        transform: translateY(0);
+
+        transition-delay: 0.42s;
+
+    }
+
+
+
+    .hero-slide-kicker {
+
+        display: inline-flex;
+
+        align-items: center;
+
+        gap: 0.55rem;
+
+        margin-bottom: 1rem;
+
+        border: 1px solid rgba(255, 255, 255, 0.22);
+
+        border-radius: 999px;
+
+        padding: 0.55rem 0.9rem;
+
+        background: rgba(255, 255, 255, 0.08);
+
+        backdrop-filter: blur(6px);
+
+        color: rgba(255, 255, 255, 0.92);
+
+        font-size: 0.78rem;
+
+        font-weight: 700;
+
+        letter-spacing: 0.22em;
+
+        text-transform: uppercase;
+
+    }
+
+
+
+    .hero-slide-title {
+
+        color: #fff;
+
+        text-wrap: balance;
+
+    }
+
+
+
+    .hero-slide-copy {
+
+        color: rgba(255, 255, 255, 0.86);
+
+        max-width: 34rem;
+
+    }
+
+
+
+    .hero-slide-cta {
+
+        display: inline-flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        min-width: 160px;
+
+        border-radius: 999px;
+
+        background: linear-gradient(135deg, rgba(13, 18, 30, 0.92) 0%, rgba(31, 41, 55, 0.96) 100%);
+
+        color: #fff;
+
+        padding: 0.95rem 1.5rem;
+
+        font-weight: 700;
+
+        letter-spacing: 0.02em;
+
+        box-shadow: 0 20px 40px rgba(2, 6, 23, 0.42);
+
+        border: 1px solid rgba(255, 255, 255, 0.18);
+
+        transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+
+    }
+
+
+
+    .hero-slide-cta:hover {
+
+        transform: translateY(-2px);
+
+        box-shadow: 0 24px 45px rgba(2, 6, 23, 0.56);
+
+        background: linear-gradient(135deg, rgba(2, 6, 23, 0.98) 0%, rgba(22, 31, 49, 0.98) 100%);
+
+    }
+
+
+
+    .hero-slide-cta::after {
+
+        content: "→";
+
+        margin-left: 0.65rem;
+
+        font-size: 1rem;
+
+    }
+
+
+
+    .hero-slide-glow {
+
+        position: absolute;
+
+        width: 180px;
+
+        height: 180px;
+
+        right: 8%;
+
+        top: 12%;
+
+        border-radius: 50%;
+
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0));
+
+        filter: blur(10px);
+
+        animation: heroPulse 6s ease-in-out infinite;
+
+        z-index: 1;
+
+    }
+
+
+
+    .hero-slider-controls {
+
+        position: absolute;
+
+        left: 1.5rem;
+
+        right: 1.5rem;
+
+        bottom: 1.5rem;
+
+        z-index: 4;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: space-between;
+
+        gap: 1rem;
+
+    }
+
+
+
+    .hero-slider-dots {
+
+        display: flex;
+
+        align-items: center;
+
+        gap: 0.55rem;
+
+    }
+
+
+
+    .hero-slider-dot {
+
+        width: 11px;
+
+        height: 11px;
+
+        border-radius: 999px;
+
+        border: 1px solid rgba(255, 255, 255, 0.5);
+
+        background: rgba(255, 255, 255, 0.26);
+
+        transition: width 0.25s ease, background 0.25s ease, border-color 0.25s ease;
+
+    }
+
+
+
+    .hero-slider-dot.is-active {
+
+        width: 34px;
+
+        background: #fff;
+
+        border-color: #fff;
+
+    }
+
+
+
+    .hero-slider-arrow {
+
+        display: inline-flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        width: 44px;
+
+        height: 44px;
+
+        border: 1px solid rgba(255, 255, 255, 0.22);
+
+        border-radius: 999px;
+
+        background: rgba(15, 23, 42, 0.3);
+
+        color: #fff;
+
+        font-size: 1.1rem;
+
+        backdrop-filter: blur(8px);
+
+        transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+
+    }
+
+
+
+    .hero-slider-arrow:hover {
+
+        transform: translateY(-1px);
+
+        background: rgba(15, 23, 42, 0.54);
+
+        border-color: rgba(255, 255, 255, 0.42);
+
+    }
+
+    .home-product-image-frame {
+
+        position: relative;
+
+        width: min(100%, 200px);
+
+        padding-top: 70%;
+
+        margin: 0 auto;
+
+        overflow: hidden;
+
+        background: #f8fafc;
+
+        border-radius: 1rem;
+
+    }
+
+
+
+    .home-product-image-frame > img {
+
+        position: absolute;
+
+        inset: 0;
+
+        width: 100%;
+
+        height: 100%;
+
+        object-fit: contain;
+
+        object-position: center;
+
+    }
+
+    .product-image-slider-track {
+
+        position: absolute;
+
+        inset: 0;
+
+    }
+
+    .product-image-slide {
+
+        position: absolute;
+
+        inset: 0;
+
+        opacity: 0;
+
+        transform: scale(1.02);
+
+        transition: opacity 0.55s ease, transform 0.8s ease;
+
+    }
+
+    .product-image-slide.is-active {
+
+        opacity: 1;
+
+        transform: scale(1);
+
+    }
+
+
+
+    .product-card-link {
+
+        cursor: pointer;
+
+        text-decoration: none;
+
+        color: inherit;
+
+    }
+
+
+
+    .product-card-link:hover {
+
+        text-decoration: none;
+
+    }
+
+
+
+    .product-card-link .home-product-image-frame img {
+
+        transition: transform 0.3s ease;
+
+    }
+
+
+
+    .product-card-link:hover .home-product-image-frame img {
+
+        transform: scale(1.05);
+
+    }
+
+
+
+    .wishlist-heart {
+
+        position: absolute;
+
+        top: 10px;
+
+        right: 10px;
+
+        z-index: 10;
+
+        width: 40px;
+
+        height: 40px;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        background-color: white;
+
+        border-radius: 50%;
+
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+
+        font-size: 22px;
+
+        transition: transform 0.2s ease, color 0.2s ease;
+
+        cursor: pointer;
+
+    }
+
+
+
+    .wishlist-heart:hover {
+
+        transform: scale(1.1);
+
+    }
+
+
+
+    .wishlist-heart.in-wishlist {
+
+        color: #ef4444;
+
+    }
+
+
+
+    .wishlist-heart.not-in-wishlist {
+
+        color: #cbd5e1;
+
+    }
+
+
+
+    .wishlist-heart.not-in-wishlist:hover {
+
+        color: #ef4444;
+
+    }
+
+    .home-categories-marquee {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1.5rem;
+
+    }
+
+    .home-categories-track {
+        display: contents;
+
+    }
+
+    .home-category-card {
+        width: 100%;
+
+    }
+
+    .home-quote-banner {
+        position: relative;
+        overflow: hidden;
+        border: 1px solid rgba(196, 181, 253, 0.8);
+        background: linear-gradient(135deg, rgba(250, 245, 255, 0.96), rgba(255, 255, 255, 0.98));
+        box-shadow: 0 20px 40px rgba(109, 40, 217, 0.08);
+    }
+
+    .home-quote-banner::before {
+        content: "";
+        position: absolute;
+        inset: auto -60px -90px auto;
+        width: 180px;
+        height: 180px;
+        border-radius: 999px;
+        background: radial-gradient(circle, rgba(167, 139, 250, 0.22), rgba(167, 139, 250, 0));
+    }
+
+    .home-quote-chip {
+        border: 1px solid rgba(192, 132, 252, 0.35);
+        background: rgba(255, 255, 255, 0.86);
+        color: #6b21a8;
+        box-shadow: 0 10px 24px rgba(76, 29, 149, 0.08);
+    }
+
+    .home-quote-card {
+        border: 1px solid rgba(224, 231, 255, 0.95);
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(244, 247, 255, 0.96));
+        box-shadow: 0 18px 36px rgba(15, 23, 42, 0.08);
+    }
+
+    @keyframes heroImageDrift {
+
+        0% { transform: scale(1.01) translate3d(0, 0, 0); }
+
+        50% { transform: scale(1.045) translate3d(-8px, -6px, 0); }
+
+        100% { transform: scale(1.01) translate3d(0, 0, 0); }
+
+    }
+
+
+
+    @keyframes heroPulse {
+
+        0%, 100% { transform: scale(0.94); opacity: 0.45; }
+
+        50% { transform: scale(1.08); opacity: 0.78; }
+
+    }
+
+    @keyframes homeGlowFloat {
+
+        0%, 100% { transform: translate3d(0, 0, 0); }
+
+        50% { transform: translate3d(18px, -24px, 0); }
+
+    }
+
+
+
+    @media (max-width: 768px) {
+
+        .hero-slider {
+
+            min-height: calc(100vh - 128px);
+
+        }
+
+
+
+        .hero-slide-content {
+
+            padding: 1.75rem 1.25rem 6rem;
+
+        }
+
+
+
+        .hero-slider-controls {
+
+            left: 1rem;
+
+            right: 1rem;
+
+            bottom: 1rem;
+
+        }
+
+        .home-shell {
+
+            overflow-x: hidden;
+
+        }
+
+        .hero-slide-content {
+
+            max-width: 100%;
+
+        }
+
+        .home-product-image-frame {
+
+            width: 100%;
+
+            max-width: 220px;
+
+        }
+
+    }
+
+    @media (max-width: 640px) {
+
+        .hero-slider {
+
+            min-height: auto;
+
+        }
+
+        .hero-slide-title {
+
+            font-size: 2rem;
+
+            line-height: 1.05;
+
+        }
+
+        .hero-slide-copy {
+
+            max-width: 20rem;
+
+        }
+
+        .hero-slider-dots {
+
+            gap: 0.45rem;
+
+        }
+
+        .hero-slider-arrow {
+
+            width: 2.7rem;
+
+            height: 2.7rem;
+
+        }
+
+    }
+
+
+
+    @media (min-width: 1200px) {
+
+        .hero-slide-content {
+
+            padding-left: 6rem;
+
+        }
+
+    }
+
+</style>
+
+
+
+<!-- HERO SECTION -->
+
+<div class="home-shell pb-16 md:pb-20" data-home-shell data-home-interactive="true">
+
+<section class="relative left-1/2 right-1/2 w-screen -translate-x-1/2 mt-0 px-0 hero-spotlight">
+
+    <div class="hero-slider overflow-hidden shadow-[0_30px_80px_rgba(15,23,42,0.18)] md:rounded-[2rem]" data-hero-slider>
+
+        <a href="{% url 'products:product_list' %}" class="hero-slide is-active block" data-hero-slide>
+
+            <img src="{% static 'images/hero-premium-fashion.svg' %}" alt="Premium fashion collection artwork" class="hero-slide-media">
+
+            <div class="hero-slide-overlay"></div>
+
+            <div class="hero-slide-glow"></div>
+
+            <div class="relative flex min-h-[380px] items-center sm:min-h-[460px] md:min-h-[560px]">
+
+                <div class="hero-slide-content">
+
+                    <p class="hero-slide-kicker">Premium Fashion</p>
+
+                    <h1 class="hero-slide-title text-3xl sm:text-4xl md:text-6xl font-extrabold leading-tight mb-4">Upgrade Your Style With Branded Looks</h1>
+
+                    <p class="hero-slide-copy text-sm sm:text-base md:text-lg mb-6">Discover polished tailoring, elevated layers, and wardrobe staples curated for a more refined everyday look.</p>
+
+                    <span class="hero-slide-cta">Shop Now</span>
+
+                </div>
+
+            </div>
+
+        </a>
+
+        <a href="{% url 'products:product_list' %}" class="hero-slide block" data-hero-slide>
+
+            <img src="{% static 'images/hero-modern-tech.svg' %}" alt="Modern electronics showcase artwork" class="hero-slide-media">
+
+            <div class="hero-slide-overlay"></div>
+
+            <div class="hero-slide-glow"></div>
+
+            <div class="relative flex min-h-[380px] items-center sm:min-h-[460px] md:min-h-[560px]">
+
+                <div class="hero-slide-content">
+
+                    <p class="hero-slide-kicker">Smart Electronics</p>
+
+                    <h2 class="hero-slide-title text-3xl sm:text-4xl md:text-6xl font-extrabold leading-tight mb-4">Sharper Tech For Work, Play, And Everyday Flow</h2>
+
+                    <p class="hero-slide-copy text-sm sm:text-base md:text-lg mb-6">Explore sleek devices, audio essentials, and desk-ready upgrades designed for speed, comfort, and style.</p>
+
+                    <span class="hero-slide-cta">Explore Tech</span>
+
+                </div>
+
+            </div>
+
+        </a>
+
+        <a href="{% url 'products:product_list' %}" class="hero-slide block" data-hero-slide>
+
+            <img src="{% static 'images/hero-home-living.svg' %}" alt="Home living collection artwork" class="hero-slide-media">
+
+            <div class="hero-slide-overlay"></div>
+
+            <div class="hero-slide-glow"></div>
+
+            <div class="relative flex min-h-[380px] items-center sm:min-h-[460px] md:min-h-[560px]">
+
+                <div class="hero-slide-content">
+
+                    <p class="hero-slide-kicker">Home Living</p>
+
+                    <h2 class="hero-slide-title text-3xl sm:text-4xl md:text-6xl font-extrabold leading-tight mb-4">Warm Spaces Start With Thoughtful Everyday Pieces</h2>
+
+                    <p class="hero-slide-copy text-sm sm:text-base md:text-lg mb-6">Refresh your rooms with calming textures, functional accents, and cozy essentials that feel modern and welcoming.</p>
+
+                    <span class="hero-slide-cta">Refresh Home</span>
+
+                </div>
+
+            </div>
+
+        </a>
+
+        <a href="{% url 'products:product_list' %}" class="hero-slide block" data-hero-slide>
+
+            <img src="{% static 'images/hero-beauty-wellness.svg' %}" alt="Beauty and wellness showcase artwork" class="hero-slide-media">
+
+            <div class="hero-slide-overlay"></div>
+
+            <div class="hero-slide-glow"></div>
+
+            <div class="relative flex min-h-[380px] items-center sm:min-h-[460px] md:min-h-[560px]">
+
+                <div class="hero-slide-content">
+
+                    <p class="hero-slide-kicker">Beauty Wellness</p>
+
+                    <h2 class="hero-slide-title text-3xl sm:text-4xl md:text-6xl font-extrabold leading-tight mb-4">Glow-First Picks For Beauty, Care, And Confidence</h2>
+
+                    <p class="hero-slide-copy text-sm sm:text-base md:text-lg mb-6">Shop refined skincare, feel-good beauty must-haves, and daily self-care favourites crafted for a softer routine.</p>
+
+                    <span class="hero-slide-cta">Discover Beauty</span>
+
+                </div>
+
+            </div>
+
+        </a>
+
+        <div class="hero-slider-controls">
+
+            <div class="hero-slider-dots" aria-label="Hero slide navigation">
+
+                <button type="button" class="hero-slider-dot is-active" data-hero-dot aria-label="Slide 1"></button>
+
+                <button type="button" class="hero-slider-dot" data-hero-dot aria-label="Slide 2"></button>
+
+                <button type="button" class="hero-slider-dot" data-hero-dot aria-label="Slide 3"></button>
+
+                <button type="button" class="hero-slider-dot" data-hero-dot aria-label="Slide 4"></button>
+
+            </div>
+
+            <div class="flex items-center gap-2">
+
+                <button type="button" class="hero-slider-arrow" data-hero-prev aria-label="Previous slide">&#8592;</button>
+
+                <button type="button" class="hero-slider-arrow" data-hero-next aria-label="Next slide">&#8594;</button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<section class="max-w-7xl mx-auto mt-8 px-4 md:px-6">
+    <div class="home-quote-banner rounded-[2rem] px-6 py-6 md:px-8 md:py-7">
+        <div class="relative z-[1] flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+            <div class="max-w-3xl">
+                <p class="text-sm font-semibold uppercase tracking-[0.24em] text-purple-700">Today&apos;s Spark</p>
+                <h2 class="mt-2 text-2xl md:text-3xl font-extrabold text-slate-900">Flash sale energy, handpicked for scroll-stopping finds.</h2>
+                <p class="mt-3 text-sm md:text-base text-slate-600">Hurry up and grab the pieces that make ordinary days feel freshly upgraded, gift-ready, and worth checking out right now.</p>
+            </div>
+            <div class="flex flex-wrap gap-3">
+                <span class="home-quote-chip rounded-full px-4 py-2 text-sm font-semibold">Quick picks, big smiles.</span>
+                <span class="home-quote-chip rounded-full px-4 py-2 text-sm font-semibold">If it catches your eye, make it yours.</span>
+                <span class="home-quote-chip rounded-full px-4 py-2 text-sm font-semibold">Shop the wow before it waves goodbye.</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<!-- TOP CATEGORIES -->
+
+<section class="max-w-7xl mx-auto mt-16 px-4 md:px-6">
+
+    <div class="flex items-center justify-between mb-8">
+
+        <div>
+
+            <h2 class="text-3xl font-bold text-gray-800">Top Categories</h2>
+
+            <p class="text-gray-600 mt-2">Popular categories from our store</p>
+
+        </div>
+
+        <a href="{% url 'products:product_list' %}" class="text-indigo-600 font-semibold hover:underline">
+
+            View All
+
+        </a>
+
+    </div>
+
+
+
+    <div class="home-categories-marquee">
+        {% if top_categories %}
+        <div class="home-categories-track">
+                {% for category in top_categories %}
+                <a href="{% url 'products:product_list_by_category' category.slug %}"
+                   class="home-category-card group relative overflow-hidden rounded-2xl shadow-md bg-white block">
+                    {% if category.preview_image %}
+                        <img src="{{ category.preview_image.url }}"
+                             alt="{{ category.name }}"
+                             class="h-72 w-full object-contain bg-slate-50 group-hover:scale-105 transition duration-500">
+                    {% else %}
+                        <img src="https://via.placeholder.com/400x400?text={{ category.name }}"
+                             alt="{{ category.name }}"
+                             class="h-72 w-full object-contain bg-slate-50 group-hover:scale-105 transition duration-500">
+                    {% endif %}
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent flex items-end">
+                        <div class="p-5">
+                            <h3 class="text-white text-xl font-bold">{{ category.name }}</h3>
+                            <p class="text-white/80 text-sm mt-1">Explore products</p>
+                        </div>
+                    </div>
+                </a>
+                {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-center text-gray-600">No categories available.</p>
+        {% endif %}
+    </div>
+
+</section>
+
+
+
+<section class="max-w-7xl mx-auto mt-12 px-4 md:px-6">
+    <div class="grid gap-4 md:grid-cols-3">
+        <div class="home-quote-card rounded-2xl p-5">
+            <p class="text-xs font-bold uppercase tracking-[0.22em] text-purple-700">Hot Right Now</p>
+            <p class="mt-3 text-base font-semibold text-slate-900">Grab the deal that makes your cart feel smarter, not heavier.</p>
+        </div>
+        <div class="home-quote-card rounded-2xl p-5">
+            <p class="text-xs font-bold uppercase tracking-[0.22em] text-purple-700">Little Push</p>
+            <p class="mt-3 text-base font-semibold text-slate-900">Best-loved picks are moving fast, and the next great buy could already be on your screen.</p>
+        </div>
+        <div class="home-quote-card rounded-2xl p-5">
+            <p class="text-xs font-bold uppercase tracking-[0.22em] text-purple-700">Checkout Mood</p>
+            <p class="mt-3 text-base font-semibold text-slate-900">Say yes to the item that feels like a treat today and a smart choice tomorrow.</p>
+        </div>
+    </div>
+</section>
+
+
+<!-- NEW DISCOUNT PRODUCTS -->
+
+<section class="max-w-7xl mx-auto mt-16 px-4 md:px-6">
+
+    <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-8">
+
+        <div>
+
+            <p class="text-sm font-semibold tracking-[0.2em] text-orange-700 uppercase">Latest Discounts</p>
+
+            <h2 class="text-3xl md:text-4xl font-extrabold text-gray-900 mt-2">
+
+                Fresh Discounts Just Dropped
+
+            </h2>
+
+            <p class="text-gray-600 mt-2">
+
+                Newly added discounted products from our latest collection.
+
+            </p>
+
+        </div>
+
+
+
+        <a href="{% url 'products:product_list' %}"
+
+           class="inline-flex items-center justify-center bg-black text-white px-6 py-3 rounded-full font-semibold hover:bg-gray-800 transition">
+
+            Grab Offers
+
+        </a>
+
+    </div>
+
+
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+
+        {% for product in discount_products %}
+
+        <a href="{% url 'products:product_detail' product.id product.slug %}" class="group bg-white rounded-2xl shadow-md hover:shadow-xl transition overflow-hidden flex flex-col h-full product-card-link no-underline" data-product-card>
+
+            <div class="relative overflow-hidden flex-shrink-0">
+
+                <div class="home-product-image-frame" {% if product.images.all %}data-product-slider{% endif %}>
+
+                    {% if product.images.all %}
+
+                    <div class="product-image-slider-track">
+
+                        {% for gallery_image in product.images.all %}
+
+                        <img src="{{ gallery_image.image.url }}"
+
+                             alt="{{ product.name }}"
+
+                             data-product-image
+
+                             class="product-image-slide{% if forloop.first %} is-active{% endif %} group-hover:scale-105 transition duration-500">
+
+                        {% endfor %}
+
+                    </div>
+
+                    {% elif product.image %}
+
+                    <img src="{{ product.image.url }}"
+
+                         alt="{{ product.name }}"
+
+                         data-product-image
+
+                         class="group-hover:scale-105 transition duration-500">
+
+                    {% else %}
+
+                    <img src="https://via.placeholder.com/400x400?text=No+Image"
+
+                         alt="No image"
+
+                         data-product-image
+
+                         class="group-hover:scale-105 transition duration-500">
+
+                    {% endif %}
+
+                </div>
+
+
+
+                <!-- Wishlist Heart Icon -->
+
+                {% if product.id in wishlist_products %}
+
+                <button
+
+    type="button"
+
+    onclick="handleWishlist(event, '{% url 'wishlist:remove_from_wishlist' product.id %}')"
+
+    class="wishlist-heart in-wishlist"
+
+    aria-label="Remove from wishlist">
+
+    &#10084;
+
+</button>
+
+               
+
+                {% else %}
+
+                <button
+
+    type="button"
+
+    onclick="handleWishlist(event, '{% url 'wishlist:add_to_wishlist' product.id %}')"
+
+    class="wishlist-heart not-in-wishlist"
+
+    aria-label="Add to wishlist">
+
+    &#9825;
+
+</button>
+
+                {% endif %}
+
+            </div>
+
+
+
+            <div class="p-3 flex flex-col flex-1">
+
+                <h3 class="font-semibold text-gray-800 line-clamp-2 text-xs">{{ product.name }}</h3>
+
+                <p class="mt-0.5 text-xs font-semibold {% if product.stock < 1 or not product.available %}text-rose-600{% else %}text-emerald-600{% endif %}">
+
+                    {% if product.stock < 1 or not product.available %}Out of Stock{% else %}In Stock{% endif %}
+
+                </p>
+
+
+
+                {% if product.has_discount %}
+
+                <div class="mt-1.5 flex flex-wrap items-center gap-2">
+
+                    <span class="text-xs text-gray-400 line-through">Rs {{ product.price }}</span>
+
+                    <span class="text-sm font-bold text-black">Rs {{ product.discounted_price }}</span>
+
+                    <span class="text-[11px] font-semibold text-emerald-600">{{ product.discount_percent_value|floatformat:0 }}% off</span>
+
+                </div>
+
+                {% else %}
+
+                <p class="mt-1.5 text-sm font-bold text-black">Rs {{ product.price }}</p>
+
+                {% endif %}
+
+                
+
+                <div class="mt-2 space-y-1.5 flex-1 flex flex-col">
+
+                    {% if product.stock > 0 and product.available %}
+
+                    <div class="flex gap-1.5">
+
+                        <form action="{% url 'cart:cart_add' product.id %}" method="post" data-card-add-to-cart-form class="flex-1" onsubmit="return handleAddToCart(event, {{ product.has_variants|lower }})">
+
+                            {% csrf_token %}
+
+                            <button type="submit" class="w-full rounded-lg bg-indigo-600 py-1.5 text-xs font-semibold text-white transition hover:bg-indigo-700">
+
+                                Add
+
+                            </button>
+
+                        </form>
+
+                        <button type="button" class="flex-1 rounded-lg bg-amber-400 py-1.5 text-center text-xs font-semibold text-slate-950 transition hover:bg-amber-500" onclick="handleBuyNow(event, {{ product.has_variants|lower }}, '{% url 'products:product_detail' product.id product.slug %}', '{% url 'cart:buy_now' product.id %}')">
+
+                            Buy
+
+                        </button>
+
+                    </div>
+
+                    {% else %}
+
+                    <p class="rounded-lg border border-gray-200 bg-gray-100 py-1.5 text-center text-xs font-semibold text-gray-600">
+
+                        Out of Stock
+
+                    </p>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+        </a>
+
+        {% empty %}
+
+        <p class="col-span-full text-center text-gray-600">No discounted products available.</p>
+
+        {% endfor %}
+
+    </div>
+
+</section>
+
+
+
+<!-- TRENDING PRODUCTS -->
+
+<section class="max-w-7xl mx-auto mt-16 px-4 md:px-6 mb-16">
+
+    <h2 class="text-3xl font-bold mb-8 text-gray-800">Trending Now</h2>
+
+
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
+
+        {% for product in products %}
+
+        <a href="{% url 'products:product_detail' product.id product.slug %}" class="group bg-white rounded-2xl shadow-md hover:shadow-xl transition overflow-hidden flex flex-col h-full product-card-link no-underline" data-product-card>
+
+            <div class="relative overflow-hidden flex-shrink-0">
+
+                <div class="home-product-image-frame" {% if product.images.all %}data-product-slider{% endif %}>
+
+                    {% if product.images.all %}
+
+                    <div class="product-image-slider-track">
+
+                        {% for gallery_image in product.images.all %}
+
+                        <img src="{{ gallery_image.image.url }}" alt="{{ product.name }}" data-product-image class="product-image-slide{% if forloop.first %} is-active{% endif %} group-hover:scale-105 transition duration-500">
+
+                        {% endfor %}
+
+                    </div>
+
+                    {% elif product.image %}
+
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}" data-product-image class="group-hover:scale-105 transition duration-500">
+
+                    {% else %}
+
+                    <img src="https://via.placeholder.com/400x400" alt="No image" data-product-image class="group-hover:scale-105 transition duration-500">
+
+                    {% endif %}
+
+                </div>
+
+
+
+                <!-- Wishlist Heart Icon -->
+
+                {% if product.id in wishlist_products %}
+
+                <button
+
+    type="button"
+
+    onclick="handleWishlist(event, '{% url 'wishlist:remove_from_wishlist' product.id %}')"
+
+    class="wishlist-heart in-wishlist"
+
+    aria-label="Remove from wishlist">
+
+    &#10084;
+
+</button>
+
+                {% else %}
+
+                <button
+
+    type="button"
+
+    onclick="handleWishlist(event, '{% url 'wishlist:add_to_wishlist' product.id %}')"
+
+    class="wishlist-heart not-in-wishlist"
+
+    aria-label="Add to wishlist">
+
+    &#9825;
+
+</button>
+
+                {% endif %}
+
+            </div>
+
+
+
+            <div class="p-3 flex flex-col flex-1">
+
+                <h3 class="font-semibold text-gray-800 text-xs">{{ product.name }}</h3>
+
+                <p class="mt-0.5 text-xs font-semibold {% if product.stock < 1 or not product.available %}text-rose-600{% else %}text-emerald-600{% endif %}">
+
+                    {% if product.stock < 1 or not product.available %}Out of Stock{% else %}In Stock{% endif %}
+
+                </p>
+
+
+
+                {% if product.has_discount %}
+
+                <div class="mt-1.5 flex flex-wrap items-center gap-2">
+
+                    <span class="text-xs text-gray-400 line-through">Rs {{ product.price }}</span>
+
+                    <span class="text-sm font-bold text-black">Rs {{ product.discounted_price }}</span>
+
+                    <span class="text-[11px] font-semibold text-emerald-600">{{ product.discount_percent_value|floatformat:0 }}% off</span>
+
+                </div>
+
+                {% else %}
+
+                <p class="text-black font-bold mt-1.5 text-sm">Rs {{ product.price }}</p>
+
+                {% endif %}
+
+
+
+                <div class="mt-2 space-y-1.5 flex-1 flex flex-col">
+
+                    {% if product.stock > 0 and product.available %}
+
+                    <div class="flex gap-1.5">
+
+                        <form action="{% url 'cart:cart_add' product.id %}" method="post" data-card-add-to-cart-form class="flex-1" onsubmit="return handleAddToCart(event, {{ product.has_variants|lower }})">
+
+                            {% csrf_token %}
+
+                            <button type="submit" class="w-full rounded-lg bg-indigo-600 py-1.5 text-xs font-semibold text-white transition hover:bg-indigo-700">
+
+                                Add
+
+                            </button>
+
+                        </form>
+
+                        <button type="button" class="flex-1 rounded-lg bg-amber-400 py-1.5 text-center text-xs font-semibold text-slate-950 transition hover:bg-amber-500" onclick="handleBuyNow(event, {{ product.has_variants|lower }}, '{% url 'products:product_detail' product.id product.slug %}', '{% url 'cart:buy_now' product.id %}')">
+
+                            Buy
+
+                        </button>
+
+                    </div>
+
+                    {% else %}
+
+                    <p class="rounded-lg border border-gray-200 bg-gray-100 py-1.5 text-center text-xs font-semibold text-gray-600">
+
+                        Out of Stock
+
+                    </p>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+        </a>
+
+        {% empty %}
+
+        <p class="col-span-full text-center text-gray-600">No products available.</p>
+
+        {% endfor %}
+
+    </div>
+
+</section>
+
+
+
+<script>
+
+const homeShell = document.querySelector("[data-home-shell]");
+const heroSlider = document.querySelector("[data-hero-slider]");
+
+if (homeShell) {
+
+    const updateHomePointer = (event) => {
+
+        const bounds = homeShell.getBoundingClientRect();
+
+        const x = ((event.clientX - bounds.left) / bounds.width) * 100;
+
+        const y = ((event.clientY - bounds.top) / bounds.height) * 100;
+
+        homeShell.style.setProperty("--pointer-x", `${Math.max(0, Math.min(100, x))}%`);
+
+        homeShell.style.setProperty("--pointer-y", `${Math.max(0, Math.min(100, y))}%`);
+
+    };
+
+    homeShell.addEventListener("pointermove", updateHomePointer);
+
+}
+
+if (heroSlider) {
+
+    const heroSlides = [...heroSlider.querySelectorAll("[data-hero-slide]")];
+
+    const heroDots = [...heroSlider.querySelectorAll("[data-hero-dot]")];
+
+    const prevHeroButton = heroSlider.querySelector("[data-hero-prev]");
+
+    const nextHeroButton = heroSlider.querySelector("[data-hero-next]");
+
+    let activeHeroIndex = 0;
+
+    let heroTimer = null;
+
+
+
+    function renderHeroSlide(index) {
+
+        activeHeroIndex = (index + heroSlides.length) % heroSlides.length;
+
+        heroSlides.forEach((slide, slideIndex) => {
+
+            slide.classList.toggle("is-active", slideIndex === activeHeroIndex);
+
+        });
+
+        heroDots.forEach((dot, dotIndex) => {
+
+            dot.classList.toggle("is-active", dotIndex === activeHeroIndex);
+
+        });
+
+    }
+
+
+
+    function queueHeroRotation() {
+
+        window.clearInterval(heroTimer);
+
+        heroTimer = window.setInterval(() => {
+
+            renderHeroSlide(activeHeroIndex + 1);
+
+        }, 5000);
+
+    }
+
+
+
+    prevHeroButton?.addEventListener("click", () => {
+
+        renderHeroSlide(activeHeroIndex - 1);
+
+        queueHeroRotation();
+
+    });
+
+
+
+    nextHeroButton?.addEventListener("click", () => {
+
+        renderHeroSlide(activeHeroIndex + 1);
+
+        queueHeroRotation();
+
+    });
+
+
+
+    heroDots.forEach((dot, dotIndex) => {
+
+        dot.addEventListener("click", () => {
+
+            renderHeroSlide(dotIndex);
+
+            queueHeroRotation();
+
+        });
+
+    });
+
+
+
+    heroSlider.addEventListener("mouseenter", () => window.clearInterval(heroTimer));
+
+    heroSlider.addEventListener("mouseleave", queueHeroRotation);
+
+    heroSlider.addEventListener("focusin", () => window.clearInterval(heroTimer));
+
+    heroSlider.addEventListener("focusout", queueHeroRotation);
+
+
+
+    renderHeroSlide(0);
+
+    queueHeroRotation();
+
+}
+
+function handleAddToCart(event, hasVariants) {
+
+    if (hasVariants) {
+
+        event.preventDefault();
+
+        showNotification('Please select a variant to proceed with checkout');
+
+        return false;
+
+    }
+
+    return true;
+
+}
+
+
+
+function handleBuyNow(event, hasVariants, detailsUrl, buyNowUrl) {
+
+    event.preventDefault();
+
+    event.stopPropagation();   // â­ THIS WAS MISSING
+
+
+
+    if (hasVariants) {
+
+        showNotification('Please select a variant to proceed with checkout');
+
+        window.location.href = detailsUrl;
+
+    } else {
+
+        window.location.href = buyNowUrl;
+
+    }
+
+}
+
+function showNotification(message) {
+
+    // Create a simple notification
+
+    const notification = document.createElement('div');
+
+    notification.className = 'fixed top-4 right-4 bg-amber-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 max-w-md';
+
+    notification.textContent = message;
+
+    document.body.appendChild(notification);
+
+    
+
+    setTimeout(() => {
+
+        notification.remove();
+
+    }, 3000);
+
+}
+
+
+
+function handleWishlist(event, url) {
+
+    event.preventDefault();      // ðŸš€ stops parent <a> navigation
+
+    event.stopPropagation();     // ðŸš€ stops bubbling
+
+    window.location.href = url;  // âœ… go to wishlist action
+
+}
+
+(function () {
+
+    const sliderCards = Array.from(document.querySelectorAll("[data-product-slider]"));
+
+    sliderCards.forEach((sliderCard) => {
+
+        const slides = Array.from(sliderCard.querySelectorAll(".product-image-slide"));
+
+        if (slides.length < 2) {
+
+            return;
+
+        }
+
+        let activeIndex = 0;
+
+        window.setInterval(() => {
+
+            slides[activeIndex].classList.remove("is-active");
+
+            activeIndex = (activeIndex + 1) % slides.length;
+
+            slides[activeIndex].classList.add("is-active");
+
+        }, 3000);
+
+    });
+
+})();
+
+</script>
+
+</div>
+
+
+
+{% endblock %}

@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% block title %}Apply Discount{% endblock %}
+
+{% block content %}
+<section class="bg-gradient-to-b from-white via-slate-50 to-indigo-50/40 py-10">
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <div class="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 shadow-sm">
+      <h2 class="text-2xl font-bold text-slate-900">Apply Discount Code</h2>
+      <!-- <p class="text-sm text-slate-500 mt-1">Enter a valid code before continuing to checkout.</p> -->
+      <p class="text-sm text-slate-500 mt-1">Enter a valid code before continuing to checkout details.</p>
+
+      <form method="post" class="mt-6 space-y-4">
+        {% csrf_token %}
+        <div>
+          <label class="block text-sm font-semibold text-slate-700 mb-1">{{ form.code.label }}</label>
+          {{ form.code }}
+          {% if form.code.errors %}
+          <p class="text-xs text-rose-600 mt-1">{{ form.code.errors|striptags }}</p>
+          {% endif %}
+        </div>
+
+        <button type="submit" class="w-full sm:w-auto rounded-xl bg-indigo-600 px-6 py-3 text-sm font-bold text-white hover:bg-indigo-700 transition">
+          Apply & Continue
+        </button>
+      </form>
+
+      <!-- <a href="{% url 'orders:payment_step' %}" class="inline-flex mt-5 text-sm font-semibold text-slate-600 hover:text-slate-800">
+        Skip discount and continue
+      </a> -->
+      <a href="{% url 'payment_checkout' %}?source=cart" class="inline-flex mt-5 text-sm font-semibold text-slate-600 hover:text-slate-800">
+        Skip discount and continue
+      </a>
+
+      <div class="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <p class="text-sm font-bold text-slate-900">Available coupons</p>
+            <p class="mt-1 text-xs text-slate-500">Change your coupon anytime before placing the order.</p>
+          </div>
+          <span class="rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-600 ring-1 ring-slate-200">
+            {{ available_offers|length }} offers
+          </span>
+        </div>
+
+        <div class="mt-4 space-y-3">
+          {% for offer in available_offers %}
+          <div class="rounded-2xl border {% if offer.is_relevant and not offer.already_used %}border-slate-200 bg-white{% else %}border-slate-100 bg-slate-50{% endif %} p-4">
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <p class="text-sm font-bold text-slate-900">{{ offer.code }} - {{ offer.discount_percent }}% OFF</p>
+                <div class="mt-2 flex flex-wrap items-center gap-2 text-[11px] font-semibold">
+                  <span class="rounded-full bg-slate-100 px-2.5 py-1 text-slate-700">{{ offer.source_label }}</span>
+                  <span class="rounded-full bg-indigo-50 px-2.5 py-1 text-indigo-700">{{ offer.source_name }}</span>
+                </div>
+                <p class="mt-2 text-xs text-slate-500">On {{ offer.applies_to }}</p>
+
+                {% if offer.already_used %}
+                <p class="mt-2 text-xs font-medium text-rose-700">Already this coupon accessed.</p>
+                {% elif offer.is_relevant %}
+                <p class="mt-2 text-xs font-medium text-emerald-700">Estimated savings: Rs.{{ offer.estimated_savings }}</p>
+                {% elif offer.shortfall_amount > 0 %}
+                <p class="mt-2 text-xs font-medium text-amber-700">Add products worth Rs.{{ offer.shortfall_amount }} more to unlock this offer.</p>
+                <p class="mt-1 text-[11px] text-slate-500">Current eligible cart value: Rs.{{ offer.matching_total }} of Rs.{{ offer.minimum_purchase_amount }}</p>
+                {% else %}
+                <p class="mt-2 text-xs font-medium text-slate-500">This coupon is not eligible for the current cart.</p>
+                {% endif %}
+              </div>
+
+              <div class="shrink-0 space-y-2">
+                {% if coupon_code == offer.code %}
+                <span class="block rounded-full bg-emerald-600 px-3 py-1.5 text-center text-xs font-bold text-white">
+                  Applied
+                </span>
+                {% elif offer.is_relevant and not offer.already_used %}
+                <a
+                  href="{% url 'orders:discount_step' %}?code={{ offer.code }}&source=cart"
+                  class="block rounded-full bg-slate-900 px-3 py-1.5 text-center text-xs font-bold text-white hover:bg-slate-800"
+                >
+                  Apply
+                </a>
+                {% else %}
+                <span class="block cursor-not-allowed rounded-full border border-slate-200 bg-slate-200/80 px-3 py-1.5 text-center text-xs font-bold text-slate-400">
+                  Apply
+                </span>
+                {% endif %}
+                {% if not offer.is_relevant and offer.shortfall_amount > 0 %}
+                <a
+                  href="{{ offer.unlock_url }}"
+                  class="block rounded-full bg-amber-100 px-3 py-1.5 text-center text-xs font-bold text-amber-800 hover:bg-amber-200"
+                >
+                  Add Products
+                </a>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          {% empty %}
+          <div class="rounded-2xl border border-dashed border-slate-300 bg-white p-4 text-xs text-slate-500">
+            No coupons available for this cart right now.
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <aside class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm h-fit">
+      <h3 class="text-xl font-bold text-slate-900">Summary</h3>
+      <div class="mt-5 space-y-3 text-sm">
+        <div class="flex items-center justify-between">
+          <span class="text-slate-600">Subtotal</span>
+          <span class="font-semibold text-slate-900">Rs.{{ subtotal }}</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-slate-600">
+            Discount
+            {% if selected_code %}
+            ({{ selected_code }} - {{ selected_percent }}%)
+            {% endif %}
+          </span>
+          <span class="font-semibold text-emerald-700">- {{ discount_amount }}</span>
+        </div>
+        <div class="border-t border-slate-200 pt-3 flex items-center justify-between">
+          <span class="font-semibold text-slate-800">Final Total</span>
+          <span class="text-2xl font-extrabold text-indigo-600">Rs.{{ final_total }}</span>
+        </div>
+      </div>
+      <p class="mt-4 text-[11px] text-slate-500">Terms and conditions apply.</p>
+    </aside>
+  </div>
+</section>
+{% endblock %}

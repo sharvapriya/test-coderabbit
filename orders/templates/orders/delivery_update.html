@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Update Delivery{% endblock %}
+
+{% block content %}
+<section class="py-8 sm:py-10 bg-slate-50">
+  <div class="max-w-3xl mx-auto px-4 sm:px-6">
+    <div class="rounded-3xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+      <div class="px-6 sm:px-8 py-7 border-b border-slate-200 bg-gradient-to-r from-indigo-800 to-slate-800">
+        <p class="text-xs uppercase tracking-[0.24em] text-indigo-200 font-semibold">Delivery Update</p>
+        <h1 class="text-2xl font-extrabold mt-2 text-white">Order #{{ assignment.order.id }}</h1>
+        <p class="text-indigo-100 mt-2 text-sm">{{ assignment.order.full_name }} - {{ assignment.order.address }}</p>
+      </div>
+
+      <div class="p-6 sm:p-8">
+        <form method="post" class="space-y-4">
+          {% csrf_token %}
+
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-1" for="id_status">Delivery Status</label>
+            {{ form.status }}
+            {% if form.status.errors %}<p class="text-xs text-rose-600 mt-1">{{ form.status.errors|join:", " }}</p>{% endif %}
+          </div>
+
+          {% if assignment.order.payment_method == 'cod' %}
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-1" for="id_cod_payment_status">COD Payment Status</label>
+            {{ form.cod_payment_status }}
+            {% if form.cod_payment_status.errors %}<p class="text-xs text-rose-600 mt-1">{{ form.cod_payment_status.errors|join:", " }}</p>{% endif %}
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-1" for="id_cod_collected_amount">Collected Amount</label>
+            {{ form.cod_collected_amount }}
+            {% if form.cod_collected_amount.errors %}<p class="text-xs text-rose-600 mt-1">{{ form.cod_collected_amount.errors|join:", " }}</p>{% endif %}
+          </div>
+          {% endif %}
+
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-1" for="id_customer_note">Customer-visible Note</label>
+            {{ form.customer_note }}
+            {% if form.customer_note.errors %}<p class="text-xs text-rose-600 mt-1">{{ form.customer_note.errors|join:", " }}</p>{% endif %}
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-1" for="id_internal_note">Internal Note</label>
+            {{ form.internal_note }}
+            {% if form.internal_note.errors %}<p class="text-xs text-rose-600 mt-1">{{ form.internal_note.errors|join:", " }}</p>{% endif %}
+          </div>
+
+          <div class="flex items-center justify-between pt-2">
+            <a href="{% url 'orders:delivery_dashboard' %}" class="text-sm font-semibold text-slate-600 hover:text-slate-800">Back</a>
+            <button type="submit" class="inline-flex items-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 transition">Save Update</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,17 @@
+<h1>Payout Management</h1>
+
+<table border="1">
+    <tr>
+        <th>Seller</th>
+        <th>Amount</th>
+        <th>Status</th>
+    </tr>
+
+    {% for payout in payouts %}
+    <tr>
+        <td>{{ payout.seller.business_name }}</td>
+        <td>{{ payout.amount }}</td>
+        <td>{{ payout.status }}</td>
+    </tr>
+    {% endfor %}
+</table>

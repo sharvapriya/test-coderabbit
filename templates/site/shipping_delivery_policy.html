@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Shipping & Delivery Policy | {{ site_business_name }}{% endblock %}
+
+{% block content %}
+<section class="max-w-5xl mx-auto px-4 py-10">
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 md:p-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-3">Shipping &amp; Delivery Policy</h1>
+        <p class="text-gray-600 mb-8">This policy outlines how {{ site_business_name }} processes, ships, and delivers customer orders.</p>
+
+        <div class="space-y-8 text-gray-700">
+            <section>
+                <h2 class="text-xl font-semibold text-gray-900 mb-3">Order Processing</h2>
+                <p class="mb-0">{{ site_shipping_processing_time }}</p>
+            </section>
+            <br>
+
+            <section>
+                <h2 class="text-xl font-semibold text-gray-900 mb-3">Estimated Delivery Timeline</h2>
+                <p class="mb-0">{{ site_shipping_timeline }}</p>
+            </section>
+            <br>
+
+            <section>
+                <h2 class="text-xl font-semibold text-gray-900 mb-3">Shipping Charges</h2>
+                <p class="mb-0">{{ site_shipping_charges }}</p>
+            </section>
+            <br>
+
+            <section>
+                <h2 class="text-xl font-semibold text-gray-900 mb-3">Supported Delivery Locations</h2>
+                <p class="mb-0">{{ site_business_name }} currently serves customers {{ site_service_regions }}. Delivery availability may vary by pin code, courier coverage, and operational conditions.</p>
+            </section>
+            <br>
+
+            <section>
+                <h2 class="text-xl font-semibold text-gray-900 mb-3">Delivery Notes</h2>
+                <ul class="list-disc pl-5 space-y-2">
+                    <li>Customers are responsible for entering a complete and accurate shipping address and contact number at checkout.</li>
+                    <li>Unexpected delays can occur due to weather, local restrictions, courier issues, remote locations, or public holidays.</li>
+                    <li>If a shipment is delayed materially, customers can contact our support team for assistance.</li>
+                </ul>
+            </section>
+            <br>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+{% block title %}My Wallet{% endblock %}
+
+{% block content %}
+<section class="relative overflow-hidden py-8 sm:py-10" style="background:
+  radial-gradient(circle at top left, rgba(249,115,22,0.16), transparent 24%),
+  radial-gradient(circle at top right, rgba(14,165,233,0.16), transparent 26%),
+  linear-gradient(180deg, #f8fafc 0%, #eef4ff 46%, #f7f8fc 100%);">
+  <div class="pointer-events-none absolute inset-0 opacity-70" style="background-image:
+    linear-gradient(rgba(255,255,255,0.55) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.55) 1px, transparent 1px);
+    background-size: 36px 36px;"></div>
+
+  <div class="relative mx-auto max-w-6xl px-4 sm:px-6">
+    <div class="overflow-hidden rounded-[2rem] border border-white/70 bg-white/92 shadow-[0_30px_90px_rgba(15,23,42,0.12)] backdrop-blur">
+      <div class="border-b border-white/50 px-6 py-7 sm:px-8 sm:py-9" style="background:
+        linear-gradient(135deg, rgba(15,23,42,0.96) 0%, rgba(30,41,59,0.94) 44%, rgba(7,89,133,0.90) 100%),
+        radial-gradient(circle at top right, rgba(255,255,255,0.18), transparent 34%);">
+        <div class="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+          <div class="max-w-3xl">
+            <p class="text-xs font-semibold uppercase tracking-[0.32em] text-cyan-200">Wallet Center</p>
+            <h1 class="mt-3 text-3xl font-black tracking-tight text-white sm:text-4xl">My Wallet</h1>
+            <p class="mt-3 max-w-2xl text-sm leading-6 text-slate-200 sm:text-base">
+              Monitor your available balance, switch between credited and spent transaction flows, and review your wallet activity with a cleaner premium experience.
+            </p>
+          </div>
+          <div class="rounded-[1.6rem] border border-white/15 bg-white/10 px-5 py-4 text-white shadow-inner backdrop-blur">
+            <p class="text-[11px] font-semibold uppercase tracking-[0.22em] text-amber-200">Available Balance</p>
+            <p class="mt-2 text-4xl font-black text-white sm:text-5xl">Rs.{{ wallet.balance }}</p>
+            <p class="mt-2 text-sm text-slate-200">Ready to use for your next checkout.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-gradient-to-b from-white via-white to-slate-50/90 p-6 sm:p-8">
+        <a href="{% url 'orders:order_tracking_list' %}" class="mb-6 inline-flex items-center text-sm font-semibold text-slate-700 transition hover:text-slate-900">
+          &larr; Back to My Orders
+        </a>
+
+        <div class="mb-8 grid gap-4 lg:grid-cols-[1.4fr_1fr]">
+          <div class="rounded-[1.7rem] border border-slate-200 bg-gradient-to-r from-slate-950 via-slate-900 to-cyan-900 p-6 text-white shadow-[0_18px_50px_rgba(15,23,42,0.14)]">
+            <p class="text-xs font-semibold uppercase tracking-[0.28em] text-cyan-200">Wallet Snapshot</p>
+            <h2 class="mt-2 text-2xl font-black">Balance you can trust</h2>
+            <p class="mt-3 max-w-2xl text-sm leading-6 text-slate-200">
+              Every debit and credit updates this wallet instantly. Use the quick filter cards below to focus only on credited or spent transactions.
+            </p>
+          </div>
+
+          <div class="rounded-[1.7rem] border border-slate-200 bg-white p-6 shadow-[0_14px_40px_rgba(15,23,42,0.06)]">
+            <p class="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Available to Use</p>
+            <p class="mt-3 text-4xl font-black text-violet-700">Rs.{{ wallet.balance }}</p>
+            <p class="mt-2 text-sm text-slate-600">Your wallet balance never expires and stays ready for future purchases.</p>
+          </div>
+        </div>
+
+        <div class="mb-8 grid gap-4 sm:grid-cols-3">
+          <div class="rounded-[1.5rem] border border-emerald-200 bg-gradient-to-br from-white via-emerald-50 to-emerald-100/70 p-5 shadow-[0_14px_32px_rgba(16,185,129,0.08)]">
+            <div class="flex items-start justify-between gap-4">
+              <div>
+                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">Total Credited</p>
+                <p class="mt-3 text-3xl font-black text-emerald-700">Rs.{{ total_refunded }}</p>
+                <p class="mt-2 text-xs text-emerald-800/80">Refunds and wallet credits</p>
+              </div>
+              <button type="button" class="wallet-filter-toggle inline-flex items-center rounded-full border border-emerald-300 bg-white px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-emerald-700 transition hover:bg-emerald-50" data-filter="credit">
+                View
+              </button>
+            </div>
+          </div>
+
+          <div class="rounded-[1.5rem] border border-rose-200 bg-gradient-to-br from-white via-rose-50 to-orange-50 p-5 shadow-[0_14px_32px_rgba(244,63,94,0.08)]">
+            <div class="flex items-start justify-between gap-4">
+              <div>
+                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-rose-700">Total Spent</p>
+                <p class="mt-3 text-3xl font-black text-rose-700">Rs.{{ total_spent }}</p>
+                <p class="mt-2 text-xs text-rose-800/80">Used in checkout</p>
+              </div>
+              <button type="button" class="wallet-filter-toggle inline-flex items-center rounded-full border border-rose-300 bg-white px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-rose-700 transition hover:bg-rose-50" data-filter="debit">
+                View
+              </button>
+            </div>
+          </div>
+
+          <div class="rounded-[1.5rem] border border-slate-200 bg-gradient-to-br from-white to-slate-50 p-5 shadow-[0_14px_32px_rgba(15,23,42,0.05)]">
+            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Filter Status</p>
+            <p id="wallet-filter-label" class="mt-3 text-2xl font-black text-slate-900">All Transactions</p>
+            <button type="button" id="wallet-filter-reset" class="mt-3 inline-flex items-center rounded-full border border-slate-300 bg-white px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-slate-700 transition hover:bg-slate-50">
+              Show All
+            </button>
+          </div>
+        </div>
+
+        <div class="rounded-[1.7rem] border border-slate-200 bg-white p-5 shadow-[0_14px_40px_rgba(15,23,42,0.06)] sm:p-6">
+          <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h3 class="text-lg font-bold text-slate-900">Wallet Transaction History</h3>
+              <p class="mt-1 text-sm text-slate-500">Use the View buttons above to reveal only credited or only spent transactions.</p>
+            </div>
+          </div>
+
+          {% if wallet_transactions %}
+          <div id="wallet-transactions-list" class="mt-5 space-y-3">
+            {% for txn in wallet_transactions %}
+            <div class="wallet-transaction-card flex flex-col gap-3 rounded-[1.2rem] border border-slate-200 bg-gradient-to-r from-white to-slate-50 p-4 transition hover:border-slate-300 hover:bg-slate-50 sm:flex-row sm:items-center sm:justify-between" data-transaction-type="{{ txn.transaction_type }}">
+              <div class="min-w-0">
+                <div class="flex flex-wrap items-center gap-2">
+                  <!-- <p class="font-semibold text-slate-900">{{ txn.description|default:txn.get_source_display }}</p>
+                  <span class="inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold {% if txn.transaction_type == 'credit' %}bg-emerald-100 text-emerald-700{% else %}bg-rose-100 text-rose-700{% endif %}">
+                    {{ txn.get_transaction_type_display }}
+                  </span> -->
+                </div>
+                
+                {% if txn.order %}
+                <p class="mt-1 text-lg font-medium text-slate-800">Order ID: {{ txn.order.display_order_id }}</p>
+                {% elif txn.return_request and txn.return_request.order %}
+                <p class="mt-1 text-lg font-medium text-slate-800">Order ID: {{ txn.return_request.order.display_order_id }}</p>
+                {% endif %}
+                <p class="mt-1 text-sm text-slate-600">{{ txn.created_at|date:"M d, Y - h:i A" }}</p>
+              </div>
+              <div class="text-left sm:text-right">
+                <p class="text-lg font-black {% if txn.transaction_type == 'credit' %}text-emerald-600{% else %}text-rose-600{% endif %}">
+                  {% if txn.transaction_type == 'credit' %}+{% else %}-{% endif %}Rs.{{ txn.amount }}
+                </p>
+                <p class="mt-1 text-xs text-slate-500">Balance after: Rs.{{ txn.balance_after }}</p>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          <div id="wallet-empty-filter" class="mt-5 hidden rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-center text-sm text-slate-500">
+            No transactions found for the selected wallet section.
+          </div>
+          {% else %}
+          <p class="mt-4 text-sm text-slate-500">No wallet transactions yet.</p>
+          {% endif %}
+        </div>
+
+        <div class="mt-8 rounded-[1.7rem] border border-cyan-200 bg-gradient-to-r from-cyan-50 via-sky-50 to-white p-5 shadow-[0_14px_36px_rgba(14,165,233,0.08)] sm:p-6">
+          <h4 class="text-base font-bold text-cyan-950">How wallet payments work</h4>
+          <ul class="mt-4 space-y-2 text-sm leading-6 text-cyan-950">
+            <li>Wallet money cannot be withdrawn as cash.</li>
+            <li>You can apply wallet balance during checkout and pay only the remaining amount online when needed.</li>
+            <li>You can use it for any purchase on the platform.</li>
+            <li>Balance never expires.</li>
+            <li>If your order total is less than your wallet balance, the leftover amount stays in your wallet.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  (function () {
+    const cards = Array.from(document.querySelectorAll(".wallet-transaction-card"));
+    const toggles = Array.from(document.querySelectorAll(".wallet-filter-toggle"));
+    const resetButton = document.getElementById("wallet-filter-reset");
+    const label = document.getElementById("wallet-filter-label");
+    const emptyState = document.getElementById("wallet-empty-filter");
+
+    if (!cards.length || !toggles.length || !label || !resetButton) {
+      return;
+    }
+
+    const filterLabels = {
+      credit: "Credited Transactions",
+      debit: "Spent Transactions",
+      all: "All Transactions",
+    };
+
+    const setToggleState = (activeFilter) => {
+      toggles.forEach((toggle) => {
+        const isActive = toggle.dataset.filter === activeFilter;
+        toggle.classList.toggle("ring-2", isActive);
+        toggle.classList.toggle("ring-offset-2", isActive);
+        toggle.classList.toggle("ring-slate-900", isActive);
+      });
+    };
+
+    const applyFilter = (filter) => {
+      let visibleCount = 0;
+      cards.forEach((card) => {
+        const matches = filter === "all" || card.dataset.transactionType === filter;
+        card.classList.toggle("hidden", !matches);
+        if (matches) {
+          visibleCount += 1;
+        }
+      });
+
+      label.textContent = filterLabels[filter] || filterLabels.all;
+      setToggleState(filter === "all" ? "" : filter);
+
+      if (emptyState) {
+        emptyState.classList.toggle("hidden", visibleCount > 0);
+      }
+    };
+
+    toggles.forEach((toggle) => {
+      toggle.addEventListener("click", () => {
+        applyFilter(toggle.dataset.filter);
+      });
+    });
+
+    resetButton.addEventListener("click", () => {
+      applyFilter("all");
+    });
+
+    applyFilter("all");
+  })();
+</script>
+{% endblock %}

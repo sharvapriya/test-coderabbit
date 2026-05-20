@@ -1,0 +1,576 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Mykart Store Invoice</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 14mm;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background: #f4f4f4;
+            color: #000000;
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 14px;
+            line-height: 1.25;
+        }
+
+        .invoice-wrapper {
+            width: 100%;
+            max-width: 980px;
+            margin: 18px auto;
+            background: #ffffff;
+            padding: 28px 32px 32px;
+            box-sizing: border-box;
+        }
+
+        .top-strip {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 14px;
+            padding: 26px 30px 22px;
+            background: linear-gradient(135deg, #171d2d 0%, #1e2434 100%);
+            color: #ffffff;
+        }
+
+        .document-title {
+            font-size: 32px;
+            font-weight: 800;
+            letter-spacing: 0.02em;
+        }
+
+        .document-subtitle {
+            margin-top: 8px;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 0.24em;
+            color: #e5b04a;
+            text-transform: uppercase;
+        }
+
+        .header-right {
+            text-align: right;
+        }
+
+        .header-right h1 {
+            margin: 0;
+            font-size: 22px;
+            font-weight: 800;
+        }
+
+        .header-right p {
+            margin: 6px 0 0;
+            font-size: 13px;
+            color: #f2f2f2;
+        }
+
+        .header-contact {
+            margin-top: 14px;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .invoice-badge {
+            display: inline-block;
+            margin-top: 12px;
+            padding: 7px 14px;
+            border: 1px solid rgba(229, 176, 74, 0.65);
+            border-radius: 999px;
+            color: #e8c97c;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .section-grid {
+            display: table;
+            width: 100%;
+            table-layout: fixed;
+            margin-bottom: 26px;
+        }
+
+        .section-column {
+            display: table-cell;
+            width: 50%;
+            vertical-align: top;
+        }
+
+        .section-column.right {
+            text-align: right;
+            padding-left: 24px;
+        }
+
+        .section-title {
+            margin: 0 0 4px;
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .section-text {
+            margin: 0;
+            white-space: pre-line;
+        }
+
+        .section-gap {
+            height: 20px;
+        }
+
+        .meta-block {
+            margin-top: 8px;
+        }
+
+        .label-strong {
+            font-weight: 700;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .invoice-table {
+            margin-top: 10px;
+            border: 1px solid #707070;
+        }
+
+        .invoice-table th,
+        .invoice-table td {
+            border: 1px solid #707070;
+            padding: 4px 5px;
+            vertical-align: top;
+            font-size: 13px;
+        }
+
+        .invoice-table thead th {
+            background: #d9d9d9;
+            font-weight: 700;
+            text-align: left;
+        }
+
+        .number,
+        .center {
+            text-align: center;
+            vertical-align: middle !important;
+        }
+
+        .amount {
+            text-align: right;
+            vertical-align: middle !important;
+            white-space: nowrap;
+        }
+
+        .product-description {
+            line-height: 1.2;
+        }
+
+        .total-row td {
+            font-weight: 700;
+        }
+
+        .amount-words {
+            border: 1px solid #707070;
+            border-top: none;
+            padding: 6px 8px;
+            font-size: 13px;
+        }
+
+        .signature-block {
+            margin-top: 18px;
+            text-align: right;
+            min-height: 110px;
+        }
+
+        .signature-image {
+            display: block;
+            max-width: 140px;
+            max-height: 70px;
+            margin: 10px 0 8px auto;
+        }
+
+        .footer-note {
+            margin-top: 18px;
+            font-size: 12px;
+        }
+
+        .actions {
+            margin-top: 20px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 10px 16px;
+            background: #111111;
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: 700;
+        }
+
+        .page-break {
+            page-break-before: always;
+            break-before: page;
+            margin-top: 28px;
+        }
+
+        .second-page {
+            margin-top: 24px;
+            padding-top: 18px;
+            border-top: 1px solid #d0d0d0;
+        }
+
+        .second-page-header {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 18px;
+        }
+
+        .second-page-title {
+            text-align: right;
+        }
+
+        .second-page-title h2 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .second-page-title p {
+            margin: 4px 0 0;
+            font-size: 13px;
+        }
+
+        .second-page-signature {
+            min-height: 120px;
+            border: 1px solid #707070;
+            border-top: none;
+            padding: 10px 8px;
+            text-align: right;
+        }
+
+        .second-page-note {
+            margin-top: 10px;
+            font-size: 12px;
+        }
+
+        .second-page-footer-table {
+            margin-top: 16px;
+            border: 1px solid #707070;
+        }
+
+        .second-page-footer-table td {
+            border: 1px solid #707070;
+            padding: 6px 5px;
+            font-size: 12px;
+            vertical-align: top;
+        }
+
+        @media print {
+            body {
+                background: #ffffff;
+            }
+
+            .invoice-wrapper {
+                max-width: none;
+                margin: 0;
+                padding: 0;
+            }
+
+            .actions {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="invoice-wrapper">
+        <div class="top-strip">
+            <div>
+                <div class="document-title">Mykart Store</div>
+                <div class="document-subtitle">Seller Invoice</div>
+            </div>
+            <div class="header-right">
+                <h1>Tax Invoice / Bill of Supply / Cash Memo</h1>
+                <p>(Original for Recipient)</p>
+                <div class="invoice-badge">Order Invoice</div>
+                <div class="header-contact">
+                    <div><span class="label-strong">Email:</span> support@mykartstore.com</div>
+                    <div><span class="label-strong">Contact:</span> +91 99654 08000</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-grid">
+            <div class="section-column">
+                <p class="section-title">Sold By :</p>
+                <p class="section-text"><strong>{{ seller.business_name|default:"Mykarate" }}</strong>
+Mykarate
+42-G Mettuthottam, Chinnavedampatti, Coimbatore-641049, Tamilnadu, India</p>
+
+                <div class="section-gap"></div>
+
+                <p class="section-text">{% if seller.pan_card_number %}<span class="label-strong">PAN No:</span> {{ seller.pan_card_number }}{% endif %}
+{% if seller.gst_number %}<span class="label-strong">GST Registration No:</span> {{ seller.gst_number }}{% endif %}</p>
+            </div>
+
+            <div class="section-column right">
+                <p class="section-title">Billing Address :</p>
+                <p class="section-text"><strong>{{ billing_details.name }}</strong>
+{{ billing_details.address }}
+{% if billing_details.state and billing_details.state != "-" %}<span class="label-strong">State/UT Code:</span> {{ billing_details.state_code }}{% endif %}</p>
+
+                <div class="section-gap"></div>
+
+                <p class="section-title">Shipping Address :</p>
+                <p class="section-text"><strong>{{ shipping_details.name }}</strong>
+{{ shipping_details.address }}
+{% if shipping_details.state and shipping_details.state != "-" %}<span class="label-strong">State/UT Code:</span> {{ shipping_details.state_code }}{% endif %}
+<span class="label-strong">Place of supply:</span> {{ place_of_supply|upper }}
+<span class="label-strong">Place of delivery:</span> {{ shipping_details.state|upper }}</p>
+            </div>
+        </div>
+
+        <div class="section-grid">
+            <div class="section-column">
+                <div class="meta-block">
+                    <p class="section-text"><span class="label-strong">Order Number:</span> {{ order.display_order_id }}
+<span class="label-strong">Order Date:</span> {{ order.created_at|date:"d.m.Y" }}</p>
+                </div>
+            </div>
+
+            <div class="section-column right">
+                <div class="meta-block">
+                    <p class="section-text"><span class="label-strong">Invoice Number :</span> INV-{{ order.display_order_id }}-{{ seller.id }}
+<span class="label-strong">Invoice Details :</span> Seller Order Invoice
+<span class="label-strong">Invoice Date :</span> {{ order.created_at|date:"d.m.Y" }}</p>
+                </div>
+            </div>
+        </div>
+
+        <table class="invoice-table">
+            <thead>
+                <tr>
+                    <th style="width: 5%;">Sl. No</th>
+                    <th style="width: 34%;">Description</th>
+                    <th style="width: 9%;">Unit Price</th>
+                    <th style="width: 8%;">Discount</th>
+                    <th style="width: 5%;">Qty</th>
+                    <th style="width: 10%;">Net Amount</th>
+                    <th style="width: 6%;">Tax Rate</th>
+                    <th style="width: 7%;">Tax Type</th>
+                    <th style="width: 8%;">Tax Amount</th>
+                    <th style="width: 8%;">Total Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entry in seller_items %}
+                <tr>
+                    <td class="number">{{ forloop.counter }}</td>
+                    <td class="product-description">
+                        {{ entry.item.product.name }}
+                        {% if entry.item.variant_summary %}<br>{{ entry.item.variant_summary }}{% endif %}
+                        {% if entry.item.product.description %}<br>{{ entry.item.product.description|truncatechars:115 }}{% endif %}
+                    </td>
+                    <td class="amount">&#8377;{{ entry.price|floatformat:2 }}</td>
+                    <td class="amount">{% if entry.discount_amount %}-&#8377;{{ entry.discount_amount|floatformat:2 }}{% else %}-{% endif %}</td>
+                    <td class="center">{{ entry.quantity }}</td>
+                    <td class="amount">&#8377;{{ entry.taxable_amount|floatformat:2 }}</td>
+                    <td class="center">{{ entry.tax_rate|floatformat:0 }}%</td>
+                    <td class="center">{{ entry.tax_type }}</td>
+                    <td class="amount">&#8377;{{ entry.tax_amount|floatformat:2 }}</td>
+                    <td class="amount">&#8377;{{ entry.gross_total|floatformat:2 }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="10" class="center">No invoice items available.</td>
+                </tr>
+                {% endfor %}
+                <tr class="total-row">
+                    <td colspan="8">TOTAL:</td>
+                    <td class="amount">&#8377;{{ gst_total|floatformat:2 }}</td>
+                    <td class="amount">&#8377;{{ invoice_total|floatformat:2 }}</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="amount-words">
+            <span class="label-strong">Amount in Words:</span><br>
+            {{ seller_total_words }}
+        </div>
+
+        <div class="signature-block">
+            <div class="label-strong">For {{ seller.business_name|default:"Mykart Store Seller" }}:</div>
+            {% if seller.seller_signature %}
+                <img src="{{ seller.seller_signature.url }}" alt="Signature" class="signature-image">
+            {% endif %}
+            <div class="label-strong">{{ seller.contact_person_name|default:"Authorized Signatory" }}</div>
+        </div>
+
+        <div class="footer-note">
+            <span class="label-strong">Payment Transaction ID:</span>
+            {% if payment_txn %}
+                {{ payment_txn.gateway_payment_id|default:"N/A" }}
+            {% else %}
+                N/A
+            {% endif %}
+            <br>
+            <span class="label-strong">Mode of Payment:</span> {{ order.payment_method|default:"-" }}
+            <br>
+            <span class="label-strong">Invoice Value:</span> &#8377;{{ invoice_total|floatformat:2 }}
+        </div>
+
+        <div class="actions">
+            <a href="{% url 'sellers:dashboard' %}?panel={{ return_panel }}" class="btn">Back to Dashboard</a>
+            <a href="javascript:window.print();" class="btn">Print Invoice</a>
+        </div>
+
+        <div class="page-break second-page">
+            <div class="second-page-header">
+                <div class="second-page-title">
+                    <h2>Tax Invoice/Bill of Supply/Cash Memo</h2>
+                    <p>(Original for Recipient)</p>
+                </div>
+            </div>
+
+            <div class="section-grid">
+                <div class="section-column">
+                    <p class="section-title">Sold By :</p>
+                    <p class="section-text"><strong>Mykarate</strong>
+Mykarate
+42-G Mettuthottam, Chinnavedampatti, Coimbatore-641049, Tamilnadu, India</p>
+
+                    <div class="section-gap"></div>
+
+                    <p class="section-text">{% if seller.pan_card_number %}<span class="label-strong">PAN No:</span> {{ seller.pan_card_number }}{% endif %}
+{% if seller.gst_number %}<span class="label-strong">GST Registration No:</span> {{ seller.gst_number }}{% endif %}</p>
+                </div>
+
+                <div class="section-column right">
+                    <p class="section-title">Billing Address :</p>
+                    <p class="section-text"><strong>{{ billing_details.name }}</strong>
+{{ billing_details.address }}
+{% if billing_details.state and billing_details.state != "-" %}<span class="label-strong">State/UT Code:</span> {{ billing_details.state_code }}{% endif %}</p>
+
+                    <div class="section-gap"></div>
+
+                    <p class="section-title">Shipping Address :</p>
+                    <p class="section-text"><strong>{{ shipping_details.name }}</strong>
+{{ shipping_details.address }}
+{% if shipping_details.state and shipping_details.state != "-" %}<span class="label-strong">State/UT Code:</span> {{ shipping_details.state_code }}{% endif %}
+<span class="label-strong">Place of supply:</span> {{ place_of_supply|upper }}
+<span class="label-strong">Place of delivery:</span> {{ shipping_details.state|upper }}</p>
+                </div>
+            </div>
+
+            <div class="section-grid">
+                <div class="section-column">
+                    <div class="meta-block">
+                        <p class="section-text"><span class="label-strong">Order Number:</span> {{ order.display_order_id }}
+<span class="label-strong">Order Date:</span> {{ order.created_at|date:"d.m.Y" }}</p>
+                    </div>
+                </div>
+
+                <div class="section-column right">
+                    <div class="meta-block">
+                        <p class="section-text"><span class="label-strong">Invoice Number :</span> INV-{{ order.display_order_id }}-{{ seller.id }}
+<span class="label-strong">Invoice Details :</span> Seller Order Invoice
+<span class="label-strong">Invoice Date :</span> {{ order.created_at|date:"d.m.Y" }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <table class="invoice-table">
+                <thead>
+                    <tr>
+                        <th style="width: 5%;">Sl. No</th>
+                        <th style="width: 34%;">Description</th>
+                        <th style="width: 9%;">Unit Price</th>
+                        <th style="width: 8%;">Discount</th>
+                        <th style="width: 5%;">Qty</th>
+                        <th style="width: 10%;">Net Amount</th>
+                        <th style="width: 6%;">Tax Rate</th>
+                        <th style="width: 7%;">Tax Type</th>
+                        <th style="width: 8%;">Tax Amount</th>
+                        <th style="width: 8%;">Total Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entry in seller_items %}
+                    <tr>
+                        <td class="number">{{ forloop.counter }}</td>
+                        <td class="product-description">
+                            {{ entry.item.product.name }}
+                            {% if entry.item.variant_summary %}<br>{{ entry.item.variant_summary }}{% endif %}
+                            {% if entry.item.product.description %}<br>{{ entry.item.product.description|truncatechars:115 }}{% endif %}
+                        </td>
+                        <td class="amount">&#8377;{{ entry.price|floatformat:2 }}</td>
+                        <td class="amount">{% if entry.discount_amount %}-&#8377;{{ entry.discount_amount|floatformat:2 }}{% else %}-{% endif %}</td>
+                        <td class="center">{{ entry.quantity }}</td>
+                        <td class="amount">&#8377;{{ entry.taxable_amount|floatformat:2 }}</td>
+                        <td class="center">{{ entry.tax_rate|floatformat:0 }}%</td>
+                        <td class="center">{{ entry.tax_type }}</td>
+                        <td class="amount">&#8377;{{ entry.tax_amount|floatformat:2 }}</td>
+                        <td class="amount">&#8377;{{ entry.gross_total|floatformat:2 }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="10" class="center">No invoice items available.</td>
+                    </tr>
+                    {% endfor %}
+                    <tr class="total-row">
+                        <td colspan="8">TOTAL:</td>
+                        <td class="amount">&#8377;{{ gst_total|floatformat:2 }}</td>
+                        <td class="amount">&#8377;{{ invoice_total|floatformat:2 }}</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="amount-words">
+                <span class="label-strong">Amount in Words:</span><br>
+                {{ seller_total_words }}
+            </div>
+
+            <div class="second-page-signature">
+                <div class="label-strong">For Mykarate:</div>
+                {% if seller.seller_signature %}
+                    <img src="{{ seller.seller_signature.url }}" alt="Signature" class="signature-image">
+                {% endif %}
+                <div class="label-strong">{{ seller.contact_person_name|default:"Authorized Signatory" }}</div>
+            </div>
+
+            <div class="second-page-note">Whether tax is payable under reverse charge - No</div>
+
+            <table class="second-page-footer-table">
+                <tr>
+                    <td style="width: 44%;">
+                        <span class="label-strong">Payment Transaction ID:</span><br>
+                        {% if payment_txn %}
+                            {{ payment_txn.gateway_payment_id|default:"N/A" }}
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </td>
+                    <td style="width: 24%;">
+                        <span class="label-strong">Date &amp; Time:</span><br>
+                        {{ order.created_at|date:"d/m/Y, h:i A" }}
+                    </td>
+                    <td style="width: 16%;">
+                        <span class="label-strong">Invoice Value:</span><br>
+                        &#8377;{{ invoice_total|floatformat:2 }}
+                    </td>
+                    <td style="width: 16%;">
+                        <span class="label-strong">Mode of Payment:</span><br>
+                        {{ order.payment_method|default:"-" }}
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

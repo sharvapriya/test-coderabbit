@@ -1,0 +1,229 @@
+{% extends "base.html" %}
+{% block title %}My Return Requests{% endblock %}
+
+{% block content %}
+<section class="py-8 sm:py-10" style="background: linear-gradient(180deg, #f8fafc 0%, #eef2ff 100%);">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6">
+    <div class="rounded-3xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+      <div class="px-6 sm:px-8 py-7 sm:py-8 border-b border-indigo-100" style="background-image: linear-gradient(rgba(255,255,255,0.84), rgba(255,255,255,0.90)), url('https://images.unsplash.com/photo-1563207153-f403bf289096?auto=format&fit=crop&w=1600&q=80'); background-size: cover; background-position: center;">
+        <p class="text-xs uppercase tracking-[0.24em] text-indigo-700 font-semibold">Account</p>
+        <h1 class="text-3xl sm:text-4xl font-extrabold mt-2 text-slate-900">My Return Requests</h1>
+        <p class="text-slate-700 mt-2">Track and manage all your return requests</p>
+      </div>
+
+      <div class="p-6 sm:p-8 bg-gradient-to-b from-white to-slate-50/60">
+        <!-- Back Link -->
+        <a href="{% url 'orders:order_tracking_list' %}" class="inline-flex items-center text-sm font-semibold text-indigo-700 hover:text-indigo-800 transition mb-6">
+          &larr; Back to My Orders
+        </a>
+
+        {% if return_requests %}
+        <!-- Pending Returns -->
+        {% if pending_returns %}
+        <div class="mb-8">
+          <h2 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+            <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-yellow-100 text-yellow-700 text-xs font-bold">{{ pending_returns|length }}</span>
+            Pending Review
+          </h2>
+          <div class="space-y-3">
+            {% for return_request in pending_returns %}
+            <div class="rounded-lg border-l-4 border-yellow-400 bg-yellow-50 p-4">
+              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div>
+                  <p class="font-semibold text-slate-900">{{ return_request.product.name }}</p>
+                  <p class="text-sm text-slate-600">Order #{{ return_request.order.id }} • {{ return_request.get_reason_display }} • Requested on {{ return_request.created_at|date:"M d, Y" }}</p>
+                </div>
+                <a href="{% url 'orders:order_tracking_detail' return_request.order.id %}" class="inline-flex items-center justify-center text-sm font-semibold text-indigo-600 hover:text-indigo-700 transition">
+                  View Order →
+                </a>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Approved Returns -->
+        {% if approved_returns %}
+        <div class="mb-8">
+          <h2 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+            <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-purple-100 text-purple-700 text-xs font-bold">{{ approved_returns|length }}</span>
+            Approved - Awaiting Shipment
+          </h2>
+          <div class="space-y-3">
+            {% for return_request in approved_returns %}
+            <div class="rounded-lg border-l-4 border-purple-400 bg-purple-50 p-4">
+              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div class="flex-1">
+                  <p class="font-semibold text-slate-900">{{ return_request.product.name }}</p>
+                  <p class="text-sm text-slate-600">Order #{{ return_request.order.id }} • Refund: Rs.{{ return_request.refund_amount }} • Approved on {{ return_request.updated_at|date:"M d, Y" }}</p>
+                  {% if return_request.admin_notes %}<p class="text-xs text-slate-700 mt-1">Note: {{ return_request.admin_notes }}</p>{% endif %}
+
+                  {% if return_request.seller_return_address %}
+                  <div class="mt-4 p-3 bg-white rounded-lg border border-purple-200">
+                    <p class="text-xs font-semibold text-purple-700 uppercase tracking-wide">Ship to Seller's Address:</p>
+                    <p class="text-sm text-slate-900 mt-2 whitespace-pre-wrap">{{ return_request.seller_return_address }}</p>
+                  </div>
+                  {% endif %}
+                </div>
+                <div class="flex flex-col sm:flex-row gap-2 mt-3 sm:mt-0">
+                  <a href="{% url 'orders:order_tracking_detail' return_request.order.id %}" class="inline-flex items-center justify-center text-sm font-semibold text-indigo-600 hover:text-indigo-700 transition px-3 py-1.5">
+                    View Details →
+                  </a>
+                  <form action="{% url 'orders:confirm_return_shipment' return_request.id %}" method="post" class="inline">
+                    {% csrf_token %}
+                    <button type="submit" class="inline-flex items-center justify-center text-sm font-semibold bg-indigo-600 text-white hover:bg-indigo-700 transition rounded-lg px-4 py-1.5 shadow-sm">Confirm Shipment</button>
+                  </form>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Shipped Returns -->
+        {% if shipped_returns %}
+        <div class="mb-8">
+          <h2 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+            <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-cyan-100 text-cyan-700 text-xs font-bold">{{ shipped_returns|length }}</span>
+            In Transit (Shipped by you)
+          </h2>
+          <div class="space-y-3">
+            {% for return_request in shipped_returns %}
+            <div class="rounded-lg border-l-4 border-cyan-400 bg-cyan-50 p-4">
+              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div>
+                  <p class="font-semibold text-slate-900">{{ return_request.product.name }}</p>
+                  <p class="text-sm text-slate-600">Order #{{ return_request.order.id }} • Refund: Rs.{{ return_request.refund_amount }} • Shipped on {{ return_request.shipped_at|default:return_request.updated_at|date:"M d, Y" }}</p>
+                </div>
+                <a href="{% url 'orders:order_tracking_detail' return_request.order.id %}" class="inline-flex items-center justify-center text-sm font-semibold text-indigo-600 hover:text-indigo-700 transition">
+                  View Details →
+                </a>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Received by Seller Returns -->
+        {% if received_returns %}
+        <div class="mb-8">
+          <h2 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+            <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 text-blue-700 text-xs font-bold">{{ received_returns|length }}</span>
+            Seller Received - Awaiting Refund
+          </h2>
+          <div class="space-y-3">
+            {% for return_request in received_returns %}
+            <div class="rounded-lg border-l-4 border-blue-400 bg-blue-50 p-4">
+              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div>
+                  <p class="font-semibold text-slate-900">{{ return_request.product.name }}</p>
+                  <p class="text-sm text-slate-600">Order #{{ return_request.order.id }} • Refund: Rs.{{ return_request.refund_amount }} • Received on {{ return_request.updated_at|date:"M d, Y" }}</p>
+                </div>
+                <a href="{% url 'orders:order_tracking_detail' return_request.order.id %}" class="inline-flex items-center justify-center text-sm font-semibold text-indigo-600 hover:text-indigo-700 transition">
+                  View Details →
+                </a>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Refunded Returns -->
+        {% if refunded_returns %}
+        <div class="mb-8">
+          <h2 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+            <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 text-green-700 text-xs font-bold">{{ refunded_returns|length }}</span>
+            Refunded
+          </h2>
+          <div class="space-y-3">
+            {% for return_request in refunded_returns %}
+            <div class="rounded-lg border-l-4 border-green-400 bg-green-50 p-4">
+              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div>
+                  <p class="font-semibold text-slate-900">{{ return_request.product.name }}</p>
+                  <p class="text-sm text-slate-600">Order #{{ return_request.order.id }} • Refund Amount: <strong>Rs.{{ return_request.refund_amount }}</strong> • Refunded on {{ return_request.updated_at|date:"M d, Y" }}</p>
+                  <p class="text-xs text-green-700 mt-1">✓ Amount credited to your wallet</p>
+                </div>
+                <a href="{% url 'orders:order_tracking_detail' return_request.order.id %}" class="inline-flex items-center justify-center text-sm font-semibold text-indigo-600 hover:text-indigo-700 transition">
+                  View Details →
+                </a>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Withdrawn Returns -->
+        {% if withdrawn_returns %}
+        <div class="mb-8">
+          <h2 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+            <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-slate-200 text-slate-700 text-xs font-bold">{{ withdrawn_returns|length }}</span>
+            Withdrawn
+          </h2>
+          <div class="space-y-3">
+            {% for return_request in withdrawn_returns %}
+            <div class="rounded-lg border-l-4 border-slate-400 bg-slate-50 p-4">
+              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div>
+                  <p class="font-semibold text-slate-900">{{ return_request.product.name }}</p>
+                  <p class="text-sm text-slate-600">Order #{{ return_request.order.id }} â€¢ Withdrawn on {{ return_request.updated_at|date:"M d, Y" }}</p>
+                </div>
+                <a href="{% url 'orders:order_tracking_detail' return_request.order.id %}" class="inline-flex items-center justify-center text-sm font-semibold text-indigo-600 hover:text-indigo-700 transition">
+                  View Details â†’
+                </a>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Rejected Returns -->
+        {% if rejected_returns %}
+        <div class="mb-8">
+          <h2 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+            <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-red-100 text-red-700 text-xs font-bold">{{ rejected_returns|length }}</span>
+            Rejected
+          </h2>
+          <div class="space-y-3">
+            {% for return_request in rejected_returns %}
+            <div class="rounded-lg border-l-4 border-red-400 bg-red-50 p-4">
+              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div>
+                  <p class="font-semibold text-slate-900">{{ return_request.product.name }}</p>
+                  <p class="text-sm text-slate-600">Order #{{ return_request.order.id }} • Rejected on {{ return_request.updated_at|date:"M d, Y" }}</p>
+                  {% if return_request.admin_notes %}<p class="text-xs text-red-700 mt-1"><strong>Reason:</strong> {{ return_request.admin_notes }}</p>{% endif %}
+                </div>
+                <a href="{% url 'orders:order_tracking_detail' return_request.order.id %}" class="inline-flex items-center justify-center text-sm font-semibold text-indigo-600 hover:text-indigo-700 transition">
+                  View Details →
+                </a>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+        {% else %}
+        <!-- Empty State -->
+        <div class="rounded-lg border-2 border-dashed border-slate-300 p-8 text-center">
+          <svg class="mx-auto h-12 w-12 text-slate-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <p class="text-lg font-semibold text-slate-900">No Return Requests</p>
+          <p class="text-slate-600 mt-2">You haven't initiated any returns yet.</p>
+          <a href="{% url 'orders:order_tracking_list' %}" class="inline-flex items-center gap-2 mt-4 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700">
+            View My Orders
+          </a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

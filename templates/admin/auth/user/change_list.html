@@ -1,0 +1,6 @@
+{% extends "admin/change_list.html" %}
+
+{% block result_list %}
+<div id="user-role-counts" data-seller-count="{{ seller_count }}" data-buyer-count="{{ buyer_count }}"></div>
+{{ block.super }}
+{% endblock %}

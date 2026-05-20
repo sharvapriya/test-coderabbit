@@ -1,0 +1,316 @@
+{% extends "base.html" %}
+
+{% block title %}Create Account{% endblock %}
+
+{% block content %}
+<div class="max-w-lg mx-auto bg-white border border-slate-200 rounded-2xl shadow-sm p-6 sm:p-8">
+    <h1 class="text-2xl font-bold text-slate-900 mb-2">Create account</h1>
+    <p class="text-slate-600 mb-6">
+        Already have an account?
+        <a href="{% url 'login' %}" class="text-indigo-600 font-semibold">Sign in</a>
+    </p>
+
+    <form
+        method="post"
+        class="space-y-4"
+        data-username-suggestions-url="{% url 'accounts:username_suggestions' %}"
+        data-username-availability-url="{% url 'accounts:username_availability' %}"
+    >
+        {% csrf_token %}
+        {% for field in form %}
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1" for="{{ field.id_for_label }}">
+                    {{ field.label }}
+                </label>
+                {% if field.name == "password1" or field.name == "password2" %}
+                    <div class="password-toggle-group">
+                        {{ field }}
+                        <button type="button" class="password-toggle-button" data-password-toggle aria-label="Show password" aria-pressed="false">
+                            <svg class="h-5 w-5" data-password-icon="show" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M2.458 12C3.732 7.943 7.523 5 12 5s8.268 2.943 9.542 7c-1.274 4.057-5.065 7-9.542 7S3.732 16.057 2.458 12Z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 15.5A3.5 3.5 0 1 0 12 8.5a3.5 3.5 0 0 0 0 7Z" />
+                            </svg>
+                            <svg class="hidden h-5 w-5" data-password-icon="hide" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="m3 3 18 18" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M10.585 10.587A2 2 0 0 0 12 14a2 2 0 0 0 1.414-.586" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9.878 5.092A10.45 10.45 0 0 1 12 5c4.477 0 8.268 2.943 9.542 7a11.07 11.07 0 0 1-4.132 5.411M6.228 6.228A11.08 11.08 0 0 0 2.458 12c1.274 4.057 5.065 7 9.542 7a10.5 10.5 0 0 0 3.103-.468" />
+                            </svg>
+                        </button>
+                    </div>
+                {% else %}
+                    {{ field }}
+                {% endif %}
+                {% if field.name == "username" %}
+                    <p class="text-xs text-slate-500 mt-1">Lowercase only. Letters, numbers, `_` and `.` are allowed.</p>
+                    <div id="username-feedback" class="hidden mt-2 text-sm font-medium"></div>
+                    <div id="username-suggestions" class="hidden mt-3">
+                        <div class="flex items-center justify-between gap-3 mb-2">
+                            <p class="text-sm text-slate-600">Suggestions</p>
+                            <button
+                                type="button"
+                                id="refresh-username-suggestions"
+                                class="hidden rounded-full border border-slate-300 px-3 py-1 text-xs font-semibold text-slate-700 transition hover:border-indigo-500 hover:text-indigo-600"
+                            >
+                                Refresh
+                            </button>
+                        </div>
+                        <div id="username-suggestions-list" class="flex flex-wrap gap-2"></div>
+                    </div>
+                {% endif %}
+                {% if field.errors %}
+                    <p class="text-sm text-red-600 mt-1">{{ field.errors|striptags }}</p>
+                {% endif %}
+            </div>
+        {% endfor %}
+
+        <button type="submit" class="w-full bg-indigo-600 text-white font-semibold py-3 rounded-xl hover:bg-indigo-700 transition">
+            Create Account
+        </button>
+        <div class="text-center mt-3">
+            <a href="{% url 'accounts:change_password' %}" class="text-white-50 text-decoration-none small">
+                Forgot Password?
+            </a>
+        </div>
+    </form>
+
+    <div class="mt-10 pt-6 border-t border-slate-200 text-center">
+        <h2 class="text-lg font-semibold text-slate-800 mb-2">
+            New Seller?
+        </h2>
+
+        <p class="text-sm text-slate-600 mb-4">
+            Want to sell your products on our platform?
+            Apply for seller registration.
+        </p>
+
+        <a href="{% url 'login' %}?next={% url 'sellers:create_profile' %}"
+            class="inline-block bg-black text-white font-semibold px-6 py-3 rounded-xl hover:bg-slate-800 transition">
+            Apply for Registration
+        </a>
+    </div>
+</div>
+
+<style>
+    form input {
+        width: 100%;
+        border: 1px solid #cbd5e1;
+        border-radius: 0.75rem;
+        padding: 0.65rem 0.8rem;
+        background-color: #fff;
+    }
+    .password-toggle-group {
+        position: relative;
+    }
+    .password-toggle-group input {
+        padding-right: 4.5rem;
+    }
+    .password-toggle-button {
+        position: absolute;
+        right: 0.75rem;
+        top: 50%;
+        transform: translateY(-50%);
+        border: 0;
+        background: transparent;
+        color: #475569;
+        font-size: 0.875rem;
+        font-weight: 600;
+        cursor: pointer;
+    }
+    .username-suggestion-chip {
+        border: 1px solid #cbd5e1;
+        background: #f8fafc;
+        color: #0f172a;
+        border-radius: 9999px;
+        padding: 0.45rem 0.8rem;
+        font-size: 0.875rem;
+        line-height: 1;
+        transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+    }
+    .username-suggestion-chip:hover {
+        border-color: #6366f1;
+        background: #eef2ff;
+        color: #4338ca;
+    }
+    .username-available {
+        color: #15803d;
+    }
+    .username-taken {
+        color: #b91c1c;
+    }
+    .username-checking {
+        color: #475569;
+    }
+
+    form input:focus {
+        outline: none;
+        border-color: #6366f1;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+    }
+</style>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const form = document.querySelector("form[data-username-suggestions-url]");
+        const usernameInput = document.getElementById("id_username");
+        const feedback = document.getElementById("username-feedback");
+        const suggestionsBox = document.getElementById("username-suggestions");
+        const suggestionsList = document.getElementById("username-suggestions-list");
+        const refreshButton = document.getElementById("refresh-username-suggestions");
+
+        function debounce(callback, delay) {
+            let timerId;
+            return function () {
+                const args = arguments;
+                clearTimeout(timerId);
+                timerId = window.setTimeout(function () {
+                    callback.apply(null, args);
+                }, delay);
+            };
+        }
+
+        function sanitizeUsername(value) {
+            let sanitized = (value || "").trim().toLowerCase();
+            if (sanitized.includes("@")) {
+                sanitized = sanitized.split("@", 1)[0];
+            }
+            sanitized = sanitized.replace(/\s+/g, "_");
+            sanitized = sanitized.replace(/[^a-z0-9._]/g, "");
+            sanitized = sanitized.replace(/_+/g, "_");
+            sanitized = sanitized.replace(/\.+/g, ".");
+            sanitized = sanitized.replace(/^[._]+|[._]+$/g, "");
+            return sanitized;
+        }
+
+        function setFeedback(kind, message) {
+            if (!feedback) return;
+            feedback.classList.remove("hidden", "username-available", "username-taken", "username-checking");
+            if (!message) {
+                feedback.classList.add("hidden");
+                feedback.textContent = "";
+                return;
+            }
+            feedback.classList.add(kind);
+            feedback.textContent = message;
+        }
+
+        function renderSuggestions(suggestions) {
+            if (!suggestionsBox || !suggestionsList || !refreshButton) return;
+            suggestionsList.innerHTML = "";
+
+            if (!suggestions || !suggestions.length) {
+                suggestionsBox.classList.add("hidden");
+                refreshButton.classList.add("hidden");
+                return;
+            }
+
+            suggestions.forEach(function (suggestion) {
+                const button = document.createElement("button");
+                button.type = "button";
+                button.className = "username-suggestion-chip";
+                button.textContent = suggestion;
+                button.addEventListener("click", function () {
+                    usernameInput.value = suggestion;
+                    checkAvailability(suggestion);
+                });
+                suggestionsList.appendChild(button);
+            });
+
+            suggestionsBox.classList.remove("hidden");
+            refreshButton.classList.remove("hidden");
+        }
+
+        async function fetchJson(url, params) {
+            const requestUrl = new URL(url, window.location.origin);
+            Object.entries(params).forEach(function ([key, value]) {
+                requestUrl.searchParams.set(key, value);
+            });
+            requestUrl.searchParams.set("_", String(Date.now()));
+
+            const response = await fetch(requestUrl.toString(), {
+                headers: { "X-Requested-With": "XMLHttpRequest" }
+            });
+
+            if (!response.ok) {
+                throw new Error("Request failed");
+            }
+            return response.json();
+        }
+
+        async function checkAvailability(value) {
+            if (!usernameInput || !form) return;
+            const sanitized = sanitizeUsername(value);
+            usernameInput.value = sanitized;
+            if (!sanitized) {
+                setFeedback("", "");
+                return;
+            }
+            setFeedback("username-checking", "Checking availability...");
+            try {
+                const data = await fetchJson(form.dataset.usernameAvailabilityUrl, { username: sanitized });
+                usernameInput.value = data.username;
+                setFeedback(
+                    data.available ? "username-available" : "username-taken",
+                    data.available ? "\u2705 Available" : "\u274c Already taken"
+                );
+            } catch (error) {
+                setFeedback("username-taken", "\u274c Could not check right now");
+            }
+        }
+
+        async function loadSuggestions() {
+            if (!usernameInput || !form) return;
+            const sanitized = sanitizeUsername(usernameInput.value);
+            usernameInput.value = sanitized;
+
+            if (!sanitized) {
+                renderSuggestions([]);
+                return;
+            }
+
+            try {
+                const data = await fetchJson(form.dataset.usernameSuggestionsUrl, { username: sanitized });
+                renderSuggestions(data.suggestions || []);
+            } catch (error) {
+                renderSuggestions([]);
+            }
+        }
+
+        const debouncedAvailabilityCheck = debounce(checkAvailability, 350);
+        const debouncedSuggestionsLoad = debounce(loadSuggestions, 350);
+
+        if (usernameInput) {
+            usernameInput.addEventListener("input", function () {
+                usernameInput.value = sanitizeUsername(usernameInput.value);
+                debouncedAvailabilityCheck(usernameInput.value);
+                debouncedSuggestionsLoad();
+            });
+            usernameInput.addEventListener("blur", function () {
+                usernameInput.value = sanitizeUsername(usernameInput.value);
+                checkAvailability(usernameInput.value);
+            });
+        }
+
+        if (refreshButton) {
+            refreshButton.addEventListener("click", function () {
+                loadSuggestions();
+            });
+        }
+
+        document.querySelectorAll("[data-password-toggle]").forEach(function (button) {
+            const input = button.parentElement.querySelector("input");
+            const showIcon = button.querySelector('[data-password-icon="show"]');
+            const hideIcon = button.querySelector('[data-password-icon="hide"]');
+            if (!input) return;
+            button.addEventListener("click", function () {
+                const showingPassword = input.type === "text";
+                input.type = showingPassword ? "password" : "text";
+                button.setAttribute("aria-pressed", String(!showingPassword));
+                button.setAttribute("aria-label", showingPassword ? "Show password" : "Hide password");
+                if (showIcon && hideIcon) {
+                    showIcon.classList.toggle("hidden", !showingPassword);
+                    hideIcon.classList.toggle("hidden", showingPassword);
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

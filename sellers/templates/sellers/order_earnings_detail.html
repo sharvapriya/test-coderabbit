@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}Order Earnings{% endblock %}
+
+{% block content %}
+<section class="max-w-6xl mx-auto px-4 py-8 space-y-6">
+  <div>
+    <h1 class="text-3xl font-bold text-slate-900">Order #{{ order.id }} Earnings</h1>
+    <p class="mt-2 text-slate-600">This page shows the stored payout summary and the item-wise breakdown that feeds the wallet totals.</p>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <div class="rounded-2xl bg-slate-50 p-5"><p class="text-xs uppercase font-semibold text-slate-500">Status</p><p class="mt-2 text-2xl font-bold">{{ payout_summary.display_status }}</p></div>
+    <div class="rounded-2xl bg-slate-50 p-5"><p class="text-xs uppercase font-semibold text-slate-500">Gross</p><p class="mt-2 text-2xl font-bold">{{ payout_summary.display_gross_amount }}</p></div>
+    <div class="rounded-2xl bg-slate-50 p-5"><p class="text-xs uppercase font-semibold text-slate-500">Net</p><p class="mt-2 text-2xl font-bold">{{ payout_summary.display_net_amount }}</p></div>
+    <div class="rounded-2xl bg-slate-50 p-5"><p class="text-xs uppercase font-semibold text-slate-500">Available On</p><p class="mt-2 text-lg font-bold">{% if payout_summary.display_status == "Cancelled" or payout_summary.display_status == "Returned" %}-{% else %}{{ payout_summary.available_on|default:"Pending transition" }}{% endif %}</p></div>
+  </div>
+
+  <section class="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-x-auto">
+    <table class="min-w-full text-sm">
+      <thead class="bg-slate-50 text-slate-600">
+        <tr>
+          <th class="px-4 py-3 text-left font-semibold">Item</th>
+          <th class="px-4 py-3 text-left font-semibold">Qty</th>
+          <th class="px-4 py-3 text-left font-semibold">Gross Price</th>
+          <th class="px-4 py-3 text-left font-semibold">Discount</th>
+          <th class="px-4 py-3 text-left font-semibold">Taxable Amount</th>
+          <th class="px-4 py-3 text-left font-semibold">Commission</th>
+          <th class="px-4 py-3 text-left font-semibold">Gateway</th>
+          <th class="px-4 py-3 text-left font-semibold">Delivery</th>
+          <th class="px-4 py-3 text-left font-semibold">Return</th>
+          <th class="px-4 py-3 text-left font-semibold">GST</th>
+          <th class="px-4 py-3 text-left font-semibold">TDS</th>
+          <th class="px-4 py-3 text-left font-semibold">Net Amount</th>
+          <th class="px-4 py-3 text-left font-semibold">Ledger Status</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100">
+        {% for row in item_rows %}
+        <tr>
+          <td class="px-4 py-4">
+            <div class="font-semibold text-slate-900">{{ row.product_name|default:"Item removed" }}</div>
+            <div class="text-xs text-slate-500">Item #{{ row.item_id }} | {{ row.reference_id }}</div>
+          </td>
+          <td class="px-4 py-4">{{ row.quantity }}</td>
+          <td class="px-4 py-4">{{ row.gross_amount }}</td>
+          <td class="px-4 py-4 text-rose-600">
+            <div>{{ row.seller_discount }}</div>
+            {% if row.product_discount or row.coupon_discount %}
+            <div class="text-xs text-slate-500">Product: {{ row.product_discount }} | Coupon: {{ row.coupon_discount }}</div>
+            {% endif %}
+          </td>
+          <td class="px-4 py-4">{{ row.discounted_amount }}</td>
+          <td class="px-4 py-4 text-rose-600">{{ row.commission }}</td>
+          <td class="px-4 py-4 text-rose-600">{{ row.gateway_fee }}</td>
+          <td class="px-4 py-4 text-rose-600">{{ row.shipping }}</td>
+          <td class="px-4 py-4 text-rose-600">{{ row.return_shipping }}</td>
+          <td class="px-4 py-4 text-rose-600">{{ row.gst }}</td>
+          <td class="px-4 py-4 text-rose-600">{{ row.tds }}</td>
+          <td class="px-4 py-4 font-semibold {% if row.net_amount < 0 %}text-rose-700{% else %}text-emerald-700{% endif %}">{{ row.net_amount }}</td>
+          <td class="px-4 py-4">{{ row.status }}</td>
+        </tr>
+        {% empty %}
+        <tr><td class="px-4 py-8 text-slate-500" colspan="13">No ledger entries found for this order.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  <section class="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-x-auto">
+    <div class="border-b border-slate-100 px-6 py-4">
+      <h2 class="text-lg font-bold text-slate-900">Raw Ledger Entries</h2>
+    </div>
+    <table class="min-w-full text-sm">
+      <thead class="bg-slate-50 text-slate-600">
+        <tr>
+          <th class="px-6 py-3 text-left font-semibold">Created</th>
+          <th class="px-6 py-3 text-left font-semibold">Type</th>
+          <th class="px-6 py-3 text-left font-semibold">Component</th>
+          <th class="px-6 py-3 text-left font-semibold">Status</th>
+          <th class="px-6 py-3 text-left font-semibold">Amount</th>
+          <th class="px-6 py-3 text-left font-semibold">Reference</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100">
+        {% for entry in ledger_entries %}
+        <tr>
+          <td class="px-6 py-4">{{ entry.created_at }}</td>
+          <td class="px-6 py-4">{{ entry.get_transaction_type_display }}</td>
+          <td class="px-6 py-4">{{ entry.get_component_display }}</td>
+          <td class="px-6 py-4">{{ entry.get_status_display }}</td>
+          <td class="px-6 py-4">{{ entry.amount }}</td>
+          <td class="px-6 py-4 text-xs text-slate-500">{{ entry.reference_id }}</td>
+        </tr>
+        {% empty %}
+        <tr><td class="px-6 py-8 text-slate-500" colspan="6">No raw ledger entries found for this order.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+</section>
+{% endblock %}

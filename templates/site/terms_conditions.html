@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}Terms & Conditions | {{ site_business_name }}{% endblock %}
+
+{% block content %}
+<section class="max-w-5xl mx-auto px-4 py-10">
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 md:p-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-3">Terms &amp; Conditions</h1>
+        <p class="text-gray-600 mb-8">These Terms &amp; Conditions govern the use of the {{ site_business_name }} website and the purchase of products through this platform.</p>
+
+        <div class="space-y-8 text-gray-700">
+            <section>
+                <h2 class="text-xl font-semibold text-gray-900 mb-3">Website Usage</h2>
+                <ul class="list-disc pl-5 space-y-2">
+                    <li>Users must provide accurate account, contact, and delivery information.</li>
+                    <li>The website must not be used for unlawful, fraudulent, or abusive activity.</li>
+                    <li>We may suspend or restrict access where misuse, attempted fraud, or policy violations are identified.</li>
+                </ul>
+            </section>
+             <br>
+
+            <section>
+                <h2 class="text-xl font-semibold text-gray-900 mb-3">Products, Pricing, and Payments</h2>
+                <ul class="list-disc pl-5 space-y-2">
+                    <li>All product listings, prices, availability, and offers are subject to change without prior notice.</li>
+                    <li>Orders are confirmed only after successful payment authorization and acceptance by {{ site_business_name }}.</li>
+                    <li>Customers must use lawful payment methods and ensure that payment details submitted are valid and authorized.</li>
+                </ul>
+            </section>
+             <br>
+
+            <section>
+                <h2 class="text-xl font-semibold text-gray-900 mb-3">Shipping and Delivery</h2>
+                <p class="mb-0">Delivery timelines are estimates and may vary due to service area, logistics constraints, weather conditions, public holidays, or other operational factors. Full shipping details are described in our Shipping &amp; Delivery Policy.</p>
+            </section>
+             <br>
+
+            <section>
+                <h2 class="text-xl font-semibold text-gray-900 mb-3">Returns, Refunds, and Cancellations</h2>
+                <p class="mb-0">Requests for cancellation, returns, or refunds are handled in line with our Refund &amp; Cancellation Policy. Eligibility may depend on order status, product condition, and the nature of the item purchased.</p>
+            </section>
+             <br>
+
+            <section>
+                <h2 class="text-xl font-semibold text-gray-900 mb-3">Seller Terms and Policies</h2>
+                <ul class="list-disc pl-5 space-y-2">
+                    <li>Sellers must apply for and obtain seller permission before they can publish and sell products on {{ site_business_name }}.</li>
+                    <li>All sellers must comply with our Seller Code of Conduct and product quality standards.</li>
+                    <li>Sellers are responsible for accurate product descriptions, pricing, and inventory management.</li>
+                    <li>Payouts are processed within 7 business days after the return window closes for each order.</li>
+                    <li>{{ site_business_name }} reserves the right to suspend or terminate seller accounts that violate policies, engage in fraudulent activities, or receive consistent complaints.</li>
+                    <li>Sellers must maintain compliance with applicable laws and regulations, including tax and consumer protection laws.</li>
+                </ul>
+            </section>
+             <br>
+
+            <section>
+                <h2 class="text-xl font-semibold text-gray-900 mb-3">Limitation of Liability</h2>
+                <p class="mb-0">{{ site_business_name }} is not liable for indirect, incidental, special, or consequential losses arising from the use of this website, delayed delivery, third-party service interruptions, or unauthorized use of an account, except where liability cannot be excluded under applicable law.</p>
+            </section>
+             <br>
+
+            <section>
+                <h2 class="text-xl font-semibold text-gray-900 mb-3">Governing Law</h2>
+                <p class="mb-0">These Terms &amp; Conditions are governed by the laws of India. Any disputes relating to this website or transactions made through it will be subject to the applicable courts in India.</p>
+            </section>
+        </div>
+    </div>
+</section>
+{% endblock %}

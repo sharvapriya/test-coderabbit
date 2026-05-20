@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}Privacy Policy | {{ site_business_name }}{% endblock %}
+
+{% block content %}
+<section class="max-w-5xl mx-auto px-4 py-10">
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 md:p-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-3">Privacy Policy</h1>
+        <p class="text-gray-600 mb-8">This Privacy Policy explains how {{ site_business_name }} collects, uses, stores, and protects customer information when you use this website.</p>
+
+        <div class="space-y-8 text-gray-700">
+            <section>
+                <h2 class="text-xl font-semibold text-gray-900 mb-3">Information We Collect</h2>
+                <p class="mb-3">We may collect personal information that you provide during account creation, checkout, order support, or other interactions with the website.</p>
+                    <ul class="list-disc pl-5 space-y-2">
+                        <li>Name, email address, mobile number, and delivery address.</li>
+                        <li>Order details, cart activity, and payment reference information.</li>
+                        <li>Account preferences, saved wishlist items, and support communications.</li>
+                    </ul>
+            </section>
+            <br>
+
+            <section>
+                <h2 class="text-xl font-semibold text-gray-900 mb-3">How We Use Your Data</h2>
+                <ul class="list-disc pl-5 space-y-2">
+                    <li>To process orders, confirm payments, arrange shipping, and provide customer support.</li>
+                    <li>To send order updates, delivery information, refund notifications, and important service communications.</li>
+                    <li>To improve website performance, product listings, and customer experience.</li>
+                    <li>To help detect misuse, fraud, or unauthorized activity on the platform.</li>
+                </ul>
+            </section>
+            <br>
+
+            <section>
+                <h2 class="text-xl font-semibold text-gray-900 mb-3">Storage and Security</h2>
+                <p class="mb-0">Customer information is stored on systems used to operate {{ site_business_name }} and is accessed only for legitimate business purposes such as order fulfillment, support, and legal compliance. We take reasonable technical and administrative measures to protect personal information from unauthorized access, misuse, or disclosure.</p>
+            </section>
+            <br>
+
+            <section>
+                <h2 class="text-xl font-semibold text-gray-900 mb-3">Cookies</h2>
+                <p class="mb-0">This website may use cookies or similar technologies to keep users signed in, maintain cart and wishlist activity, remember basic preferences, and improve site functionality. You can manage cookie behavior through your browser settings, but disabling cookies may affect parts of the shopping experience.</p>
+            </section>
+            <br>
+
+            <section>
+                <h2 class="text-xl font-semibold text-gray-900 mb-3">Sharing of Information</h2>
+                <p class="mb-0">We only share information when needed to operate the service, such as with payment processors, delivery partners, technical service providers, or when required by law. We do not sell customer personal information.</p>
+            </section>
+            <br>
+
+            <section>
+                <h2 class="text-xl font-semibold text-gray-900 mb-3">Privacy Contact</h2>
+                <p class="mb-0">For privacy-related questions, data requests, or complaints, contact us at <a href="mailto:{{ site_support_email }}" class="text-blue-700 hover:underline">{{ site_support_email }}</a>.</p>
+            </section>
+        </div>
+    </div>
+</section>
+{% endblock %}

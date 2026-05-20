@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Refund & Cancellation Policy | {{ site_business_name }}{% endblock %}
+
+{% block content %}
+<section class="max-w-5xl mx-auto px-4 py-10">
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 md:p-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-3">Refund &amp; Cancellation Policy</h1>
+        <p class="text-gray-600 mb-8">This policy explains the return, cancellation, and refund rules for orders placed with {{ site_business_name }}.</p>
+
+        <div class="space-y-8 text-gray-700">
+            <section>
+                <h2 class="text-xl font-semibold text-gray-900 mb-3">Cancellation Rules</h2>
+                <ul class="list-disc pl-5 space-y-2">
+                    <li>Orders may be cancelled before they are packed, shipped, or handed over for delivery.</li>
+                    <li>Once an order has been dispatched, cancellation may not be available and the return process will apply instead where eligible.</li>
+                    <li>{{ site_business_name }} may cancel orders affected by payment failure, pricing errors, stock unavailability, or suspected misuse.</li>
+                </ul>
+            </section>
+            <br>
+
+            <section>
+                <h2 class="text-xl font-semibold text-gray-900 mb-3">Return Eligibility</h2>
+                <ul class="list-disc pl-5 space-y-2">
+                    <li>Return requests must generally be raised within {{ site_return_window_days }} days of delivery unless a product page or category states otherwise.</li>
+                    <li>Items must be unused, in original condition, and returned with tags, accessories, and original packaging where applicable.</li>
+                    <li>Products that are damaged due to misuse, altered after delivery, or clearly non-returnable for hygiene or customization reasons may be declined.</li>
+                </ul>
+            </section>
+            <br>
+
+            <section>
+                <h2 class="text-xl font-semibold text-gray-900 mb-3">Refund Process</h2>
+                <ul class="list-disc pl-5 space-y-2">
+                    <li>Refunds are issued after the cancellation or returned item is reviewed and approved.</li>
+                    <li>Approved refunds are sent to your wallet . Wallet never gets expired . You can use it for future purchases </li>
+                    <li>{{ site_refund_timeline }}</li>
+                </ul>
+            </section>
+            <br>
+
+            <section>
+                <h2 class="text-xl font-semibold text-gray-900 mb-3">How to Request Help</h2>
+                <p class="mb-0">For cancellation, return, or refund support, email <a href="mailto:{{ site_support_email }}" class="text-blue-700 hover:underline">{{ site_support_email }}</a> or call <a href="tel:{{ site_support_phone }}" class="text-blue-700 hover:underline">{{ site_support_phone }}</a> with your order details.</p>
+            </section>
+            <br>
+        </div>
+    </div>
+</section>
+{% endblock %}

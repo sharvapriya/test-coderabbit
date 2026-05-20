@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Seller Registration Status{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto mt-10 bg-white p-6 rounded-lg shadow">
+  <h1 class="text-2xl font-bold mb-2">Track Seller Registration</h1>
+  <p class="text-sm text-gray-600 mb-6">Enter your registration ID to view approval status.</p>
+
+  <form method="post" class="space-y-4 mb-6">
+    {% csrf_token %}
+    <div>
+      <label class="block text-sm font-medium mb-1">Registration ID</label>
+      <input
+        type="text"
+        name="registration_id"
+        value="{{ registration_id }}"
+        required
+        class="w-full border rounded px-3 py-2"
+        placeholder="e.g. MYKART/2026/657854"
+      >
+    </div>
+    <button type="submit" class="bg-black text-white px-5 py-2 rounded">Track Status</button>
+      <h2 class="m-10 text-sm font-semibold text-white-800 mb-2">
+            please check your registered email for Registration ID and Status.
+        </h2>
+  </form>
+
+  {% if has_searched and registration_id and tracked_profile %}
+    <div class="rounded-lg border border-gray-200 p-4 bg-gray-50">
+      <p class="text-sm"><span class="font-semibold">Business:</span> {{ tracked_profile.business_name }}</p>
+      <p class="text-sm mt-1"><span class="font-semibold">Registration ID:</span> {{ tracked_profile.registration_id }}</p>
+      <p class="text-sm mt-1"><span class="font-semibold">Status:</span> {{ tracked_profile.get_approval_status_display }}</p>
+
+      {% if tracked_profile.approval_status == "approved" %}
+        <p class="text-sm mt-1 text-emerald-700"><span class="font-semibold">Seller ID:</span> {{ tracked_profile.seller_id }}</p>
+        {% if user.is_authenticated and user == tracked_profile.user %}
+          <a href="{% url 'sellers:dashboard' %}" class="inline-block mt-3 text-sm font-semibold text-indigo-700 hover:underline">
+            Go to Seller Dashboard
+          </a>
+        {% endif %}
+      {% elif tracked_profile.approval_status == "pending" %}
+        <p class="text-sm mt-2 text-amber-700">Your details are submitted to admin and currently under review.</p>
+        {% if user.is_authenticated and user == tracked_profile.user %}
+          <form method="post" action="{% url 'sellers:withdraw_registration' %}" class="mt-4">
+            {% csrf_token %}
+            <input type="hidden" name="registration_id" value="{{ tracked_profile.registration_id }}">
+            <button
+              type="submit"
+              class="inline-flex items-center rounded bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700"
+              onclick="return confirm('Are you sure you want to withdraw this seller registration?');"
+            >
+              Withdraw Registration
+            </button>
+          </form>
+        {% endif %}
+      {% elif tracked_profile.approval_status == "rejected" %}
+        <p class="text-sm mt-2 text-red-700">Your registration was rejected. Please contact support/admin for next steps.</p>
+      {% endif %}
+    </div>
+  {% elif has_searched %}
+    <div class="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+      {{ lookup_error }}
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
+

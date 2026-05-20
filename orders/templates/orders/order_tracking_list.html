@@ -1,0 +1,293 @@
+{% extends "base.html" %}
+{% block title %}My Orders{% endblock %}
+
+{% block content %}
+<section class="py-8 sm:py-10 tracking-page" style="background: linear-gradient(180deg, #f9fafb 0%, #eef2ff 100%);">
+  <div class="max-w-[1160px] mx-auto px-4 sm:px-6">
+    <div class="animate-[fadeUp_0.45s_ease-out]">
+      <div class="pb-8 sm:pb-10">
+        <p class="text-xs uppercase tracking-[0.24em] text-indigo-700 font-semibold">Orders</p>
+        <h1 class="text-[30px] sm:text-[32px] leading-tight font-semibold mt-2 text-slate-900">Track Your Deliveries</h1>
+        <p class="text-slate-500 mt-3 max-w-2xl">Check real-time item status, review totals, and open each order for complete delivery progress.</p>
+      </div>
+
+      <div class="pb-8 sm:pb-10">
+        <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <h2 class="text-base font-bold text-slate-900">My Orders</h2>
+          {% if has_orders %}
+          <div class="flex flex-wrap items-center gap-2 sm:justify-end" data-order-tabs>
+            {% if has_orders %}
+            <button type="button" class="rounded-full bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700" data-order-tab="active">
+              Active Orders
+            </button>
+            <button type="button" class="rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50" data-order-tab="delivered">
+              Completed Orders
+            </button>
+            <button type="button" class="rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50" data-order-tab="completed">
+              Cancelled Orders
+            </button>
+            {% endif %}
+            {% if return_requests %}
+            <button type="button" class="rounded-full border border-red-300 bg-white px-4 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-50" data-order-tab="returns">
+              Returns {% if return_requests %}<span class="ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full bg-red-100 text-red-700 text-xs font-bold">{{ return_requests|length }}</span>{% endif %}
+            </button>
+            {% endif %}
+            <a href="{% url 'orders:return_request_list' %}" class="rounded-full border border-red-300 bg-red-50 px-4 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-100">
+              📋 View All Returns
+            </a>
+          </div>
+          {% endif %}
+        </div>
+        {% if has_orders %}
+        <div class="space-y-10">
+          <div data-order-panel="active">
+            <h3 class="text-sm font-bold uppercase tracking-wider text-indigo-700 mb-4">Active Orders</h3>
+            {% if active_tracking_orders %}
+            <div class="grid gap-4 sm:gap-5">
+              {% for row in active_tracking_orders %}
+              <a href="{% url 'orders:order_tracking_detail' row.order.id %}" class="group block rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600" aria-label="Track order {{ row.order.id }}">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+                  <div>
+                    <p class="text-xs font-bold uppercase tracking-wider text-slate-500">Order #{{  row.order.display_order_id }}</p>
+                    <p class="text-sm text-slate-600 mt-2">Placed on {{ row.order.created_at|date:"M d, Y - h:i A" }}</p>
+                    <p class="mt-2">
+                      <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold {% if row.order.status == 'partially_cancelled' %}bg-amber-100 text-amber-800{% else %}bg-emerald-100 text-emerald-800{% endif %}">
+                        {{ row.order.get_status_display }}
+                      </span>
+                    </p>
+                    <p class="text-sm text-slate-700 mt-2">{{ row.items_count }} item{{ row.items_count|pluralize }}</p>
+                    <div class="mt-3 flex items-center gap-2">
+                      {% for item in row.preview_items %}
+                        {% if item.product.image %}
+                        <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="w-10 h-10 rounded-md border border-slate-200 object-cover">
+                        {% else %}
+                        <div class="w-8 h-8 rounded-md border border-slate-200 bg-slate-100 text-[8px] font-semibold text-slate-500 flex items-center justify-center">
+                          No image
+                        </div>
+                        {% endif %}
+                      {% endfor %}
+                      {% if row.extra_items_count > 0 %}
+                      <span class="text-xs font-semibold text-slate-500">+{{ row.extra_items_count }} more</span>
+                      {% endif %}
+                    </div>
+                  </div>
+                  <div class="sm:text-right">
+                    <p class="text-sm text-slate-500">Total Price</p>
+                    <p class="text-lg font-bold text-slate-900 mt-1">Rs.{{ row.order.get_total_cost }}</p>
+                    <span class="inline-flex items-center justify-center mt-4 rounded-[10px] bg-indigo-600 text-white px-5 py-2 text-sm font-semibold group-hover:bg-indigo-700 active:scale-[0.98] transition duration-200 ease-in-out">
+                      Track Order ->
+                    </span>
+                  </div>
+                </div>
+              </a>
+              {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-sm text-slate-500">No active orders.</p>
+            {% endif %}
+          </div>
+
+          <div class="hidden" data-order-panel="delivered">
+            <h3 class="text-xl font-bold uppercase tracking-wider text-emerald-700 mb-4">Completed Orders</h3>
+            {% if delivered_tracking_orders %}
+            <div class="grid gap-4 sm:gap-5">
+              {% for row in delivered_tracking_orders %}
+              <a href="{% url 'orders:order_tracking_detail' row.order.id %}" class="group block rounded-2xl border border-emerald-200 bg-emerald-50/40 p-5 sm:p-6 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600" aria-label="Track order {{ row.order.id }}">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+                  <div>
+                    <p class="text-xs font-bold uppercase tracking-wider text-emerald-700">Order #{{  row.order.display_order_id }}</p>
+                    <p class="text-sm text-slate-600 mt-2">Placed on {{ row.order.created_at|date:"M d, Y - h:i A" }}</p>
+                    <p class="mt-2">
+                      <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold {% if row.order.status == 'partially_cancelled' %}bg-amber-100 text-amber-800{% else %}bg-emerald-100 text-emerald-800{% endif %}">
+                        {{ row.order.get_status_display }}
+                      </span>
+                    </p>
+                    <p class="text-sm text-slate-700 mt-2">{{ row.items_count }} item{{ row.items_count|pluralize }}</p>
+                    <div class="mt-3 flex items-center gap-2">
+                      {% for item in row.preview_items %}
+                        {% if item.product.image %}
+                        <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="w-10 h-10 rounded-md border border-slate-200 object-cover">
+                        {% else %}
+                        <div class="w-8 h-8 rounded-md border border-slate-200 bg-slate-100 text-[8px] font-semibold text-slate-500 flex items-center justify-center">
+                          No image
+                        </div>
+                        {% endif %}
+                      {% endfor %}
+                      {% if row.extra_items_count > 0 %}
+                      <span class="text-xs font-semibold text-slate-500">+{{ row.extra_items_count }} more</span>
+                      {% endif %}
+                    </div>
+                  </div>
+                  <div class="sm:text-right">
+                    <p class="text-sm text-slate-500">Total Price</p>
+                    <p class="text-lg font-bold text-slate-900 mt-1">Rs.{{ row.order.get_total_cost }}</p>
+                    <span class="inline-flex items-center justify-center mt-4 rounded-[10px] bg-emerald-600 text-white px-5 py-2 text-sm font-semibold group-hover:bg-emerald-700 active:scale-[0.98] transition duration-200 ease-in-out">
+                      View Details
+                    </span>
+                  </div>
+                </div>
+              </a>
+              {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-sm text-slate-500">No delivered orders.</p>
+            {% endif %}
+          </div>
+
+          <div class="hidden" data-order-panel="completed">
+            <h3 class="text-xl font-bold uppercase tracking-wider text-rose-700 mb-4">Cancelled Orders</h3>
+            {% if cancelled_tracking_orders %}
+            <div class="grid gap-4 sm:gap-5">
+              {% for row in cancelled_tracking_orders %}
+              <a href="{% url 'orders:order_tracking_detail' row.order.id %}" class="group block rounded-2xl border border-rose-200 bg-rose-50/40 p-5 sm:p-6 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-600" aria-label="Track order {{ row.order.id }}">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+                  <div>
+                    <p class="text-xs font-bold uppercase tracking-wider text-rose-700">Order #{{  row.order.display_order_id }}</p>
+                    <p class="text-sm text-slate-600 mt-2">Placed on {{ row.order.created_at|date:"M d, Y - h:i A" }}</p>
+                    <p class="mt-2">
+                      <span class="inline-flex items-center rounded-full bg-rose-100 text-rose-800 px-3 py-1 text-xs font-semibold">
+                        {{ row.order.get_status_display }}
+                      </span>
+                    </p>
+                    <p class="text-sm text-slate-700 mt-2">{{ row.items_count }} item{{ row.items_count|pluralize }}</p>
+                  </div>
+                  <div class="sm:text-right">
+                    <p class="text-sm text-slate-500">Total Price</p>
+                    <p class="text-lg font-bold text-slate-900 mt-1">Rs.{{ row.order.get_total_cost }}</p>
+                    <span class="inline-flex items-center justify-center mt-4 rounded-[10px] bg-rose-600 text-white px-5 py-2 text-sm font-semibold group-hover:bg-rose-700 active:scale-[0.98] transition duration-200 ease-in-out">
+                      View Details
+                    </span>
+                  </div>
+                </div>
+              </a>
+              {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-sm text-slate-500">No cancelled orders.</p>
+            {% endif %}
+          </div>
+
+
+          <!-- RETURNS SECTION -->
+          <div class="hidden" data-order-panel="returns">
+            <h3 class="text-xl font-bold uppercase tracking-wider text-red-700 mb-4">My Returns</h3>
+            {% if return_requests %}
+            <div class="grid gap-4 sm:gap-5">
+              {% for r in return_requests %}
+              <div class="rounded-2xl border p-5 sm:p-6 shadow-sm bg-white
+                {% if r.status == 'pending' %}border-yellow-200 bg-yellow-50/30
+                {% elif r.status == 'approved' %}border-indigo-200 bg-indigo-50/30
+                {% elif r.status == 'shipped_by_buyer' %}border-purple-200 bg-purple-50/30
+                {% elif r.status == 'received_by_seller' %}border-blue-200 bg-blue-50/30
+                {% elif r.status == 'refund_completed' %}border-green-200 bg-green-50/30
+                {% elif r.status == 'rejected' %}border-red-200 bg-red-50/30
+                {% endif %}">
+                <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                  <div class="flex-1">
+                    <p class="text-xs font-bold uppercase tracking-wider text-slate-500">Order #{{ r.order.display_order_id }}</p>
+                    <p class="font-semibold text-slate-900 mt-1">{{ r.product.name }}</p>
+                    <p class="text-sm text-slate-500 mt-1">Requested on {{ r.created_at|date:"M d, Y" }}</p>
+                    <p class="text-sm text-slate-600 mt-1"><strong>Reason:</strong> {{ r.get_reason_display }}</p>
+                    {% if r.refund_amount %}
+                    <p class="text-sm text-slate-600 mt-1"><strong>Refund:</strong> Rs.{{ r.refund_amount }}</p>
+                    {% endif %}
+                    {% if r.admin_notes %}
+                    <p class="text-sm text-slate-600 mt-1"><strong>Admin Note:</strong> {{ r.admin_notes }}</p>
+                    {% endif %}
+                    {% if r.status == 'approved' and r.seller_return_address %}
+                    <div class="mt-3 p-3 rounded-lg bg-white border border-purple-200">
+                      <p class="text-xs font-semibold text-purple-700 uppercase tracking-wide">Ship to Seller's Address:</p>
+                      <p class="text-sm text-slate-900 mt-2 whitespace-pre-wrap">{{ r.seller_return_address }}</p>
+                    </div>
+                    {% endif %}
+                  </div>
+                  <div class="flex flex-col items-start sm:items-end gap-3">
+                    <span class="inline-flex rounded-full px-3 py-1 text-xs font-semibold
+                      {% if r.status == 'pending' %}bg-yellow-100 text-yellow-800
+                      {% elif r.status == 'approved' %}bg-indigo-100 text-indigo-800
+                      {% elif r.status == 'shipped_by_buyer' %}bg-purple-100 text-purple-800
+                      {% elif r.status == 'received_by_seller' %}bg-blue-100 text-blue-800
+                      {% elif r.status == 'refund_completed' %}bg-green-100 text-green-800
+                      {% elif r.status == 'rejected' %}bg-red-100 text-red-800
+                      {% endif %}">{{ r.get_status_display }}</span>
+                    {% if r.status == 'approved' %}
+                    <form action="{% url 'orders:confirm_return_shipment' r.id %}" method="post">
+                      {% csrf_token %}
+                      <button type="submit" class="inline-flex items-center justify-center rounded-[10px] bg-indigo-600 text-white px-4 py-2 text-sm font-semibold hover:bg-indigo-700 transition">
+                        ✓ I Have Shipped the Product
+                      </button>
+                    </form>
+                    {% elif r.status == 'shipped_by_buyer' %}
+                    <span class="text-xs text-purple-700 font-medium">📦 Shipped — awaiting seller confirmation</span>
+                    {% elif r.status == 'received_by_seller' %}
+                    <span class="text-xs text-blue-700 font-medium">✓ Seller received — admin processing refund</span>
+                    {% elif r.status == 'refund_completed' %}
+                    <span class="text-xs text-green-700 font-medium">✓ Refund credited to your wallet</span>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-sm text-slate-500">No return requests found.</p>
+            {% endif %}
+          </div>
+        </div>
+        {% else %}
+        <div class="text-center py-12">
+          <h2 class="text-2xl font-extrabold text-slate-900">No orders yet</h2>
+          <p class="text-slate-600 mt-2">Your placed orders will appear here for tracking.</p>
+          <a href="{% url 'products:product_list' %}" class="inline-flex mt-6 rounded-[10px] bg-indigo-600 text-white px-6 py-2.5 font-bold hover:bg-indigo-700 active:scale-[0.98] transition duration-200 ease-in-out shadow-sm shadow-indigo-200">
+            Start Shopping
+          </a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+<style>
+  @keyframes fadeUp {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+</style>
+<script>
+  (function () {
+    const tabs = Array.from(document.querySelectorAll("[data-order-tab]"));
+    const panels = Array.from(document.querySelectorAll("[data-order-panel]"));
+    if (!tabs.length || !panels.length) return;
+
+    const activateTab = (target) => {
+      tabs.forEach((tab) => {
+        const isActive = tab.dataset.orderTab === target;
+        tab.classList.toggle("bg-indigo-600", isActive);
+        tab.classList.toggle("text-white", isActive);
+        tab.classList.toggle("hover:bg-indigo-700", isActive);
+        tab.classList.toggle("border", !isActive);
+        tab.classList.toggle("border-slate-300", !isActive);
+        tab.classList.toggle("bg-white", !isActive);
+        tab.classList.toggle("text-slate-700", !isActive);
+        tab.classList.toggle("hover:bg-slate-50", !isActive);
+      });
+
+      panels.forEach((panel) => {
+        panel.classList.toggle("hidden", panel.dataset.orderPanel !== target);
+      });
+    };
+
+    tabs.forEach((tab) => {
+      tab.addEventListener("click", () => activateTab(tab.dataset.orderTab));
+    });
+
+    activateTab("active");
+  })();
+</script>
+{% endblock %}
