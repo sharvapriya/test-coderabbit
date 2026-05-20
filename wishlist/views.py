@@ -30,3 +30,7 @@ def wishlist_view(request):
         product__available=True,
     )
     return render(request, 'wishlist/wishlist.html', {'wishlist_items': wishlist_items})
+
+x=1
+y=2
+print( x+y )
